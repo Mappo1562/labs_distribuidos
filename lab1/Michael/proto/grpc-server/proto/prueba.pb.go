@@ -22,10 +22,10 @@ const (
 )
 
 type OperationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Operation     string                 `protobuf:"bytes,1,opt,name=operation,proto3" json:"operation,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	SolicitudOferta string                 `protobuf:"bytes,1,opt,name=solicitud_oferta,json=solicitudOferta,proto3" json:"solicitud_oferta,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *OperationRequest) Reset() {
@@ -58,16 +58,16 @@ func (*OperationRequest) Descriptor() ([]byte, []int) {
 	return file_prueba_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *OperationRequest) GetOperation() string {
+func (x *OperationRequest) GetSolicitudOferta() string {
 	if x != nil {
-		return x.Operation
+		return x.SolicitudOferta
 	}
 	return ""
 }
 
 type OperationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        string                 `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	Oferta        string                 `protobuf:"bytes,1,opt,name=oferta,proto3" json:"oferta,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,9 +102,9 @@ func (*OperationResponse) Descriptor() ([]byte, []int) {
 	return file_prueba_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *OperationResponse) GetResult() string {
+func (x *OperationResponse) GetOferta() string {
 	if x != nil {
-		return x.Result
+		return x.Oferta
 	}
 	return ""
 }
@@ -113,13 +113,13 @@ var File_prueba_proto protoreflect.FileDescriptor
 
 const file_prueba_proto_rawDesc = "" +
 	"\n" +
-	"\fprueba.proto\x12\x06prueba\"0\n" +
-	"\x10OperationRequest\x12\x1c\n" +
-	"\toperation\x18\x01 \x01(\tR\toperation\"+\n" +
+	"\fprueba.proto\x12\x06prueba\"=\n" +
+	"\x10OperationRequest\x12)\n" +
+	"\x10solicitud_oferta\x18\x01 \x01(\tR\x0fsolicitudOferta\"+\n" +
 	"\x11OperationResponse\x12\x16\n" +
-	"\x06result\x18\x01 \x01(\tR\x06result2\x9b\x01\n" +
-	"\x06prueba\x12F\n" +
-	"\rSendOperation\x12\x18.prueba.OperationRequest\x1a\x19.prueba.OperationResponse\"\x00\x12I\n" +
+	"\x06oferta\x18\x01 \x01(\tR\x06oferta2\x9e\x01\n" +
+	"\x06prueba\x12I\n" +
+	"\x10solicitar_oferta\x12\x18.prueba.OperationRequest\x1a\x19.prueba.OperationResponse\"\x00\x12I\n" +
 	"\x10ProcessOperation\x12\x18.prueba.OperationRequest\x1a\x19.prueba.OperationResponse\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
 
 var (
@@ -140,9 +140,9 @@ var file_prueba_proto_goTypes = []any{
 	(*OperationResponse)(nil), // 1: prueba.OperationResponse
 }
 var file_prueba_proto_depIdxs = []int32{
-	0, // 0: prueba.prueba.SendOperation:input_type -> prueba.OperationRequest
+	0, // 0: prueba.prueba.solicitar_oferta:input_type -> prueba.OperationRequest
 	0, // 1: prueba.prueba.ProcessOperation:input_type -> prueba.OperationRequest
-	1, // 2: prueba.prueba.SendOperation:output_type -> prueba.OperationResponse
+	1, // 2: prueba.prueba.solicitar_oferta:output_type -> prueba.OperationResponse
 	1, // 3: prueba.prueba.ProcessOperation:output_type -> prueba.OperationResponse
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type

@@ -8,14 +8,14 @@ option go_package = "grpc-server/proto";
 package prueba;
 
 service prueba {
-    rpc SendOperation(OperationRequest) returns (OperationResponse) {}
+    rpc solicitar_oferta(OperationRequest) returns (OperationResponse) {}
     rpc ProcessOperation(OperationRequest) returns (OperationResponse) {}
 }
 
 message OperationRequest{
-    string operation = 1;
+    string solicitud_oferta = 1;
 }
 
 message OperationResponse{
-    string result = 1;
+    string oferta = 1;
 }
