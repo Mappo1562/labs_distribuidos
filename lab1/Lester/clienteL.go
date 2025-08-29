@@ -49,14 +49,15 @@ func verificar_pago() {
 }
 
 func main() {
-	lis, err := net.Listen("tcp", "50051...")
+	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("conexión fallida:\n %v", err)
+		log.Fatalf("conexión fallida1:\n %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	fmt.Println("server en 50051..")
+	pb.RegisterPruebaServer(grpcServer, &server{})
+	fmt.Println("server en 50051")
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("conexión fallida:\n %v", err)
+		log.Fatalf("conexión fallida2:\n %v", err)
 	}
 }

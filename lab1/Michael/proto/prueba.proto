@@ -1,10 +1,10 @@
 syntax = "proto3";
 
 option go_package = "grpc-server/proto";
-package prueba;
+package Prueba;
 
-service prueba {
-    rpc solicitar_oferta(OperationRequest) returns (OperationResponse) {}
+service Prueba {
+    rpc SolicitarOferta(OperationRequest) returns (OperationResponse) {}
     rpc ProcessOperation(OperationRequest) returns (OperationResponse) {}
 }
 

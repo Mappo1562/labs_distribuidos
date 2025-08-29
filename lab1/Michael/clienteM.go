@@ -7,11 +7,12 @@ import (
 	pb "Michael/proto/grpc-server/proto"
 	"context"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 )
 
-const container = "M_container:50051"
+const container = "localhost:50051"
 
 func main() {
 	conn, err := grpc.Dial(container, grpc.WithInsecure()) // conectar con el socket
@@ -22,10 +23,10 @@ func main() {
 
 	client := pb.NewPruebaClient(conn) // hacer un cliente con la conexión creada
 
-	msg := "quiero un atraco"
-	req := &pb.OperationRequest{SolicitudOferta: msg}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
 
-	resp, err := client.SolicitarOferta(context.Background(), req)
+	resp, err := client.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "quiero un atraco"})
 	if err != nil {
 		log.Fatalf("Error llamando a SolicitarOferta: %v", err)
 	}
