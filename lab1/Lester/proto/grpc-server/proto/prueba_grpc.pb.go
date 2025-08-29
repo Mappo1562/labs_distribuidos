@@ -23,15 +23,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Prueba_SendOperation_FullMethodName    = "/prueba.prueba/SendOperation"
-	Prueba_ProcessOperation_FullMethodName = "/prueba.prueba/ProcessOperation"
+	Prueba_SolicitarOferta_FullMethodName  = "/Prueba.Prueba/SolicitarOferta"
+	Prueba_ProcessOperation_FullMethodName = "/Prueba.Prueba/ProcessOperation"
 )
 
 // PruebaClient is the client API for Prueba service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PruebaClient interface {
-	SendOperation(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	SolicitarOferta(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 	ProcessOperation(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error)
 }
 
@@ -43,10 +43,10 @@ func NewPruebaClient(cc grpc.ClientConnInterface) PruebaClient {
 	return &pruebaClient{cc}
 }
 
-func (c *pruebaClient) SendOperation(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+func (c *pruebaClient) SolicitarOferta(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OperationResponse)
-	err := c.cc.Invoke(ctx, Prueba_SendOperation_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Prueba_SolicitarOferta_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *pruebaClient) ProcessOperation(ctx context.Context, in *OperationReques
 // All implementations must embed UnimplementedPruebaServer
 // for forward compatibility.
 type PruebaServer interface {
-	SendOperation(context.Context, *OperationRequest) (*OperationResponse, error)
+	SolicitarOferta(context.Context, *OperationRequest) (*OperationResponse, error)
 	ProcessOperation(context.Context, *OperationRequest) (*OperationResponse, error)
 	mustEmbedUnimplementedPruebaServer()
 }
@@ -79,8 +79,8 @@ type PruebaServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPruebaServer struct{}
 
-func (UnimplementedPruebaServer) SendOperation(context.Context, *OperationRequest) (*OperationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendOperation not implemented")
+func (UnimplementedPruebaServer) SolicitarOferta(context.Context, *OperationRequest) (*OperationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SolicitarOferta not implemented")
 }
 func (UnimplementedPruebaServer) ProcessOperation(context.Context, *OperationRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessOperation not implemented")
@@ -106,20 +106,20 @@ func RegisterPruebaServer(s grpc.ServiceRegistrar, srv PruebaServer) {
 	s.RegisterService(&Prueba_ServiceDesc, srv)
 }
 
-func _Prueba_SendOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Prueba_SolicitarOferta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OperationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PruebaServer).SendOperation(ctx, in)
+		return srv.(PruebaServer).SolicitarOferta(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Prueba_SendOperation_FullMethodName,
+		FullMethod: Prueba_SolicitarOferta_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PruebaServer).SendOperation(ctx, req.(*OperationRequest))
+		return srv.(PruebaServer).SolicitarOferta(ctx, req.(*OperationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,12 +146,12 @@ func _Prueba_ProcessOperation_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Prueba_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "prueba.prueba",
+	ServiceName: "Prueba.Prueba",
 	HandlerType: (*PruebaServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendOperation",
-			Handler:    _Prueba_SendOperation_Handler,
+			MethodName: "SolicitarOferta",
+			Handler:    _Prueba_SolicitarOferta_Handler,
 		},
 		{
 			MethodName: "ProcessOperation",

@@ -6,31 +6,36 @@ package main
 import (
 	pb "Michael/proto/grpc-server/proto"
 	"context"
+	"flag"
 	"log"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const container = "localhost:50051"
 
+var (
+	addr = flag.String("addr", "localhost:50051", "the address to connect to")
+)
+
 func main() {
-	conn, err := grpc.Dial(container, grpc.WithInsecure()) // conectar con el socket
+	flag.Parse()
+	// Set up a connection to the server.
+	conn, err := grpc.NewClient(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Error al conectar el servidor: %v", err)
+		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
+	c := pb.NewPruebaClient(conn)
 
-	client := pb.NewPruebaClient(conn) // hacer un cliente con la conexión creada
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	// Contact the server and print out its response.
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-
-	resp, err := client.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "quiero un atraco"})
+	r, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "dame un atraco lester, por favor"})
 	if err != nil {
-		log.Fatalf("Error llamando a SolicitarOferta: %v", err)
+		log.Fatalf("could not greet: %v", err)
 	}
-
-	// Usar la respuesta
-	log.Println("Respuesta del servidor:", resp.Oferta)
+	log.Printf("respuesta: %s", r.GetOferta())
 }

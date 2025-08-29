@@ -5,6 +5,7 @@ package main
 // go mod tidy
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net"
 
@@ -17,19 +18,17 @@ import (
 
 const Michael = "M_container:50052"
 
+var (
+	port = flag.Int("port", 50051, "The server port")
+)
+
 type server struct {
 	pb.UnimplementedPruebaServer // se define el servidor de prueba.proto
 }
 
-func (s *server) solicitar_oferta(ctx context.Context, req *pb.OperationRequest) error {
-	conn, err := grpc.Dial(Michael, grpc.WithInsecure()) // abrir el socket
-	if err != nil {
-		log.Printf("conexión fallida con michael D:\n %v", err)
-		return err
-	}
-	defer conn.Close()
-	log.Printf("creo que recibí\n %v", conn)
-	return nil
+func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (*pb.OperationResponse, error) {
+	log.Printf("creo que recibí\n %v", in.GetSolicitudOferta())
+	return &pb.OperationResponse{Oferta: "no hay ofertas actualmente"}, nil
 }
 
 func espera() {

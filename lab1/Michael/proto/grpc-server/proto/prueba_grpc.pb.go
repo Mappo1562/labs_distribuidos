@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Prueba_SolicitarOferta_FullMethodName  = "/prueba.prueba/solicitar_oferta"
-	Prueba_ProcessOperation_FullMethodName = "/prueba.prueba/ProcessOperation"
+	Prueba_SolicitarOferta_FullMethodName  = "/Prueba.Prueba/SolicitarOferta"
+	Prueba_ProcessOperation_FullMethodName = "/Prueba.Prueba/ProcessOperation"
 )
 
 // PruebaClient is the client API for Prueba service.
@@ -142,11 +142,11 @@ func _Prueba_ProcessOperation_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Prueba_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "prueba.prueba",
+	ServiceName: "Prueba.Prueba",
 	HandlerType: (*PruebaServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "solicitar_oferta",
+			MethodName: "SolicitarOferta",
 			Handler:    _Prueba_SolicitarOferta_Handler,
 		},
 		{
