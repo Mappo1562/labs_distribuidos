@@ -9,7 +9,7 @@ package Prueba;
 
 service Prueba {
     rpc SolicitarOferta(OperationRequest) returns (OperationResponse) {}
-    rpc ProcessOperation(OperationRequest) returns (OperationResponse) {}
+    rpc AceptarOferta(Vacio) returns (Vacio) {}
 }
 
 message OperationRequest{
@@ -18,4 +18,10 @@ message OperationRequest{
 
 message OperationResponse{
     string oferta = 1;
+	double ExitoTrevor = 2;
+	double ExitoFranklin = 3;
+	double riesgo = 4;
+	int64 botin = 5;
 }
+
+message Vacio{}

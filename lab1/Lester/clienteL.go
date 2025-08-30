@@ -35,17 +35,17 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 		return &pb.OperationResponse{Oferta: "No hay ofertas actualmente..."}, nil
 	}
 	contador += 1
-	ExitoTrevor := rand.Float64()
-	ExitoFranklin := rand.Float64()
+	exitoTrevor := rand.Float64()
+	exitoFranklin := rand.Float64()
 	riesgo := rand.Float64()
 	botin := rand.Intn(100000)
 	// extras :v
 	lugares := [5]string{"Liberty city", "Los santos", "San Andreas", "Vice City", "Cayo Perico"}
 	objetivo := [4]string{"un banco", "una joyeria", "una mansión", "un barco"}
 
-	msg := fmt.Sprintf("Encontré una opción, se trata de %v en %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], fmt.Sprintf("%d", botin), fmt.Sprintf("%.2f", riesgo), fmt.Sprintf("%.2f", ExitoTrevor), fmt.Sprintf("%.2f", ExitoFranklin))
+	msg := fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], fmt.Sprintf("%d", botin), fmt.Sprintf("%.2f", riesgo), fmt.Sprintf("%.2f", exitoTrevor), fmt.Sprintf("%.2f", exitoFranklin))
 
-	return &pb.OperationResponse{Oferta: msg}, nil
+	return &pb.OperationResponse{Oferta: msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: int64(botin)}, nil
 }
 
 func aumento_estrellas() {

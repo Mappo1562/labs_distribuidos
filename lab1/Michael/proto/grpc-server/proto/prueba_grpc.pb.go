@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Prueba_SolicitarOferta_FullMethodName  = "/Prueba.Prueba/SolicitarOferta"
-	Prueba_ProcessOperation_FullMethodName = "/Prueba.Prueba/ProcessOperation"
+	Prueba_SolicitarOferta_FullMethodName = "/Prueba.Prueba/SolicitarOferta"
+	Prueba_AceptarOferta_FullMethodName   = "/Prueba.Prueba/AceptarOferta"
 )
 
 // PruebaClient is the client API for Prueba service.
@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PruebaClient interface {
 	SolicitarOferta(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error)
-	ProcessOperation(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error)
+	AceptarOferta(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error)
 }
 
 type pruebaClient struct {
@@ -49,10 +49,10 @@ func (c *pruebaClient) SolicitarOferta(ctx context.Context, in *OperationRequest
 	return out, nil
 }
 
-func (c *pruebaClient) ProcessOperation(ctx context.Context, in *OperationRequest, opts ...grpc.CallOption) (*OperationResponse, error) {
+func (c *pruebaClient) AceptarOferta(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OperationResponse)
-	err := c.cc.Invoke(ctx, Prueba_ProcessOperation_FullMethodName, in, out, cOpts...)
+	out := new(Vacio)
+	err := c.cc.Invoke(ctx, Prueba_AceptarOferta_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (c *pruebaClient) ProcessOperation(ctx context.Context, in *OperationReques
 // for forward compatibility.
 type PruebaServer interface {
 	SolicitarOferta(context.Context, *OperationRequest) (*OperationResponse, error)
-	ProcessOperation(context.Context, *OperationRequest) (*OperationResponse, error)
+	AceptarOferta(context.Context, *Vacio) (*Vacio, error)
 	mustEmbedUnimplementedPruebaServer()
 }
 
@@ -78,8 +78,8 @@ type UnimplementedPruebaServer struct{}
 func (UnimplementedPruebaServer) SolicitarOferta(context.Context, *OperationRequest) (*OperationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SolicitarOferta not implemented")
 }
-func (UnimplementedPruebaServer) ProcessOperation(context.Context, *OperationRequest) (*OperationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProcessOperation not implemented")
+func (UnimplementedPruebaServer) AceptarOferta(context.Context, *Vacio) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AceptarOferta not implemented")
 }
 func (UnimplementedPruebaServer) mustEmbedUnimplementedPruebaServer() {}
 func (UnimplementedPruebaServer) testEmbeddedByValue()                {}
@@ -120,20 +120,20 @@ func _Prueba_SolicitarOferta_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Prueba_ProcessOperation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OperationRequest)
+func _Prueba_AceptarOferta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Vacio)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PruebaServer).ProcessOperation(ctx, in)
+		return srv.(PruebaServer).AceptarOferta(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Prueba_ProcessOperation_FullMethodName,
+		FullMethod: Prueba_AceptarOferta_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PruebaServer).ProcessOperation(ctx, req.(*OperationRequest))
+		return srv.(PruebaServer).AceptarOferta(ctx, req.(*Vacio))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -150,8 +150,8 @@ var Prueba_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Prueba_SolicitarOferta_Handler,
 		},
 		{
-			MethodName: "ProcessOperation",
-			Handler:    _Prueba_ProcessOperation_Handler,
+			MethodName: "AceptarOferta",
+			Handler:    _Prueba_AceptarOferta_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
