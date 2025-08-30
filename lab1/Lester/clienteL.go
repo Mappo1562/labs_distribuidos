@@ -4,13 +4,12 @@ package main
 // go mod init <nombre_carpeta_cliente>
 // go mod tidy
 import (
-	"context"
-	"flag"
-	"fmt"
-	"net"
-
 	pb "Lester/proto/grpc-server/proto"
+	"context"
+	"fmt"
 	"log"
+	"math/rand"
+	"net"
 	"time"
 
 	"google.golang.org/grpc"
@@ -18,21 +17,35 @@ import (
 
 const Michael = "M_container:50052"
 
-var (
-	port = flag.Int("port", 50051, "The server port")
-)
+const port = ":50051"
 
 type server struct {
 	pb.UnimplementedPruebaServer // se define el servidor de prueba.proto
 }
 
-func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (*pb.OperationResponse, error) {
-	log.Printf("creo que recibí\n %v", in.GetSolicitudOferta())
-	return &pb.OperationResponse{Oferta: "no hay ofertas actualmente"}, nil
-}
+var contador int = 0
 
-func espera() {
-	time.Sleep(10 * time.Second)
+func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (*pb.OperationResponse, error) {
+	// falta alguna algo q resetee el contador cuando michael acepte la oferta
+	if contador > 2 {
+		contador = 0
+		time.Sleep(10 * time.Second)
+	}
+	if rand.Float64() > 0.9 {
+		return &pb.OperationResponse{Oferta: "No hay ofertas actualmente..."}, nil
+	}
+	contador += 1
+	ExitoTrevor := rand.Float64()
+	ExitoFranklin := rand.Float64()
+	riesgo := rand.Float64()
+	botin := rand.Intn(100000)
+	// extras :v
+	lugares := [5]string{"Liberty city", "Los santos", "San Andreas", "Vice City", "Cayo Perico"}
+	objetivo := [4]string{"un banco", "una joyeria", "una mansión", "un barco"}
+
+	msg := fmt.Sprintf("Encontré una opción, se trata de %v en %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], fmt.Sprintf("%d", botin), fmt.Sprintf("%.2f", riesgo), fmt.Sprintf("%.2f", ExitoTrevor), fmt.Sprintf("%.2f", ExitoFranklin))
+
+	return &pb.OperationResponse{Oferta: msg}, nil
 }
 
 func aumento_estrellas() {
@@ -48,15 +61,15 @@ func verificar_pago() {
 }
 
 func main() {
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("conexión fallida1:\n %v", err)
+		log.Fatalf("conexión fallida:\n %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterPruebaServer(grpcServer, &server{})
-	fmt.Println("server en 50051")
+	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("conexión fallida2:\n %v", err)
+		log.Fatalf("conexión fallida:\n %v", err)
 	}
 }

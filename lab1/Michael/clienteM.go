@@ -6,7 +6,6 @@ package main
 import (
 	pb "Michael/proto/grpc-server/proto"
 	"context"
-	"flag"
 	"log"
 	"time"
 
@@ -14,16 +13,11 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const container = "localhost:50051"
-
-var (
-	addr = flag.String("addr", "localhost:50051", "the address to connect to")
-)
+const LesterAddr = "localhost:50051"
 
 func main() {
-	flag.Parse()
 	// Set up a connection to the server.
-	conn, err := grpc.NewClient(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -31,9 +25,27 @@ func main() {
 	c := pb.NewPruebaClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*12)
 	defer cancel()
-	r, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "dame un atraco lester, por favor"})
+	r, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "1dame un atraco lester, por favor"})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("respuesta: %s", r.GetOferta())
+
+	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "2dame un atraco lester, por favor"})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("respuesta: %s", r.GetOferta())
+
+	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "3dame un atraco lester, por favor"})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("respuesta: %s", r.GetOferta())
+
+	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "4dame un atraco lester, por favor"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
