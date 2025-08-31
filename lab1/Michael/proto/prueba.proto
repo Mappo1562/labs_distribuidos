@@ -9,6 +9,19 @@ service Prueba {
     rpc AceptarOferta(Vacio) returns (Vacio) {}
 }
 
+service Distraccion {
+    rpc InicioDistraccion(Instruccion) returns (Resultado) {}
+}
+
+message Instruccion{
+    int64 numTurnos = 1;
+}
+
+message Resultado{
+    string ExitoDistraccion = 1;
+    bool exito = 2;
+}
+
 message OperationRequest{
     string solicitud_oferta = 1;
 }

@@ -14,6 +14,8 @@ import (
 )
 
 const LesterAddr = "localhost:50051"
+const FranklinAddr = "localhost:50053"
+const TrevorAddr = "localhost:50054"
 
 func main() {
 	// Set up a connection to the server.
@@ -25,35 +27,89 @@ func main() {
 	c := pb.NewPruebaClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	r, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "1dame un atraco lester, por favor"})
+
+	//Fase La negociación
+	var ofertaValida bool = false
+	respuestaOferta, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "Dame un atraco lester, por favor"})
+
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("respuesta: %s", r.GetOferta())
-	time.Sleep(time.Second)
+	log.Printf("respuesta: %s", respuestaOferta.GetOferta())
 
-	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "2dame un atraco lester, por favor"})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+	if respuestaOferta.GetRiesgo() < 0.8 && (respuestaOferta.GetExitoFranklin() > 0.5 || respuestaOferta.GetExitoTrevor() > 0.5) {
+		ofertaValida = true
+		c.AceptarOferta(ctx, &pb.Vacio{})
 	}
-	log.Printf("respuesta: %s", r.GetOferta())
-	time.Sleep(time.Second)
 
-	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "3dame un atraco lester, por favor"})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+	for !ofertaValida {
+		respuestaOferta, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "Dame otro atraco lester, por favor"})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+
+		log.Printf("respuesta: %s", respuestaOferta.GetOferta())
+		if respuestaOferta.GetRiesgo() < 0.8 && (respuestaOferta.GetExitoFranklin() > 0.5 || respuestaOferta.GetExitoTrevor() > 0.5) {
+			ofertaValida = true
+			c.AceptarOferta(ctx, &pb.Vacio{})
+		}
 	}
-	log.Printf("respuesta: %s", r.GetOferta())
-	time.Sleep(time.Second)
 
-	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "4dame un atraco lester, por favor"})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+	//Fase La Distracción
+	var mandarGolpe bool
+
+	if respuestaOferta.GetExitoFranklin() > respuestaOferta.GetExitoTrevor() {
+		mandarGolpe = true
+	} else {
+		mandarGolpe = false
 	}
-	log.Printf("respuesta: %s", r.GetOferta())
 
-	c.AceptarOferta(ctx, &pb.Vacio{})
+	if mandarGolpe {
+		log.Printf("Mando a franklin a la primera parte")
+		// Set up a connection to the server.
+		conn, err := grpc.NewClient(FranklinAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewDistraccionClient(conn)
+		// Contact the server and print out its response.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		turnos := 200 - respuestaOferta.GetExitoFranklin()*100
+		respuestaDistraccion, err := c.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Printf("Franklin dice: %s", respuestaDistraccion.GetExitoDistraccion())
+
+	} else {
+		log.Printf("Mando a trevor a la primera parte")
+		// Set up a connection to the server.
+		conn, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewDistraccionClient(conn)
+		// Contact the server and print out its response.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		turnos := 200 - respuestaOferta.GetExitoTrevor()*100
+		respuestaDistraccion, err := c.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Printf("Trevor dice: %s", respuestaDistraccion.GetExitoDistraccion())
+	}
+
+	//Fase El Golpe
+	if !mandarGolpe {
+		log.Printf("Mando a franklin a la segunda parte")
+	} else {
+		log.Printf("Mando a trevor a la segunda parte")
+	}
 
 }

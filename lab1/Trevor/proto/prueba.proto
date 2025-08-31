@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "grpc-server/proto";
+package Prueba;
+
+service Distraccion {
+    rpc InicioDistraccion(Instruccion) returns (Resultado) {}
+}
+
+message Instruccion{
+    int64 numTurnos = 1;
+}
+
+message Resultado{
+    string ExitoDistraccion = 1;
+    bool exito = 2;
+}
+
+message Vacio{}
