@@ -25,29 +25,35 @@ func main() {
 	c := pb.NewPruebaClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*12)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	r, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "1dame un atraco lester, por favor"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("respuesta: %s", r.GetOferta())
+	time.Sleep(time.Second)
 
 	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "2dame un atraco lester, por favor"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("respuesta: %s", r.GetOferta())
+	time.Sleep(time.Second)
 
 	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "3dame un atraco lester, por favor"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("respuesta: %s", r.GetOferta())
+	time.Sleep(time.Second)
 
 	r, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "4dame un atraco lester, por favor"})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("respuesta: %s", r.GetOferta())
+
+	c.AceptarOferta(ctx, &pb.Vacio{})
+
 }
