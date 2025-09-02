@@ -35,30 +35,49 @@ var (
 	scanner  *bufio.Scanner
 )
 
+func parseIntOpt(s string) *int64 {
+	if s == "" {
+		return nil
+	}
+	val, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return nil
+	}
+	return &val
+}
+
+func formatInt64(p *int64) string {
+	if p == nil {
+		return "N/A"
+	}
+	return fmt.Sprintf("%d", *p)
+}
+
 func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (*pb.OperationResponse, error) {
+	log.Printf("solicitud: %s", in.GetSolicitudOferta())
 	if contador%3 == 0 && contador != 0 {
 		time.Sleep(10 * time.Second)
 	}
 	if rand.Float64() > 0.9 {
-		return &pb.OperationResponse{Oferta: "No hay ofertas actualmente... \n"}, nil
+		msg := "No hay ofertas actualmente... \n"
+		return &pb.OperationResponse{Oferta: &msg}, nil
 	}
 	contador += 1
 
 	var (
 		msg           string
-		exitoTrevor   int64
-		exitoFranklin int64
-		riesgo        int64
-		botin         int64
-		err           error
+		exitoTrevor   *int64
+		exitoFranklin *int64
+		riesgo        *int64
+		botin         *int64
 	)
 	if scanner.Scan() {
 		fmt.Println("Propuesta obtenida:", scanner.Text())
 		arr := strings.Split(scanner.Text(), ",")
-		exitoTrevor, err = strconv.ParseInt(arr[2], 10, 64)
-		exitoFranklin, err = strconv.ParseInt(arr[1], 10, 64)
-		riesgo, err = strconv.ParseInt(arr[3], 10, 64)
-		botin, err = strconv.ParseInt(arr[0], 10, 64)
+		botin = parseIntOpt(arr[0])
+		exitoFranklin = parseIntOpt(arr[1])
+		exitoTrevor = parseIntOpt(arr[2])
+		riesgo = parseIntOpt(arr[3])
 	} else {
 		e := scanner.Err()
 		if e != nil {
@@ -68,18 +87,18 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 			fmt.Println("Fin del archivo")
 			msg = "No quedan atracos disponibles"
 		}
-		exitoTrevor = 0
-		exitoFranklin = 0
-		riesgo = 0
-		botin = 0
+		exitoTrevor = nil
+		exitoFranklin = nil
+		riesgo = nil
+		botin = nil
 	}
 	// extras :v
 	lugares := [5]string{"Liberty city", "Los santos", "San Andreas", "Vice City", "Cayo Perico"}
 	objetivo := [4]string{"un banco", "una joyeria", "una mansión", "un barco"}
 
-	msg = fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], fmt.Sprintf("%d", botin), fmt.Sprintf("%.2f", riesgo), fmt.Sprintf("%.2f", exitoTrevor), fmt.Sprintf("%.2f", exitoFranklin))
+	msg = fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], formatInt64(botin), formatInt64(riesgo), formatInt64(exitoTrevor), formatInt64(exitoFranklin))
 
-	return &pb.OperationResponse{Oferta: msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: int64(botin)}, nil
+	return &pb.OperationResponse{Oferta: &msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: botin}, nil
 }
 
 func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {

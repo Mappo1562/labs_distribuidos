@@ -18,9 +18,9 @@ message OperationRequest{
 
 message OperationResponse{
     optional string oferta = 1;
-	optional double ExitoTrevor = 2;
-	optional double ExitoFranklin = 3;
-	optional double riesgo = 4;
+	optional int64 ExitoTrevor = 2;
+	optional int64 ExitoFranklin = 3;
+	optional int64 riesgo = 4;
 	optional int64 botin = 5;
 }
 

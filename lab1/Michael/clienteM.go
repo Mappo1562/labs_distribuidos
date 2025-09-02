@@ -18,32 +18,17 @@ const FranklinAddr = "localhost:50053"
 const TrevorAddr = "localhost:50054"
 
 func procesarOferta(respuesta *pb.OperationResponse) bool {
-	var flag bool = true
-
-	//Revisión campos vacios
-	if respuesta.Oferta == nil {
-		flag = false
-	}
-	if respuesta.ExitoFranklin == nil {
-		flag = false
-	}
-	if respuesta.ExitoTrevor == nil {
-		flag = false
-	}
-	if respuesta.Riesgo == nil {
-		flag = false
-	}
-	if respuesta.Botin == nil {
-		flag = false
+	if respuesta.Oferta == nil || respuesta.ExitoFranklin == nil || respuesta.ExitoTrevor == nil || respuesta.Riesgo == nil || respuesta.Botin == nil {
+		return false
 	}
 
-	//Revisión condición de aceptación
-	if *respuesta.Riesgo > 0.8 || (*respuesta.ExitoFranklin < 0.5 && *respuesta.ExitoTrevor < 0.5) {
-		flag = false
+	if *respuesta.Riesgo > 80 || (*respuesta.ExitoFranklin < 50 && *respuesta.ExitoTrevor < 50) {
+		return false
 	}
 
-	return flag
+	return true
 }
+
 func main() {
 	// Set up a connection to the server.
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
