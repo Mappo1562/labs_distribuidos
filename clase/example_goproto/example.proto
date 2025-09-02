@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package example;
+
+option go_package = "./example_goproto/pb";  
+
+message Request{
+    int32 Message = 1; 
+}
+
+message Response{
+    int32 Message = 1; 
+}
+
+
+service CordinationService {
+    rpc Cordination (Request) returns (Response);
+}
