@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 )
 
 const Michael = "M_container:50052"
@@ -32,7 +33,7 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 		time.Sleep(10 * time.Second)
 	}
 	if rand.Float64() > 0.9 {
-		return &pb.OperationResponse{Oferta: "No hay ofertas actualmente... \n"}, nil
+		return &pb.OperationResponse{Oferta: proto.String("No hay ofertas actualmente... \n")}, nil
 	}
 	contador += 1
 	exitoTrevor := rand.Float64()
@@ -45,7 +46,7 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 
 	msg := fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], fmt.Sprintf("%d", botin), fmt.Sprintf("%.2f", riesgo), fmt.Sprintf("%.2f", exitoTrevor), fmt.Sprintf("%.2f", exitoFranklin))
 
-	return &pb.OperationResponse{Oferta: msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: int64(botin)}, nil
+	return &pb.OperationResponse{Oferta: proto.String(msg), ExitoTrevor: proto.Float64(exitoTrevor), ExitoFranklin: proto.Float64(exitoFranklin), Riesgo: proto.Float64(riesgo), Botin: proto.Int64(int64(botin))}, nil
 }
 
 func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {

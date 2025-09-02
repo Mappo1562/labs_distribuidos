@@ -17,6 +17,33 @@ const LesterAddr = "localhost:50051"
 const FranklinAddr = "localhost:50053"
 const TrevorAddr = "localhost:50054"
 
+func procesarOferta(respuesta *pb.OperationResponse) bool {
+	var flag bool = true
+
+	//Revisión campos vacios
+	if respuesta.Oferta == nil {
+		flag = false
+	}
+	if respuesta.ExitoFranklin == nil {
+		flag = false
+	}
+	if respuesta.ExitoTrevor == nil {
+		flag = false
+	}
+	if respuesta.Riesgo == nil {
+		flag = false
+	}
+	if respuesta.Botin == nil {
+		flag = false
+	}
+
+	//Revisión condición de aceptación
+	if *respuesta.Riesgo > 0.8 || (*respuesta.ExitoFranklin < 0.5 && *respuesta.ExitoTrevor < 0.5) {
+		flag = false
+	}
+
+	return flag
+}
 func main() {
 	// Set up a connection to the server.
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -31,7 +58,7 @@ func main() {
 	defer cancel()
 
 	//Fase La negociación
-	var ofertaValida bool = false
+	//var ofertaValida bool = false
 	respuestaOferta, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "Dame un atraco lester, por favor"})
 
 	if err != nil {
@@ -39,8 +66,9 @@ func main() {
 	}
 	log.Printf("respuesta: %s", respuestaOferta.GetOferta())
 
-	if respuestaOferta.GetRiesgo() < 0.8 && (respuestaOferta.GetExitoFranklin() > 0.5 || respuestaOferta.GetExitoTrevor() > 0.5) {
-		ofertaValida = true
+	ofertaValida := procesarOferta(respuestaOferta)
+
+	if ofertaValida {
 		c.AceptarOferta(ctx, &pb.Vacio{})
 	}
 
@@ -49,12 +77,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-
-		log.Printf("respuesta: %s", respuestaOferta.GetOferta())
-		if respuestaOferta.GetRiesgo() < 0.8 && (respuestaOferta.GetExitoFranklin() > 0.5 || respuestaOferta.GetExitoTrevor() > 0.5) {
-			ofertaValida = true
+		ofertaValida = procesarOferta(respuestaOferta)
+		if ofertaValida {
 			c.AceptarOferta(ctx, &pb.Vacio{})
 		}
+		log.Printf("respuesta: %s", respuestaOferta.GetOferta())
 	}
 
 	//Fase La Distracción
@@ -74,12 +101,12 @@ func main() {
 			log.Fatalf("did not connect: %v", err)
 		}
 		defer conn.Close()
-		c := pb.NewDistraccionClient(conn)
+		c2 := pb.NewDistraccionClient(conn)
 		// Contact the server and print out its response.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		turnos := 200 - respuestaOferta.GetExitoFranklin()*100
-		respuestaDistraccion, err := c.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
+		respuestaDistraccion, err := c2.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
@@ -93,12 +120,12 @@ func main() {
 			log.Fatalf("did not connect: %v", err)
 		}
 		defer conn.Close()
-		c := pb.NewDistraccionClient(conn)
+		c3 := pb.NewDistraccionClient(conn)
 		// Contact the server and print out its response.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		turnos := 200 - respuestaOferta.GetExitoTrevor()*100
-		respuestaDistraccion, err := c.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
+		respuestaDistraccion, err := c3.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
@@ -111,5 +138,4 @@ func main() {
 	} else {
 		log.Printf("Mando a trevor a la segunda parte")
 	}
-
 }
