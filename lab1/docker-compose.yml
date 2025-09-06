@@ -1,9 +1,9 @@
-version: "3.9"
+
 
 services:
   lester:
     build: ./Lester
-    container_name: lester-server
+    container_name: lester
     ports:
       - "50051:50051"  # expone el puerto del servidor
     networks:
@@ -11,7 +11,7 @@ services:
 
   michael:
     build: ./Michael
-    container_name: michael-client
+    container_name: michael
     depends_on:
       - lester          # se asegura que el servidor esté arriba
     networks:

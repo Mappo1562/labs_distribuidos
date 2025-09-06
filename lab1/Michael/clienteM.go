@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const LesterAddr = "localhost:50051"
+const LesterAddr = "lester:50051"
 const FranklinAddr = "localhost:50053"
 const TrevorAddr = "localhost:50054"
 
@@ -44,12 +44,13 @@ func main() {
 
 	//Fase La negociación
 	//var ofertaValida bool = false
+	log.Printf("Dame un atraco lester, por favor")
 	respuestaOferta, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "Dame un atraco lester, por favor"})
 
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-	log.Printf("respuesta: %s", respuestaOferta.GetOferta())
+	// log.Printf("respuesta: %s", respuestaOferta.GetOferta())
 
 	ofertaValida := procesarOferta(respuestaOferta)
 
@@ -58,15 +59,18 @@ func main() {
 	}
 
 	for !ofertaValida {
+		log.Printf("Dame otro atraco lester, por favor")
+		time.Sleep(time.Second)
 		respuestaOferta, err = c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "Dame otro atraco lester, por favor"})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
 		ofertaValida = procesarOferta(respuestaOferta)
 		if ofertaValida {
+			log.Printf("Me quedo con ese")
 			c.AceptarOferta(ctx, &pb.Vacio{})
 		}
-		log.Printf("respuesta: %s", respuestaOferta.GetOferta())
+		// log.Printf("respuesta: %s", respuestaOferta.GetOferta())
 	}
 
 	//Fase La Distracción

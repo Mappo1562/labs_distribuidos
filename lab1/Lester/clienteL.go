@@ -31,9 +31,19 @@ type server struct {
 
 var (
 	contador int = 0
-	file     *os.File
 	scanner  *bufio.Scanner
 )
+
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ░░███╗░░  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ░████║░░  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ██╔██║░░  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ╚═╝██║░░  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ███████╗  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ╚══════╝  //
+//												//
+//////////////////////////////////////////////////
 
 func parseIntOpt(s string) *int64 {
 	if s == "" {
@@ -54,12 +64,13 @@ func formatInt64(p *int64) string {
 }
 
 func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (*pb.OperationResponse, error) {
-	log.Printf("solicitud: %s", in.GetSolicitudOferta())
 	if contador%3 == 0 && contador != 0 {
+		log.Printf("voy a buscar, espera...")
 		time.Sleep(10 * time.Second)
 	}
 	if rand.Float64() > 0.9 {
 		msg := "No hay ofertas actualmente... \n"
+		log.Printf("%s", msg)
 		return &pb.OperationResponse{Oferta: &msg}, nil
 	}
 	contador += 1
@@ -97,6 +108,7 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 	objetivo := [4]string{"un banco", "una joyeria", "una mansión", "un barco"}
 
 	msg = fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], formatInt64(botin), formatInt64(riesgo), formatInt64(exitoTrevor), formatInt64(exitoFranklin))
+	log.Printf("%s", msg)
 
 	return &pb.OperationResponse{Oferta: &msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: botin}, nil
 }
@@ -107,9 +119,45 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 	return &pb.Vacio{}, nil
 }
 
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ██████╗░  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ╚════██╗  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ░░███╔═╝  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ██╔══╝░░  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ███████╗  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ╚══════╝  //
+//												//
+//////////////////////////////////////////////////
+
+// lester no participa en la 2 pero pa q lo copien si quieren uwu
+
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ██████╗░  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ╚════██╗  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ░█████╔╝  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ░╚═══██╗  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ██████╔╝  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ╚═════╝░  //
+//												//
+//////////////////////////////////////////////////
+
+// docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
 func aumento_estrellas() {
 	// RabitMQ pa cualquiera
 }
+
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ░░██╗██╗  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ░██╔╝██║  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ██╔╝░██║  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ███████║  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ╚════██║  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ░░░░░╚═╝  //
+//												//
+//////////////////////////////////////////////////
 
 func recibir_pago() {
 
@@ -121,7 +169,7 @@ func verificar_pago() {
 
 func main() {
 	// abrir archivo
-	path := "../entradas/" + entrada
+	path := "entradas/" + entrada
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("no se pudo abrir el archivo:\n %v", err)
@@ -131,7 +179,6 @@ func main() {
 	scanner = bufio.NewScanner(file)
 
 	scanner.Scan()
-	fmt.Println("Línea:", scanner.Text())
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

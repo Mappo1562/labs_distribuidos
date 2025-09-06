@@ -4,6 +4,7 @@ package main
 // go mod init <nombre_cliente>
 // go mod tidy
 
+// docker compose up --build
 import (
 	"fmt"
 )
