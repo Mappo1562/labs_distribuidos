@@ -30,6 +30,7 @@ func procesarOferta(respuesta *pb.OperationResponse) bool {
 }
 
 func main() {
+	time.Sleep(time.Second * 3)
 	// Set up a connection to the server.
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

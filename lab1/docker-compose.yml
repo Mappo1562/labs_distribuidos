@@ -19,6 +19,16 @@ services:
     environment:
       - SERVER_ADDR=lester:50051  # variable que tu cliente puede usar para conectarse
 
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+
 networks:
   grpc-net:
     driver: bridge

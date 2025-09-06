@@ -27,6 +27,12 @@ func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb
 		ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: true}, nil
 }
 
+func (s *server) InicioAtraco(ctx context.Context, in *pb.Instruccion) (*pb.Resultado, error) {
+	log.Printf("Tengo que trabajar %v", in.GetNumTurnos())
+	return &pb.Resultado{
+		ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: true}, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

@@ -5,6 +5,11 @@ package main
 // go mod tidy
 
 // docker compose up --build
+
+// docker run -d --hostname my-rabbit --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3
+// docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3
+// docker compose pull
+
 import (
 	"fmt"
 )

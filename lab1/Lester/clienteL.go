@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 )
 
@@ -32,6 +33,7 @@ type server struct {
 var (
 	contador int = 0
 	scanner  *bufio.Scanner
+	riesgo   *int64
 )
 
 //////////////////////////////////////////////////
@@ -79,7 +81,6 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 		msg           string
 		exitoTrevor   *int64
 		exitoFranklin *int64
-		riesgo        *int64
 		botin         *int64
 	)
 	if scanner.Scan() {
@@ -144,8 +145,53 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 //////////////////////////////////////////////////
 
 // docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
-func aumento_estrellas() {
-	// RabitMQ pa cualquiera
+func (s *server) activar_aumento_estrellas(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
+	// conexión
+	conn, err := amqp.Dial("amqp://trevor:trevor@localhost:50054/")
+	if err != nil {
+		log.Fatalf(" Error al conectar : %v", err)
+	}
+	defer conn.Close()
+
+	// Apertura de canal
+	channel, err := conn.Channel()
+	if err != nil {
+		log.Fatalf(" Error al abrir el canal: %v", err)
+	}
+	defer channel.Close()
+
+	// Declaracion de la cola de mensajes
+	queue, err := channel.QueueDeclare(
+		"tareas", // name
+		false,    // durable
+		false,    // delete when unused
+		false,    // exclusive
+		false,    // no-wait
+		nil,      // args
+	)
+	if err != nil {
+		log.Fatalf(" Error al declarar la cola de mensajes: %v", err)
+	}
+
+	defer conn.Close()
+	var frecuencia_estrellas int = 100 - int(*riesgo)
+	for i := 0; i < 1000; i++ {
+		if i%frecuencia_estrellas == frecuencia_estrellas-1 {
+			body := "+1"
+			channel.Publish(
+				"",         // exchange
+				queue.Name, // routing key
+				false,      // mandatory
+				false,      // immediate
+				amqp.Publishing{
+					ContentType: "text/plain",
+					Body:        []byte(body),
+				},
+			)
+			log.Printf("🟢 Enviado: %s", body)
+		}
+	}
+	return &pb.Vacio{}, nil
 }
 
 //////////////////////////////////////////////////
@@ -174,7 +220,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("no se pudo abrir el archivo:\n %v", err)
 	}
-
+	defer file.Close()
 	// iniciar scanner
 	scanner = bufio.NewScanner(file)
 
