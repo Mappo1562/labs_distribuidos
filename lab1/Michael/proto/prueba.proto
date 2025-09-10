@@ -10,14 +10,14 @@ service Prueba {
 }
 
 service Distraccion {
-    rpc InicioDistraccion(Instruccion) returns (Resultado) {}
+    rpc InicioDistraccion(Instruccion) returns (ResultadoDistraccion) {}
 }
 
 message Instruccion{
     int64 numTurnos = 1;
 }
 
-message Resultado{
+message ResultadoDistraccion{
     string ExitoDistraccion = 1;
     bool exito = 2;
 }

@@ -166,7 +166,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DistraccionClient interface {
-	InicioDistraccion(ctx context.Context, in *Instruccion, opts ...grpc.CallOption) (*Resultado, error)
+	InicioDistraccion(ctx context.Context, in *Instruccion, opts ...grpc.CallOption) (*ResultadoDistraccion, error)
 }
 
 type distraccionClient struct {
@@ -177,9 +177,9 @@ func NewDistraccionClient(cc grpc.ClientConnInterface) DistraccionClient {
 	return &distraccionClient{cc}
 }
 
-func (c *distraccionClient) InicioDistraccion(ctx context.Context, in *Instruccion, opts ...grpc.CallOption) (*Resultado, error) {
+func (c *distraccionClient) InicioDistraccion(ctx context.Context, in *Instruccion, opts ...grpc.CallOption) (*ResultadoDistraccion, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Resultado)
+	out := new(ResultadoDistraccion)
 	err := c.cc.Invoke(ctx, Distraccion_InicioDistraccion_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (c *distraccionClient) InicioDistraccion(ctx context.Context, in *Instrucci
 // All implementations must embed UnimplementedDistraccionServer
 // for forward compatibility.
 type DistraccionServer interface {
-	InicioDistraccion(context.Context, *Instruccion) (*Resultado, error)
+	InicioDistraccion(context.Context, *Instruccion) (*ResultadoDistraccion, error)
 	mustEmbedUnimplementedDistraccionServer()
 }
 
@@ -202,7 +202,7 @@ type DistraccionServer interface {
 // pointer dereference when methods are called.
 type UnimplementedDistraccionServer struct{}
 
-func (UnimplementedDistraccionServer) InicioDistraccion(context.Context, *Instruccion) (*Resultado, error) {
+func (UnimplementedDistraccionServer) InicioDistraccion(context.Context, *Instruccion) (*ResultadoDistraccion, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InicioDistraccion not implemented")
 }
 func (UnimplementedDistraccionServer) mustEmbedUnimplementedDistraccionServer() {}

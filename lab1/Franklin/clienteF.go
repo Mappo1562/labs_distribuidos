@@ -8,12 +8,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 
 	"google.golang.org/grpc"
 )
 
-const Michael = "M_container:50052"
+const MichaelAddr = "M_container:50052"
 
 const port = ":50053"
 
@@ -23,8 +24,24 @@ type server struct {
 
 func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.Resultado, error) {
 	log.Printf("Tengo que trabajar %v", in.GetNumTurnos())
-	return &pb.Resultado{
-		ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: true}, nil
+	var exito bool = FracasoDistraccion()
+	if exito {
+		return &pb.Resultado{
+			ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: exito}, nil
+	} else {
+		return &pb.Resultado{
+			ExitoDistraccion: "Chop ladró y Franklin perdió la concentración, aborta la misión", Exito: exito}, nil
+	}
+
+}
+
+func FracasoDistraccion() bool {
+	var ranInt int = rand.Intn(100)
+	var exito bool = true
+	if ranInt < 10 {
+		exito = false
+	}
+	return exito
 }
 
 func main() {
