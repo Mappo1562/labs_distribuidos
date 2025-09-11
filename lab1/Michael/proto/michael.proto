@@ -1,15 +1,34 @@
-// se compila con:
-// protoc --go_out=. --go-grpc_out=. .\prueba.proto
-// crea la carpeta grpc-server
 
 syntax = "proto3";
 
 option go_package = "grpc-server/proto";
-package Prueba;
+package Atraco;
 
 service Prueba {
     rpc SolicitarOferta(OperationRequest) returns (OperationResponse) {}
     rpc AceptarOferta(Vacio) returns (Vacio) {}
+}
+
+service Distraccion {
+    rpc InicioDistraccion(Instruccion) returns (ResultadoDistraccion) {}
+}
+
+service Golpe {
+    rpc InicioGolpe(Instruccion) returns (ResultadoGolpe) {}
+}
+
+message ResultadoGolpe{
+    bool ExitoGolpe = 1;
+    int64 BotinExtra = 3;
+}
+
+message Instruccion{
+    int64 numTurnos = 1;
+}
+
+message ResultadoDistraccion{
+    string ExitoDistraccion = 1;
+    bool exito = 2;
 }
 
 message OperationRequest{

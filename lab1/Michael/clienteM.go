@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const LesterAddr = "lester:50051"
+const LesterAddr = "localhost:50051"
 const FranklinAddr = "localhost:50053"
 const TrevorAddr = "localhost:50054"
 
@@ -40,7 +40,7 @@ func main() {
 	c := pb.NewPruebaClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 
 	//Fase La negociación
@@ -95,7 +95,9 @@ func main() {
 		// Contact the server and print out its response.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
-		turnos := 200 - respuestaOferta.GetExitoFranklin()*100
+		turnos := 200 - respuestaOferta.GetExitoFranklin()
+		log.Printf("Tiene que trabajar estos turnos: %v", turnos)
+
 		respuestaDistraccion, err := c2.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
@@ -114,7 +116,8 @@ func main() {
 		// Contact the server and print out its response.
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
-		turnos := 200 - respuestaOferta.GetExitoTrevor()*100
+		turnos := 200 - respuestaOferta.GetExitoTrevor()
+		log.Printf("Tiene que trabajar estos turnos: %v", turnos)
 		respuestaDistraccion, err := c3.InicioDistraccion(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
@@ -125,6 +128,7 @@ func main() {
 	//Fase El Golpe
 	if !mandarGolpe {
 		log.Printf("Mando a franklin a la segunda parte")
+
 	} else {
 		log.Printf("Mando a trevor a la segunda parte")
 	}

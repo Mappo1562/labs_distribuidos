@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 option go_package = "grpc-server/proto";
-package trevor;
+package Atraco;
 
 service Distraccion {
     rpc InicioDistraccion(Instruccion) returns (ResultadoDistraccion) {}
