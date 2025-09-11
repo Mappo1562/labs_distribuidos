@@ -47,8 +47,26 @@ func FracasoDistraccion() bool {
 	return exito
 }
 
-func getEstrellas() {
+func InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+	var turnos int = int(in.GetNumTurnos())
+	var limiteEstrellas int = 5
+	var furia bool = false
+	var resultadoGolpe bool = true
+	for i := 0; i < int(turnos); i++ {
+		var estrellas int = getEstrellas()
+		if estrellas > limiteEstrellas {
+			if furia {
+				resultadoGolpe = false
+				break
+			}
+			limiteEstrellas = 7
+		}
+	}
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+}
 
+func getEstrellas() int {
+	return 1
 }
 
 func main() {

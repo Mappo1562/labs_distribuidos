@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.9
 // 	protoc        v6.32.0
-// source: trevor.proto
+// source: franklin.proto
 
 package proto
 
@@ -30,7 +30,7 @@ type Instruccion struct {
 
 func (x *Instruccion) Reset() {
 	*x = Instruccion{}
-	mi := &file_trevor_proto_msgTypes[0]
+	mi := &file_franklin_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +42,7 @@ func (x *Instruccion) String() string {
 func (*Instruccion) ProtoMessage() {}
 
 func (x *Instruccion) ProtoReflect() protoreflect.Message {
-	mi := &file_trevor_proto_msgTypes[0]
+	mi := &file_franklin_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +55,7 @@ func (x *Instruccion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Instruccion.ProtoReflect.Descriptor instead.
 func (*Instruccion) Descriptor() ([]byte, []int) {
-	return file_trevor_proto_rawDescGZIP(), []int{0}
+	return file_franklin_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Instruccion) GetNumTurnos() int64 {
@@ -75,7 +75,7 @@ type ResultadoDistraccion struct {
 
 func (x *ResultadoDistraccion) Reset() {
 	*x = ResultadoDistraccion{}
-	mi := &file_trevor_proto_msgTypes[1]
+	mi := &file_franklin_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +87,7 @@ func (x *ResultadoDistraccion) String() string {
 func (*ResultadoDistraccion) ProtoMessage() {}
 
 func (x *ResultadoDistraccion) ProtoReflect() protoreflect.Message {
-	mi := &file_trevor_proto_msgTypes[1]
+	mi := &file_franklin_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +100,7 @@ func (x *ResultadoDistraccion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResultadoDistraccion.ProtoReflect.Descriptor instead.
 func (*ResultadoDistraccion) Descriptor() ([]byte, []int) {
-	return file_trevor_proto_rawDescGZIP(), []int{1}
+	return file_franklin_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ResultadoDistraccion) GetExitoDistraccion() string {
@@ -120,7 +120,6 @@ func (x *ResultadoDistraccion) GetExito() bool {
 type ResultadoGolpe struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ExitoGolpe    bool                   `protobuf:"varint,1,opt,name=ExitoGolpe,proto3" json:"ExitoGolpe,omitempty"`
-	Exito         bool                   `protobuf:"varint,2,opt,name=exito,proto3" json:"exito,omitempty"`
 	BotinExtra    int64                  `protobuf:"varint,3,opt,name=BotinExtra,proto3" json:"BotinExtra,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -128,7 +127,7 @@ type ResultadoGolpe struct {
 
 func (x *ResultadoGolpe) Reset() {
 	*x = ResultadoGolpe{}
-	mi := &file_trevor_proto_msgTypes[2]
+	mi := &file_franklin_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -140,7 +139,7 @@ func (x *ResultadoGolpe) String() string {
 func (*ResultadoGolpe) ProtoMessage() {}
 
 func (x *ResultadoGolpe) ProtoReflect() protoreflect.Message {
-	mi := &file_trevor_proto_msgTypes[2]
+	mi := &file_franklin_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -153,19 +152,12 @@ func (x *ResultadoGolpe) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResultadoGolpe.ProtoReflect.Descriptor instead.
 func (*ResultadoGolpe) Descriptor() ([]byte, []int) {
-	return file_trevor_proto_rawDescGZIP(), []int{2}
+	return file_franklin_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ResultadoGolpe) GetExitoGolpe() bool {
 	if x != nil {
 		return x.ExitoGolpe
-	}
-	return false
-}
-
-func (x *ResultadoGolpe) GetExito() bool {
-	if x != nil {
-		return x.Exito
 	}
 	return false
 }
@@ -185,7 +177,7 @@ type Vacio struct {
 
 func (x *Vacio) Reset() {
 	*x = Vacio{}
-	mi := &file_trevor_proto_msgTypes[3]
+	mi := &file_franklin_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -197,7 +189,7 @@ func (x *Vacio) String() string {
 func (*Vacio) ProtoMessage() {}
 
 func (x *Vacio) ProtoReflect() protoreflect.Message {
-	mi := &file_trevor_proto_msgTypes[3]
+	mi := &file_franklin_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -210,57 +202,56 @@ func (x *Vacio) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vacio.ProtoReflect.Descriptor instead.
 func (*Vacio) Descriptor() ([]byte, []int) {
-	return file_trevor_proto_rawDescGZIP(), []int{3}
+	return file_franklin_proto_rawDescGZIP(), []int{3}
 }
 
-var File_trevor_proto protoreflect.FileDescriptor
+var File_franklin_proto protoreflect.FileDescriptor
 
-const file_trevor_proto_rawDesc = "" +
+const file_franklin_proto_rawDesc = "" +
 	"\n" +
-	"\ftrevor.proto\x12\x06trevor\"+\n" +
+	"\x0efranklin.proto\x12\bfranklin\"+\n" +
 	"\vInstruccion\x12\x1c\n" +
 	"\tnumTurnos\x18\x01 \x01(\x03R\tnumTurnos\"X\n" +
 	"\x14ResultadoDistraccion\x12*\n" +
 	"\x10ExitoDistraccion\x18\x01 \x01(\tR\x10ExitoDistraccion\x12\x14\n" +
-	"\x05exito\x18\x02 \x01(\bR\x05exito\"f\n" +
+	"\x05exito\x18\x02 \x01(\bR\x05exito\"P\n" +
 	"\x0eResultadoGolpe\x12\x1e\n" +
 	"\n" +
 	"ExitoGolpe\x18\x01 \x01(\bR\n" +
-	"ExitoGolpe\x12\x14\n" +
-	"\x05exito\x18\x02 \x01(\bR\x05exito\x12\x1e\n" +
+	"ExitoGolpe\x12\x1e\n" +
 	"\n" +
 	"BotinExtra\x18\x03 \x01(\x03R\n" +
 	"BotinExtra\"\a\n" +
-	"\x05Vacio2W\n" +
-	"\vDistraccion\x12H\n" +
-	"\x11InicioDistraccion\x12\x13.trevor.Instruccion\x1a\x1c.trevor.ResultadoDistraccion\"\x002E\n" +
-	"\x05Golpe\x12<\n" +
-	"\vInicioGolpe\x12\x13.trevor.Instruccion\x1a\x16.trevor.ResultadoGolpe\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
+	"\x05Vacio2[\n" +
+	"\vDistraccion\x12L\n" +
+	"\x11InicioDistraccion\x12\x15.franklin.Instruccion\x1a\x1e.franklin.ResultadoDistraccion\"\x002I\n" +
+	"\x05Golpe\x12@\n" +
+	"\vInicioGolpe\x12\x15.franklin.Instruccion\x1a\x18.franklin.ResultadoGolpe\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
 
 var (
-	file_trevor_proto_rawDescOnce sync.Once
-	file_trevor_proto_rawDescData []byte
+	file_franklin_proto_rawDescOnce sync.Once
+	file_franklin_proto_rawDescData []byte
 )
 
-func file_trevor_proto_rawDescGZIP() []byte {
-	file_trevor_proto_rawDescOnce.Do(func() {
-		file_trevor_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_trevor_proto_rawDesc), len(file_trevor_proto_rawDesc)))
+func file_franklin_proto_rawDescGZIP() []byte {
+	file_franklin_proto_rawDescOnce.Do(func() {
+		file_franklin_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_franklin_proto_rawDesc), len(file_franklin_proto_rawDesc)))
 	})
-	return file_trevor_proto_rawDescData
+	return file_franklin_proto_rawDescData
 }
 
-var file_trevor_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_trevor_proto_goTypes = []any{
-	(*Instruccion)(nil),          // 0: trevor.Instruccion
-	(*ResultadoDistraccion)(nil), // 1: trevor.ResultadoDistraccion
-	(*ResultadoGolpe)(nil),       // 2: trevor.ResultadoGolpe
-	(*Vacio)(nil),                // 3: trevor.Vacio
+var file_franklin_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_franklin_proto_goTypes = []any{
+	(*Instruccion)(nil),          // 0: franklin.Instruccion
+	(*ResultadoDistraccion)(nil), // 1: franklin.ResultadoDistraccion
+	(*ResultadoGolpe)(nil),       // 2: franklin.ResultadoGolpe
+	(*Vacio)(nil),                // 3: franklin.Vacio
 }
-var file_trevor_proto_depIdxs = []int32{
-	0, // 0: trevor.Distraccion.InicioDistraccion:input_type -> trevor.Instruccion
-	0, // 1: trevor.Golpe.InicioGolpe:input_type -> trevor.Instruccion
-	1, // 2: trevor.Distraccion.InicioDistraccion:output_type -> trevor.ResultadoDistraccion
-	2, // 3: trevor.Golpe.InicioGolpe:output_type -> trevor.ResultadoGolpe
+var file_franklin_proto_depIdxs = []int32{
+	0, // 0: franklin.Distraccion.InicioDistraccion:input_type -> franklin.Instruccion
+	0, // 1: franklin.Golpe.InicioGolpe:input_type -> franklin.Instruccion
+	1, // 2: franklin.Distraccion.InicioDistraccion:output_type -> franklin.ResultadoDistraccion
+	2, // 3: franklin.Golpe.InicioGolpe:output_type -> franklin.ResultadoGolpe
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -268,26 +259,26 @@ var file_trevor_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_trevor_proto_init() }
-func file_trevor_proto_init() {
-	if File_trevor_proto != nil {
+func init() { file_franklin_proto_init() }
+func file_franklin_proto_init() {
+	if File_franklin_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_trevor_proto_rawDesc), len(file_trevor_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_franklin_proto_rawDesc), len(file_franklin_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   2,
 		},
-		GoTypes:           file_trevor_proto_goTypes,
-		DependencyIndexes: file_trevor_proto_depIdxs,
-		MessageInfos:      file_trevor_proto_msgTypes,
+		GoTypes:           file_franklin_proto_goTypes,
+		DependencyIndexes: file_franklin_proto_depIdxs,
+		MessageInfos:      file_franklin_proto_msgTypes,
 	}.Build()
-	File_trevor_proto = out.File
-	file_trevor_proto_goTypes = nil
-	file_trevor_proto_depIdxs = nil
+	File_franklin_proto = out.File
+	file_franklin_proto_goTypes = nil
+	file_franklin_proto_depIdxs = nil
 }

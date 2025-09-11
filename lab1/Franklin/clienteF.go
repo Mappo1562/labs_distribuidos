@@ -22,17 +22,20 @@ type server struct {
 	pb.UnimplementedDistraccionServer
 }
 
-func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.Resultado, error) {
-	log.Printf("Tengo que trabajar %v", in.GetNumTurnos())
-	var exito bool = FracasoDistraccion()
-	if exito {
-		return &pb.Resultado{
-			ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: exito}, nil
-	} else {
-		return &pb.Resultado{
-			ExitoDistraccion: "Chop ladró y Franklin perdió la concentración, aborta la misión", Exito: exito}, nil
+func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoDistraccion, error) {
+	var turnos int64 = in.GetNumTurnos()
+	log.Printf("Tengo que trabajar %v", turnos)
+	for i := 0; i < int(turnos); i++ {
+		if i == int(turnos/2) {
+			var exito bool = FracasoDistraccion()
+			if !exito {
+				return &pb.ResultadoDistraccion{
+					ExitoDistraccion: "Chop ladró y Franklin perdió la concentración, aborta la misión", Exito: false}, nil
+			}
+		}
 	}
-
+	return &pb.ResultadoDistraccion{
+		ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: true}, nil
 }
 
 func FracasoDistraccion() bool {
@@ -42,6 +45,28 @@ func FracasoDistraccion() bool {
 		exito = false
 	}
 	return exito
+}
+
+func InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+	var turnos int = int(in.GetNumTurnos())
+	var limiteEstrellas int = 5
+	var furia bool = false
+	var resultadoGolpe bool = true
+	for i := 0; i < int(turnos); i++ {
+		var estrellas int = getEstrellas()
+		if estrellas > limiteEstrellas {
+			if furia {
+				resultadoGolpe = false
+				break
+			}
+			limiteEstrellas = 7
+		}
+	}
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+}
+
+func getEstrellas() int {
+	return 1
 }
 
 func main() {

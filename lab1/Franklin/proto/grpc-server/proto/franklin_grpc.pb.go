@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.32.0
-// source: trevor.proto
+// source: franklin.proto
 
 package proto
 
@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Distraccion_InicioDistraccion_FullMethodName = "/trevor.Distraccion/InicioDistraccion"
+	Distraccion_InicioDistraccion_FullMethodName = "/franklin.Distraccion/InicioDistraccion"
 )
 
 // DistraccionClient is the client API for Distraccion service.
@@ -108,7 +108,7 @@ func _Distraccion_InicioDistraccion_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Distraccion_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "trevor.Distraccion",
+	ServiceName: "franklin.Distraccion",
 	HandlerType: (*DistraccionServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -117,11 +117,11 @@ var Distraccion_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "trevor.proto",
+	Metadata: "franklin.proto",
 }
 
 const (
-	Golpe_InicioGolpe_FullMethodName = "/trevor.Golpe/InicioGolpe"
+	Golpe_InicioGolpe_FullMethodName = "/franklin.Golpe/InicioGolpe"
 )
 
 // GolpeClient is the client API for Golpe service.
@@ -210,7 +210,7 @@ func _Golpe_InicioGolpe_Handler(srv interface{}, ctx context.Context, dec func(i
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Golpe_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "trevor.Golpe",
+	ServiceName: "franklin.Golpe",
 	HandlerType: (*GolpeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -219,5 +219,5 @@ var Golpe_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "trevor.proto",
+	Metadata: "franklin.proto",
 }
