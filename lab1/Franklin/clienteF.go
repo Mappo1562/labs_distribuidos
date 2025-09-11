@@ -50,19 +50,19 @@ func FracasoDistraccion() bool {
 func InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
 	var turnos int = int(in.GetNumTurnos())
 	var limiteEstrellas int = 5
-	var furia bool = false
+	var chopBonus int64 = 0
 	var resultadoGolpe bool = true
 	for i := 0; i < int(turnos); i++ {
 		var estrellas int = getEstrellas()
+		if estrellas > 3 {
+			chopBonus += 1000
+		}
 		if estrellas > limiteEstrellas {
-			if furia {
-				resultadoGolpe = false
-				break
-			}
-			limiteEstrellas = 7
+			resultadoGolpe = false
+			break
 		}
 	}
-	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
 }
 
 func getEstrellas() int {
