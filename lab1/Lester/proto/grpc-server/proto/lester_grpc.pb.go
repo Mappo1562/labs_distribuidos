@@ -158,8 +158,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EstrellasClient interface {
-	EmpezarMandarEstrellas(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Stars, error)
-	TerminarMandarEstrellas(ctx context.Context, in *Stars, opts ...grpc.CallOption) (*Vacio, error)
+	EmpezarMandarEstrellas(ctx context.Context, in *Stars, opts ...grpc.CallOption) (*Stars, error)
+	TerminarMandarEstrellas(ctx context.Context, in *Stars, opts ...grpc.CallOption) (*Stars, error)
 }
 
 type estrellasClient struct {
@@ -170,7 +170,7 @@ func NewEstrellasClient(cc grpc.ClientConnInterface) EstrellasClient {
 	return &estrellasClient{cc}
 }
 
-func (c *estrellasClient) EmpezarMandarEstrellas(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Stars, error) {
+func (c *estrellasClient) EmpezarMandarEstrellas(ctx context.Context, in *Stars, opts ...grpc.CallOption) (*Stars, error) {
 	out := new(Stars)
 	err := c.cc.Invoke(ctx, Estrellas_EmpezarMandarEstrellas_FullMethodName, in, out, opts...)
 	if err != nil {
@@ -179,8 +179,8 @@ func (c *estrellasClient) EmpezarMandarEstrellas(ctx context.Context, in *Vacio,
 	return out, nil
 }
 
-func (c *estrellasClient) TerminarMandarEstrellas(ctx context.Context, in *Stars, opts ...grpc.CallOption) (*Vacio, error) {
-	out := new(Vacio)
+func (c *estrellasClient) TerminarMandarEstrellas(ctx context.Context, in *Stars, opts ...grpc.CallOption) (*Stars, error) {
+	out := new(Stars)
 	err := c.cc.Invoke(ctx, Estrellas_TerminarMandarEstrellas_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -192,8 +192,8 @@ func (c *estrellasClient) TerminarMandarEstrellas(ctx context.Context, in *Stars
 // All implementations must embed UnimplementedEstrellasServer
 // for forward compatibility
 type EstrellasServer interface {
-	EmpezarMandarEstrellas(context.Context, *Vacio) (*Stars, error)
-	TerminarMandarEstrellas(context.Context, *Stars) (*Vacio, error)
+	EmpezarMandarEstrellas(context.Context, *Stars) (*Stars, error)
+	TerminarMandarEstrellas(context.Context, *Stars) (*Stars, error)
 	mustEmbedUnimplementedEstrellasServer()
 }
 
@@ -201,10 +201,10 @@ type EstrellasServer interface {
 type UnimplementedEstrellasServer struct {
 }
 
-func (UnimplementedEstrellasServer) EmpezarMandarEstrellas(context.Context, *Vacio) (*Stars, error) {
+func (UnimplementedEstrellasServer) EmpezarMandarEstrellas(context.Context, *Stars) (*Stars, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EmpezarMandarEstrellas not implemented")
 }
-func (UnimplementedEstrellasServer) TerminarMandarEstrellas(context.Context, *Stars) (*Vacio, error) {
+func (UnimplementedEstrellasServer) TerminarMandarEstrellas(context.Context, *Stars) (*Stars, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TerminarMandarEstrellas not implemented")
 }
 func (UnimplementedEstrellasServer) mustEmbedUnimplementedEstrellasServer() {}
@@ -221,7 +221,7 @@ func RegisterEstrellasServer(s grpc.ServiceRegistrar, srv EstrellasServer) {
 }
 
 func _Estrellas_EmpezarMandarEstrellas_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Vacio)
+	in := new(Stars)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -233,7 +233,7 @@ func _Estrellas_EmpezarMandarEstrellas_Handler(srv interface{}, ctx context.Cont
 		FullMethod: Estrellas_EmpezarMandarEstrellas_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EstrellasServer).EmpezarMandarEstrellas(ctx, req.(*Vacio))
+		return srv.(EstrellasServer).EmpezarMandarEstrellas(ctx, req.(*Stars))
 	}
 	return interceptor(ctx, in, info, handler)
 }

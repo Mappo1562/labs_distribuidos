@@ -22,8 +22,8 @@ service Golpe {
 
 
 service Estrellas {
-    rpc EmpezarMandarEstrellas(Vacio) returns (Stars);
-    rpc TerminarMandarEstrellas(Stars) returns (Vacio);
+    rpc EmpezarMandarEstrellas(Stars) returns (Stars);
+    rpc TerminarMandarEstrellas(Stars) returns (Stars);
 }
 
 message Stars{
