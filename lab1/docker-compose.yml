@@ -5,7 +5,8 @@ services:
     build: ./Lester
     container_name: lester
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     ports:
       - "50051:50051"  # expone el puerto del servidor
     networks:
@@ -33,7 +34,8 @@ services:
     networks:
       - grpc-net
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       AMQP_URI: amqp://guest:guest@rabbitmq:5672/
     
@@ -45,7 +47,8 @@ services:
     networks:
       - grpc-net
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       AMQP_URI: amqp://guest:guest@rabbitmq:5672/
 
@@ -55,9 +58,16 @@ services:
     ports:
       - "5672:5672"     # AMQP para tus servicios
       - "15672:15672"   # interfaz de administración web
+    networks:
+      - grpc-net
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 networks:
   grpc-net:
