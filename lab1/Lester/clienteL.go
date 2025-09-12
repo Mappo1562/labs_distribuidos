@@ -14,6 +14,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -32,9 +33,11 @@ type server struct {
 }
 
 var (
-	contador int = 0
-	scanner  *bufio.Scanner
-	riesgo   *int64
+	contador   int = 0
+	scanner    *bufio.Scanner
+	riesgo     *int64
+	estrellear bool
+	mu         sync.Mutex
 )
 
 //////////////////////////////////////////////////
@@ -145,6 +148,14 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 //												//
 //////////////////////////////////////////////////
 
+// falta hacerle el proto a esta wea
+func (s *server) TerminarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.Stars, error) {
+	mu.Lock()
+	estrellear = false
+	mu.Unlock()
+	return &pb.Stars{Flag: true}, nil
+}
+
 func connectWithRetry(uri string) (*amqp.Connection, error) {
 	var conn *amqp.Connection
 	var err error
@@ -164,7 +175,7 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 	return nil, err
 }
 
-func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.Stars, error) {
+func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.Stars, error) {
 	log.Printf(" Aumento de estrellas activado ")
 	frecuencia := 100 - int(*riesgo)
 	// falta ver cual de los dos hace el atraco
@@ -197,15 +208,24 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	for i := 1; i < frecuencia*8; i++ {
-		time.Sleep(100 * time.Millisecond)
+	flag := true
+	i := 0
+	for flag {
+		if i == 130 { // esta wea esta pa probar nomas
+			estrellear = false
+		}
+		mu.Lock()
+		if !estrellear {
+			flag = false
+		}
+		mu.Unlock()
 		if i%frecuencia == 0 && frecuencia != 0 {
 			body := "Subiste 1 estrella, ten mas cuidado"
 			err = ch.PublishWithContext(ctx,
 				"",     // exchange
 				q.Name, // routing key
 				false,  // mandatory
-				false,  // immediate|
+				false,  // immediate
 				amqp.Publishing{
 					ContentType: "text/plain",
 					Body:        []byte(body),
@@ -215,6 +235,7 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.
 			}
 			log.Printf(" [°]  Enviado '%s'\n", body)
 		}
+		i++
 	}
 	return &pb.Stars{Flag: true}, nil
 }
