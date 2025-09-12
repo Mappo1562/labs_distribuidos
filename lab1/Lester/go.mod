@@ -3,7 +3,7 @@ module Lester
 go 1.25.0
 
 require (
-	github.com/streadway/amqp v1.1.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	google.golang.org/grpc v1.75.0
 	google.golang.org/protobuf v1.36.8
 )
