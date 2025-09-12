@@ -141,10 +141,12 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	var estrellas int = 0
 	for i := 0; i < int(turnos); i++ {
 		//////////////////////////////////////////////////
-		d, ok := <-msgs
-		log.Printf("respuesta obtenida:\n %v", string(d.Body))
-		if ok {
+		select {
+		case d := <-msgs:
+			log.Printf("respuesta obtenida: %s \n", d.Body)
 			estrellas = estrellas + 1
+		default:
+			fmt.Println("No hay mensajes en la cola en este momento")
 		}
 		//////////////////////////////////////////////////
 
