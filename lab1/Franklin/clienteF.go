@@ -10,7 +10,9 @@ import (
 	"log"
 	"math/rand"
 	"net"
+	"time"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 )
 
@@ -24,6 +26,17 @@ type server struct {
 	pb.UnimplementedDistraccionServer
 	pb.UnimplementedGolpeServer
 }
+
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ██████╗░  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ╚════██╗  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ░░███╔═╝  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ██╔══╝░░  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ███████╗  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ╚══════╝  //
+//												//
+//////////////////////////////////////////////////
 
 func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoDistraccion, error) {
 	var turnos int64 = in.GetNumTurnos()
@@ -50,26 +63,122 @@ func FracasoDistraccion() bool {
 	return exito
 }
 
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ██████╗░  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ╚════██╗  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ░█████╔╝  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ░╚═══██╗  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ██████╔╝  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ╚═════╝░  //
+//												//
+//////////////////////////////////////////////////
+
+// Conexion RabbitMQ
+func connectWithRetry(uri string) (*amqp.Connection, error) {
+	var conn *amqp.Connection
+	var err error
+	const maxRetries = 10
+	const delay = 5 * time.Second
+
+	for i := 0; i < maxRetries; i++ {
+		conn, err = amqp.Dial(uri)
+		if err == nil {
+			log.Println("Conexión a RabbitMQ exitosa!")
+			return conn, nil
+		}
+		log.Printf("Error de conexión a RabbitMQ (intento %d/%d): %v", i+1, maxRetries, err)
+		time.Sleep(delay)
+	}
+
+	return nil, err
+}
+
 func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+	///////////////
+	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
+
+	conn, err := connectWithRetry(amqpURI)
+	if err != nil {
+		log.Fatalf("Se excedió el número máximo de reintentos. No se pudo conectar a RabbitMQ: %v", err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("No se pudo abrir un canal: %v", err)
+	}
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"my_queue", // nombre de la cola
+		false,      // durable
+		false,      // auto-delete cuando no se usa
+		false,      // exclusiva
+		false,      // no-wait
+		nil,        // argumentos
+	)
+	if err != nil {
+		log.Fatalf("No se pudo declarar la cola: %v", err)
+	}
+	msgs, err := ch.Consume(
+		q.Name, // cola
+		"",     // consumidor
+		true,   // auto-ack
+		false,  // exclusivo
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	if err != nil {
+		log.Fatalf("No se pudo registrar un consumidor: %v", err)
+	}
+	///////////////
 	var turnos int = int(in.GetNumTurnos())
 	var limiteEstrellas int = 5
 	var chopBonus int64 = 0
 	var resultadoGolpe bool = true
+	var estrellas int = 0
 	for i := 0; i < int(turnos); i++ {
-		var estrellas int = getEstrellas()
+		//////////////////////////////////////////////////
+		d, ok := <-msgs
+		log.Printf("respuesta obtenida:\n %v", string(d.Body))
+		if ok {
+			estrellas = estrellas + 1
+		}
+		//////////////////////////////////////////////////
+
 		if estrellas > limiteEstrellas {
 			resultadoGolpe = false
-			break
+			return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
 		}
 		if estrellas > 3 {
 			chopBonus += 1000
 		}
 	}
-	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
 }
 
-func getEstrellas() int {
-	return 1
+//////////////////////////////////////////////////
+//												//
+//  ███████╗░█████╗░░██████╗███████╗  ░░██╗██╗  //
+//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ░██╔╝██║  //
+//  █████╗░░███████║╚█████╗░█████╗░░  ██╔╝░██║  //
+//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ███████║  //
+//  ██║░░░░░██║░░██║██████╔╝███████╗  ╚════██║  //
+//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ░░░░░╚═╝  //
+//												//
+//////////////////////////////////////////////////
+
+func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.ConfirmacionPago, error) {
+	var botinTotal int64 = in.BotinTotal
+	var pagoRecibido int64 = in.Pago
+	var pagoReal int64 = botinTotal / int64(4)
+	if pagoRecibido == pagoReal {
+		return &pb.ConfirmacionPago{Confirma: true}, nil
+	} else {
+		return &pb.ConfirmacionPago{Confirma: false}, nil
+	}
 }
 
 func main() {

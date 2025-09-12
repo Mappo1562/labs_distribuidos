@@ -354,10 +354,9 @@ const file_lester_proto_rawDesc = "" +
 	"\rAceptarOferta\x12\r.Atraco.Vacio\x1a\r.Atraco.Vacio\"\x002|\n" +
 	"\tEstrellas\x126\n" +
 	"\x16EmpezarMandarEstrellas\x12\r.Atraco.Stars\x1a\r.Atraco.Stars\x127\n" +
-	"\x17TerminarMandarEstrellas\x12\r.Atraco.Stars\x1a\r.Atraco.Stars2C\n" +
-	"\tPagoBotin\x126\n" +
-	"\n" +
-	"EnviarPago\x12\f.Atraco.Pago\x1a\x18.Atraco.ConfirmacionPago\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
+	"\x17TerminarMandarEstrellas\x12\r.Atraco.Stars\x1a\r.Atraco.Stars2F\n" +
+	"\tPagoBotin\x129\n" +
+	"\rConfirmarPago\x12\f.Atraco.Pago\x1a\x18.Atraco.ConfirmacionPago\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
 
 var (
 	file_lester_proto_rawDescOnce sync.Once
@@ -385,12 +384,12 @@ var file_lester_proto_depIdxs = []int32{
 	5, // 1: Atraco.Prueba.AceptarOferta:input_type -> Atraco.Vacio
 	0, // 2: Atraco.Estrellas.EmpezarMandarEstrellas:input_type -> Atraco.Stars
 	0, // 3: Atraco.Estrellas.TerminarMandarEstrellas:input_type -> Atraco.Stars
-	3, // 4: Atraco.PagoBotin.EnviarPago:input_type -> Atraco.Pago
+	3, // 4: Atraco.PagoBotin.ConfirmarPago:input_type -> Atraco.Pago
 	2, // 5: Atraco.Prueba.SolicitarOferta:output_type -> Atraco.OperationResponse
 	5, // 6: Atraco.Prueba.AceptarOferta:output_type -> Atraco.Vacio
 	0, // 7: Atraco.Estrellas.EmpezarMandarEstrellas:output_type -> Atraco.Stars
 	0, // 8: Atraco.Estrellas.TerminarMandarEstrellas:output_type -> Atraco.Stars
-	4, // 9: Atraco.PagoBotin.EnviarPago:output_type -> Atraco.ConfirmacionPago
+	4, // 9: Atraco.PagoBotin.ConfirmarPago:output_type -> Atraco.ConfirmacionPago
 	5, // [5:10] is the sub-list for method output_type
 	0, // [0:5] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

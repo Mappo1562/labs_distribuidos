@@ -34,7 +34,7 @@ message OperationResponse{
 }
 
 service PagoBotin{
-    rpc EnviarPago(Pago) returns (ConfirmacionPago) {}
+    rpc ConfirmarPago(Pago) returns (ConfirmacionPago) {}
 }
 
 message Pago{

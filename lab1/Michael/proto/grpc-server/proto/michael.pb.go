@@ -518,10 +518,9 @@ const file_michael_proto_rawDesc = "" +
 	"\vInicioGolpe\x12\x13.Atraco.Instruccion\x1a\x16.Atraco.ResultadoGolpe\"\x002|\n" +
 	"\tEstrellas\x126\n" +
 	"\x16EmpezarMandarEstrellas\x12\r.Atraco.Stars\x1a\r.Atraco.Stars\x127\n" +
-	"\x17TerminarMandarEstrellas\x12\r.Atraco.Stars\x1a\r.Atraco.Stars2C\n" +
-	"\tPagoBotin\x126\n" +
-	"\n" +
-	"EnviarPago\x12\f.Atraco.Pago\x1a\x18.Atraco.ConfirmacionPago\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
+	"\x17TerminarMandarEstrellas\x12\r.Atraco.Stars\x1a\r.Atraco.Stars2F\n" +
+	"\tPagoBotin\x129\n" +
+	"\rConfirmarPago\x12\f.Atraco.Pago\x1a\x18.Atraco.ConfirmacionPago\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
 
 var (
 	file_michael_proto_rawDescOnce sync.Once
@@ -554,14 +553,14 @@ var file_michael_proto_depIdxs = []int32{
 	2, // 3: Atraco.Golpe.InicioGolpe:input_type -> Atraco.Instruccion
 	0, // 4: Atraco.Estrellas.EmpezarMandarEstrellas:input_type -> Atraco.Stars
 	0, // 5: Atraco.Estrellas.TerminarMandarEstrellas:input_type -> Atraco.Stars
-	6, // 6: Atraco.PagoBotin.EnviarPago:input_type -> Atraco.Pago
+	6, // 6: Atraco.PagoBotin.ConfirmarPago:input_type -> Atraco.Pago
 	5, // 7: Atraco.Prueba.SolicitarOferta:output_type -> Atraco.OperationResponse
 	8, // 8: Atraco.Prueba.AceptarOferta:output_type -> Atraco.Vacio
 	3, // 9: Atraco.Distraccion.InicioDistraccion:output_type -> Atraco.ResultadoDistraccion
 	1, // 10: Atraco.Golpe.InicioGolpe:output_type -> Atraco.ResultadoGolpe
 	0, // 11: Atraco.Estrellas.EmpezarMandarEstrellas:output_type -> Atraco.Stars
 	0, // 12: Atraco.Estrellas.TerminarMandarEstrellas:output_type -> Atraco.Stars
-	7, // 13: Atraco.PagoBotin.EnviarPago:output_type -> Atraco.ConfirmacionPago
+	7, // 13: Atraco.PagoBotin.ConfirmarPago:output_type -> Atraco.ConfirmacionPago
 	7, // [7:14] is the sub-list for method output_type
 	0, // [0:7] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

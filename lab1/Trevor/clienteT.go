@@ -25,6 +25,7 @@ const (
 type server struct {
 	pb.UnimplementedDistraccionServer
 	pb.UnimplementedGolpeServer
+	pb.UnimplementedPagoBotinServer
 }
 
 //////////////////////////////////////////////////
@@ -150,9 +151,12 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		if estrellas > limiteEstrellas {
 			if furia {
 				resultadoGolpe = false
-				break
+				return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+			} else {
+				limiteEstrellas = 7
+				furia = true
 			}
-			limiteEstrellas = 7
+
 		}
 	}
 	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
@@ -169,6 +173,17 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 //												//
 //////////////////////////////////////////////////
 
+func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.ConfirmacionPago, error) {
+	var botinTotal int64 = in.BotinTotal
+	var pagoRecibido int64 = in.Pago
+	var pagoReal int64 = botinTotal / int64(4)
+	if pagoRecibido == pagoReal {
+		return &pb.ConfirmacionPago{Confirma: true}, nil
+	} else {
+		return &pb.ConfirmacionPago{Confirma: false}, nil
+	}
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -178,6 +193,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterDistraccionServer(grpcServer, &server{})
 	pb.RegisterGolpeServer(grpcServer, &server{})
+	pb.RegisterPagoBotinServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)

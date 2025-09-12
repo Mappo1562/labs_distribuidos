@@ -303,14 +303,14 @@ var Estrellas_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	PagoBotin_EnviarPago_FullMethodName = "/Atraco.PagoBotin/EnviarPago"
+	PagoBotin_ConfirmarPago_FullMethodName = "/Atraco.PagoBotin/ConfirmarPago"
 )
 
 // PagoBotinClient is the client API for PagoBotin service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PagoBotinClient interface {
-	EnviarPago(ctx context.Context, in *Pago, opts ...grpc.CallOption) (*ConfirmacionPago, error)
+	ConfirmarPago(ctx context.Context, in *Pago, opts ...grpc.CallOption) (*ConfirmacionPago, error)
 }
 
 type pagoBotinClient struct {
@@ -321,10 +321,10 @@ func NewPagoBotinClient(cc grpc.ClientConnInterface) PagoBotinClient {
 	return &pagoBotinClient{cc}
 }
 
-func (c *pagoBotinClient) EnviarPago(ctx context.Context, in *Pago, opts ...grpc.CallOption) (*ConfirmacionPago, error) {
+func (c *pagoBotinClient) ConfirmarPago(ctx context.Context, in *Pago, opts ...grpc.CallOption) (*ConfirmacionPago, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ConfirmacionPago)
-	err := c.cc.Invoke(ctx, PagoBotin_EnviarPago_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, PagoBotin_ConfirmarPago_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +335,7 @@ func (c *pagoBotinClient) EnviarPago(ctx context.Context, in *Pago, opts ...grpc
 // All implementations must embed UnimplementedPagoBotinServer
 // for forward compatibility.
 type PagoBotinServer interface {
-	EnviarPago(context.Context, *Pago) (*ConfirmacionPago, error)
+	ConfirmarPago(context.Context, *Pago) (*ConfirmacionPago, error)
 	mustEmbedUnimplementedPagoBotinServer()
 }
 
@@ -346,8 +346,8 @@ type PagoBotinServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPagoBotinServer struct{}
 
-func (UnimplementedPagoBotinServer) EnviarPago(context.Context, *Pago) (*ConfirmacionPago, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EnviarPago not implemented")
+func (UnimplementedPagoBotinServer) ConfirmarPago(context.Context, *Pago) (*ConfirmacionPago, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmarPago not implemented")
 }
 func (UnimplementedPagoBotinServer) mustEmbedUnimplementedPagoBotinServer() {}
 func (UnimplementedPagoBotinServer) testEmbeddedByValue()                   {}
@@ -370,20 +370,20 @@ func RegisterPagoBotinServer(s grpc.ServiceRegistrar, srv PagoBotinServer) {
 	s.RegisterService(&PagoBotin_ServiceDesc, srv)
 }
 
-func _PagoBotin_EnviarPago_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _PagoBotin_ConfirmarPago_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Pago)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PagoBotinServer).EnviarPago(ctx, in)
+		return srv.(PagoBotinServer).ConfirmarPago(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PagoBotin_EnviarPago_FullMethodName,
+		FullMethod: PagoBotin_ConfirmarPago_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PagoBotinServer).EnviarPago(ctx, req.(*Pago))
+		return srv.(PagoBotinServer).ConfirmarPago(ctx, req.(*Pago))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -396,8 +396,8 @@ var PagoBotin_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*PagoBotinServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "EnviarPago",
-			Handler:    _PagoBotin_EnviarPago_Handler,
+			MethodName: "ConfirmarPago",
+			Handler:    _PagoBotin_ConfirmarPago_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

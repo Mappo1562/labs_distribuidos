@@ -329,10 +329,9 @@ const file_trevor_proto_rawDesc = "" +
 	"\vDistraccion\x12H\n" +
 	"\x11InicioDistraccion\x12\x13.Atraco.Instruccion\x1a\x1c.Atraco.ResultadoDistraccion\"\x002E\n" +
 	"\x05Golpe\x12<\n" +
-	"\vInicioGolpe\x12\x13.Atraco.Instruccion\x1a\x16.Atraco.ResultadoGolpe\"\x002C\n" +
-	"\tPagoBotin\x126\n" +
-	"\n" +
-	"EnviarPago\x12\f.Atraco.Pago\x1a\x18.Atraco.ConfirmacionPago\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
+	"\vInicioGolpe\x12\x13.Atraco.Instruccion\x1a\x16.Atraco.ResultadoGolpe\"\x002F\n" +
+	"\tPagoBotin\x129\n" +
+	"\rConfirmarPago\x12\f.Atraco.Pago\x1a\x18.Atraco.ConfirmacionPago\"\x00B\x13Z\x11grpc-server/protob\x06proto3"
 
 var (
 	file_trevor_proto_rawDescOnce sync.Once
@@ -358,10 +357,10 @@ var file_trevor_proto_goTypes = []any{
 var file_trevor_proto_depIdxs = []int32{
 	0, // 0: Atraco.Distraccion.InicioDistraccion:input_type -> Atraco.Instruccion
 	0, // 1: Atraco.Golpe.InicioGolpe:input_type -> Atraco.Instruccion
-	3, // 2: Atraco.PagoBotin.EnviarPago:input_type -> Atraco.Pago
+	3, // 2: Atraco.PagoBotin.ConfirmarPago:input_type -> Atraco.Pago
 	1, // 3: Atraco.Distraccion.InicioDistraccion:output_type -> Atraco.ResultadoDistraccion
 	2, // 4: Atraco.Golpe.InicioGolpe:output_type -> Atraco.ResultadoGolpe
-	4, // 5: Atraco.PagoBotin.EnviarPago:output_type -> Atraco.ConfirmacionPago
+	4, // 5: Atraco.PagoBotin.ConfirmarPago:output_type -> Atraco.ConfirmacionPago
 	3, // [3:6] is the sub-list for method output_type
 	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
