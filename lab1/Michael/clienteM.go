@@ -129,7 +129,72 @@ func main() {
 	if !mandarGolpe {
 		log.Printf("Mando a franklin a la segunda parte")
 
+		conn2, err := grpc.NewClient(FranklinAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn2.Close()
+		c2 := pb.NewGolpeClient(conn2)
+		// Contact the server and print out its response.
+		ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel2()
+		turnos := 200 - respuestaOferta.GetExitoFranklin()
+		log.Printf("Tiene que trabajar estos turnos: %v", turnos)
+
+		conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c := pb.NewEstrellasClient(conn)
+
+		// Contact the server and print out its response.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
+		respuestaGolpe, err2 := c2.InicioGolpe(ctx2, &pb.Instruccion{NumTurnos: int64(turnos)})
+		estrellasInicio, err := c.EmpezarMandarEstrellas(ctx, &pb.Vacio{})
+
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		if err2 != nil {
+			log.Fatalf("could not greet: %v", err2)
+		}
+
+		if !estrellasInicio.GetFlag() {
+			log.Printf("No se pudo empezar a mandar estrellas")
+		}
+
+		exito := respuestaGolpe.GetExitoGolpe()
+		botinExtra := respuestaGolpe.GetBotinExtra()
+
+		log.Printf("Franklin dice: %v", exito)
+
+		estrellasFinal, err := c.TerminarMandarEstrellas(ctx, &pb.Stars{Flag: true})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+
 	} else {
 		log.Printf("Mando a trevor a la segunda parte")
+
+		// Set up a connection to the server.
+		conn, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		c3 := pb.NewGolpeClient(conn)
+		// Contact the server and print out its response.
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		turnos := 200 - respuestaOferta.GetExitoTrevor()
+		log.Printf("Tiene que trabajar estos turnos: %v", turnos)
+		respuestaGolpe, err := c3.InicioGolpe(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		log.Printf("Trevor dice: %v", respuestaGolpe.GetExitoGolpe())
 	}
 }

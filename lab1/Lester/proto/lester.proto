@@ -1,5 +1,5 @@
 // se compila con:
-// protoc --go_out=. --go-grpc_out=. .\prueba.proto
+// protoc --go_out=. --go-grpc_out=. .\lester.proto
 // crea la carpeta grpc-server
 
 syntax = "proto3";
@@ -10,6 +10,15 @@ package Atraco;
 service Prueba {
     rpc SolicitarOferta(OperationRequest) returns (OperationResponse) {}
     rpc AceptarOferta(Vacio) returns (Vacio) {}
+}
+
+service Estrellas {
+    rpc EmpezarMandarEstrellas(Vacio) returns (Stars);
+    rpc TerminarMandarEstrellas(Stars) returns (Vacio);
+}
+
+message Stars{
+    bool flag = 1;
 }
 
 message OperationRequest{
