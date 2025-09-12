@@ -1,3 +1,6 @@
+// se compila con:
+// protoc --go_out=. --go-grpc_out=. .\michael.proto
+// crea la carpeta grpc-server
 
 syntax = "proto3";
 
@@ -15,6 +18,16 @@ service Distraccion {
 
 service Golpe {
     rpc InicioGolpe(Instruccion) returns (ResultadoGolpe) {}
+}
+
+
+service Estrellas {
+    rpc EmpezarMandarEstrellas(Vacio) returns (Stars);
+    rpc TerminarMandarEstrellas(Stars) returns (Vacio);
+}
+
+message Stars{
+    bool flag = 1;
 }
 
 message ResultadoGolpe{
