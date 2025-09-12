@@ -37,7 +37,7 @@ services:
     build: ./Franklin
     container_name: franklin
     ports:
-      - "50054:50054"
+      - "50053:50053"
     networks:
       - grpc-net
     depends_on:
