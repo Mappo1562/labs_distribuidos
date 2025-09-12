@@ -14,12 +14,15 @@ import (
 	"google.golang.org/grpc"
 )
 
-const MichaelAddr = "michael:50052"
-
-const port = ":50053"
+const (
+	MichaelAddr = "M_container:50052"
+	port        = ":50053"
+	Rabbit      = "rabbitmq:50056"
+)
 
 type server struct {
 	pb.UnimplementedDistraccionServer
+	pb.UnimplementedGolpeServer
 }
 
 func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoDistraccion, error) {
@@ -47,19 +50,19 @@ func FracasoDistraccion() bool {
 	return exito
 }
 
-func InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
 	var turnos int = int(in.GetNumTurnos())
 	var limiteEstrellas int = 5
 	var chopBonus int64 = 0
 	var resultadoGolpe bool = true
 	for i := 0; i < int(turnos); i++ {
 		var estrellas int = getEstrellas()
-		if estrellas > 3 {
-			chopBonus += 1000
-		}
 		if estrellas > limiteEstrellas {
 			resultadoGolpe = false
 			break
+		}
+		if estrellas > 3 {
+			chopBonus += 1000
 		}
 	}
 	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
@@ -77,6 +80,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterDistraccionServer(grpcServer, &server{})
+	pb.RegisterGolpeServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)

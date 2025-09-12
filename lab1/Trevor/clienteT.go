@@ -12,7 +12,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/rabbitmq/amqp091-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 )
@@ -25,6 +24,7 @@ const (
 
 type server struct {
 	pb.UnimplementedDistraccionServer
+	pb.UnimplementedGolpeServer
 }
 
 func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoDistraccion, error) {
@@ -71,7 +71,7 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 	return nil, err
 }
 
-func EstablecerConexion() <-chan amqp091.Delivery {
+func EstablecerConexion() <-chan amqp.Delivery {
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
 	conn, err := connectWithRetry(amqpURI)
@@ -116,7 +116,7 @@ func getEstrellas() int {
 	return 1
 }
 
-func InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
 	///////////////
 	msgs := EstablecerConexion()
 	///////////////
@@ -152,8 +152,10 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterDistraccionServer(grpcServer, &server{})
+	pb.RegisterGolpeServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
 	}
+
 }
