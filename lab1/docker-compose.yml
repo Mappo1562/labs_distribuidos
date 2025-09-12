@@ -23,6 +23,26 @@ services:
     environment:
       - SERVER_ADDR=lester:50051  # variable que tu cliente puede usar para conectarse
 
+  trevor:
+    build: ./Trevor
+    container_name: trevor
+    ports:
+      - "50054:50054"
+    networks:
+      - grpc-net
+    depends_on:
+      - michael
+    
+  franklin:
+    build: ./Franklin
+    container_name: franklin
+    ports:
+      - "50054:50054"
+    networks:
+      - grpc-net
+    depends_on:
+      - michael
+
   rabbitmq:
     image: rabbitmq:3
     container_name: rabbitmq
