@@ -141,11 +141,16 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	var resultadoGolpe bool = true
 	var estrellas int = 0
 	for i := 0; i < int(turnos); i++ {
+		log.Print(i)
 		//////////////////////////////////////////////////
-		d := <-msgs
-		if len(d.Body) > 0 {
-			log.Printf("respuesta obtenida: %s \n", d.Body)
-			estrellas++
+		select {
+		case d := <-msgs:
+			if len(d.Body) > 0 {
+				log.Printf("respuesta obtenida: %s \n", d.Body)
+				estrellas++
+			}
+		default:
+			// no hay mensaje, seguimos con la iteración
 		}
 		//////////////////////////////////////////////////
 		if estrellas >= limiteEstrellas {
@@ -159,7 +164,8 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 
 		}
 	}
-	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+	log.Print("Fin")
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 10}, nil
 }
 
 //////////////////////////////////////////////////
