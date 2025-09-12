@@ -22,7 +22,7 @@ import (
 
 const (
 	entrada = "ofertas_pequeno.csv"
-	Rabbit  = "rabbitmq:50056"
+	Rabbit  = "rabbitmq:5672"
 	port    = ":50051"
 )
 

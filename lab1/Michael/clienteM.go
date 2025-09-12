@@ -14,8 +14,8 @@ import (
 )
 
 const LesterAddr = "lester:50051"
-const FranklinAddr = "localhost:50053"
-const TrevorAddr = "localhost:50054"
+const FranklinAddr = "franklin:50053"
+const TrevorAddr = "trevor:50054"
 
 func procesarOferta(respuesta *pb.OperationResponse) bool {
 	if respuesta.Oferta == nil || respuesta.ExitoFranklin == nil || respuesta.ExitoTrevor == nil || respuesta.Riesgo == nil || respuesta.Botin == nil {
@@ -167,11 +167,11 @@ func main() {
 		}
 
 		exito := respuestaGolpe.GetExitoGolpe()
-		botinExtra := respuestaGolpe.GetBotinExtra()
+		//botinExtra := respuestaGolpe.GetBotinExtra()
 
 		log.Printf("Franklin dice: %v", exito)
 
-		estrellasFinal, err := c.TerminarMandarEstrellas(ctx, &pb.Stars{Flag: true})
+		//estrellasFinal, err := c.TerminarMandarEstrellas(ctx, &pb.Stars{Flag: true})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}

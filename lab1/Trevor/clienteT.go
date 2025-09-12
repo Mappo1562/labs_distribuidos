@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	MichaelAddr = "M_container:50052"
+	MichaelAddr = "michael:50052"
 	port        = ":50054"
-	Rabbit      = "rabbitmq:50056"
+	Rabbit      = "rabbitmq:5672"
 )
 
 type server struct {

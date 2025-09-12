@@ -10,14 +10,16 @@ services:
       - "50051:50051"  # expone el puerto del servidor
     networks:
       - grpc-net
+    environment:
+      AMQP_URI: amqp://guest:guest@rabbitmq:5672/
 
   michael:
     build: ./Michael
     container_name: michael
     depends_on:
       - lester          # se asegura que el servidor esté arriba
-      - Trevor
-      - Franklin
+      - trevor
+      - franklin
     networks:
       - grpc-net
     environment:
@@ -31,7 +33,9 @@ services:
     networks:
       - grpc-net
     depends_on:
-      - michael
+      - rabbitmq
+    environment:
+      AMQP_URI: amqp://guest:guest@rabbitmq:5672/
     
   franklin:
     build: ./Franklin
@@ -41,19 +45,19 @@ services:
     networks:
       - grpc-net
     depends_on:
-      - michael
+      - rabbitmq
+    environment:
+      AMQP_URI: amqp://guest:guest@rabbitmq:5672/
 
   rabbitmq:
-    image: rabbitmq:3
+    image: rabbitmq:3.12-management
     container_name: rabbitmq
     ports:
-      - "5672:5672" #productor
-      - "15672:15672" #consumidor
-
-      
+      - "5672:5672"     # AMQP para tus servicios
+      - "15672:15672"   # interfaz de administración web
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
 networks:
   grpc-net:

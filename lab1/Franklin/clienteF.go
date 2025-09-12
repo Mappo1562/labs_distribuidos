@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const MichaelAddr = "M_container:50052"
+const MichaelAddr = "michael:50052"
 
 const port = ":50053"
 
