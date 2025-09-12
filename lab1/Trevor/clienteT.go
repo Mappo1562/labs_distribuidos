@@ -142,11 +142,10 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	var estrellas int = 0
 	for i := 0; i < int(turnos); i++ {
 		//////////////////////////////////////////////////
-		d, ok := <-msgs
-		log.Printf("respuesta obtenida:\n %v", string(d.Body))
-		log.Printf("Respuesta del ok: %v", ok)
-		if ok {
-			estrellas = estrellas + 1
+		d := <-msgs
+		if len(d.Body) > 0 {
+			log.Printf("respuesta obtenida: %s \n", d.Body)
+			estrellas++
 		}
 		//////////////////////////////////////////////////
 		if estrellas >= limiteEstrellas {
