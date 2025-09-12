@@ -149,9 +149,9 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 //////////////////////////////////////////////////
 
 func (s *server) TerminarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.Stars, error) {
-	mu.Lock()
+	//mu.Lock()
 	estrellear = false
-	mu.Unlock()
+	//mu.Unlock()
 	return &pb.Stars{Flag: true}, nil
 }
 
@@ -210,11 +210,11 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 	flag := true
 	i := 0
 	for flag {
-		mu.Lock()
+		//mu.Lock()
 		if !estrellear {
 			flag = false
 		}
-		mu.Unlock()
+		//mu.Unlock()
 		if i%frecuencia == 0 && frecuencia != 0 {
 			body := "Subiste 1 estrella, ten mas cuidado"
 			err = ch.PublishWithContext(ctx,

@@ -144,11 +144,12 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		//////////////////////////////////////////////////
 		d, ok := <-msgs
 		log.Printf("respuesta obtenida:\n %v", string(d.Body))
+		log.Printf("Respuesta del ok: %v", ok)
 		if ok {
 			estrellas = estrellas + 1
 		}
 		//////////////////////////////////////////////////
-		if estrellas > limiteEstrellas {
+		if estrellas >= limiteEstrellas {
 			if furia {
 				resultadoGolpe = false
 				return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil

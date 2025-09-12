@@ -30,30 +30,12 @@ func procesarOferta(respuesta *pb.OperationResponse) bool {
 	return true
 }
 
-func activar_estrellas() {
-	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-	defer cancel()
-	c := pb.NewEstrellasClient(conn)
-	estrellasInicio, err := c.EmpezarMandarEstrellas(ctx, &pb.Stars{Flag: true})
-	if err != nil {
-		log.Fatalf("error en RPC: %v", err)
-	}
-	if !estrellasInicio.GetFlag() {
-		log.Printf("No se pudo mandar estrellas")
-	}
-}
-
 func newClientConn(addr string) (*grpc.ClientConn, context.Context, context.CancelFunc) {
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("no se pudo conectar a %s: %v", addr, err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	return conn, ctx, cancel
 }
 
@@ -248,72 +230,95 @@ func main() {
 	} else {
 		log.Printf("Mando a trevor a la segunda parte")
 
-		// Set up a connection to the server.
-		// conn, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		// if err != nil {
-		// 	log.Fatalf("did not connect: %v", err)
-		//}
-		// defer conn.Close()
-		// c3 := pb.NewGolpeClient(conn)
-		// Contact the server and print out its response.
+		connTrevor, ctxT, cancelT := newClientConn(TrevorAddr)
+		defer connTrevor.Close()
+		defer cancelT()
+		golpeClient := pb.NewGolpeClient(connTrevor)
 
-		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Cliente Lester
+		connLester, ctxL, cancelL := newClientConn(LesterAddr)
+		defer connLester.Close()
+		defer cancelL()
+		estrellasClient := pb.NewEstrellasClient(connLester)
 
-		conn2, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatalf("did not connect: %v", err)
-		}
-		defer conn2.Close()
-		// Contact the server and print out its response.
-		ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel2()
+		// Datos iniciales
 		turnos := 200 - respuestaOferta.GetExitoTrevor()
-		log.Printf("Tiene que trabajar estos turnos: %v", turnos)
+		log.Printf("Trevor debe trabajar estos turnos: %v", turnos)
 
-		defer conn.Close()
-		c2 := pb.NewGolpeClient(conn2)
+		// Variables compartidas
+		var mu sync.Mutex
+		cond := sync.NewCond(&mu)
+		var golpeTerminado bool
+		var respuestaGolpe *pb.ResultadoGolpe
+		var errGolpe, errEstrellas error
 
-		// Contact the server and print out its response.
+		var wg sync.WaitGroup
+		wg.Add(2)
 
-		go activar_estrellas()
-		respuestaGolpe, err2 := c2.InicioGolpe(ctx2, &pb.Instruccion{NumTurnos: int64(turnos)})
+		// Goroutine Trevor
+		go func() {
 
-		if err != nil {
-			log.Fatalf("could not greet: %v", err)
+			defer wg.Done()
+			resp, err := golpeClient.InicioGolpe(ctxT, &pb.Instruccion{NumTurnos: int64(turnos)})
+			mu.Lock()
+			defer mu.Unlock()
+
+			if err != nil {
+				errGolpe = err
+			} else {
+				respuestaGolpe = resp
+				log.Printf("Trevor terminó: %v, botín extra: %v", respuestaGolpe.GetExitoGolpe(), respuestaGolpe.GetBotinExtra())
+			}
+
+			golpeTerminado = true
+			cond.Broadcast() // avisamos a Lester
+		}()
+
+		// Goroutine Lester
+		go func() {
+			// Empieza inmediatamente
+			defer wg.Done()
+			inicio, err := estrellasClient.EmpezarMandarEstrellas(ctxL, &pb.Stars{Flag: true})
+			if err != nil {
+				errEstrellas = err
+				return
+			}
+			if !inicio.GetFlag() {
+				log.Printf("No se pudo empezar a mandar estrellas")
+			}
+
+			// Espera a que Trevor termine
+			mu.Lock()
+			for !golpeTerminado && errGolpe == nil {
+				cond.Wait()
+			}
+			if errGolpe != nil {
+				errEstrellas = errGolpe
+				mu.Unlock()
+				return
+			}
+			mu.Unlock()
+
+			// Ahora termina
+			log.Printf("Esto es antes de terminar estrellas")
+			fin, err := estrellasClient.TerminarMandarEstrellas(ctxL, &pb.Stars{Flag: true})
+			log.Printf("Esto es despues de terminar estrellas")
+
+			if err != nil {
+				errEstrellas = err
+				return
+			}
+			log.Printf("Estrellas finalizadas: %v", fin.GetFlag())
+		}()
+
+		wg.Wait()
+
+		if errGolpe != nil {
+			log.Fatalf("Error en Trevor: %v", errGolpe)
 		}
-		if err2 != nil {
-			log.Fatalf("could not greet: %v", err2)
-		}
 
-		///
-
-		conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatalf("did not connect: %v", err)
+		if errEstrellas != nil {
+			log.Fatalf("Erro en Lester: %v", errEstrellas)
 		}
-		defer conn.Close()
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-		defer cancel()
-		c := pb.NewEstrellasClient(conn)
-		estrellasInicio, err := c.TerminarMandarEstrellas(ctx, &pb.Stars{Flag: true})
-		if err != nil {
-			log.Fatalf("error en RPC: %v", err)
-		}
-		if !estrellasInicio.GetFlag() {
-			log.Printf("No se pudo mandar estrellas")
-		}
-		log.Printf("estrellas detenidas")
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		// defer cancel()
-		// turnos := 200 - respuestaOferta.GetExitoTrevor()
-		// log.Printf("Tiene que trabajar estos turnos: %v", turnos)
-		// respuestaGolpe, err := c3.InicioGolpe(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
-		if err != nil {
-			log.Fatalf("could not greet: %v", err)
-		}
-		log.Printf("Trevor dice: %v", respuestaGolpe.GetExitoGolpe())
 	}
 }
