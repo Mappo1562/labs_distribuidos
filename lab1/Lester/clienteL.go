@@ -28,6 +28,7 @@ const (
 
 type server struct {
 	pb.UnimplementedPruebaServer // se define el servidor de prueba.proto
+	pb.UnimplementedEstrellasServer
 }
 
 var (
@@ -108,8 +109,8 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 	lugares := [5]string{"Liberty city", "Los santos", "San Andreas", "Vice City", "Cayo Perico"}
 	objetivo := [4]string{"un banco", "una joyeria", "una mansión", "un barco"}
 
+	log.Printf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], formatInt64(botin), formatInt64(riesgo), formatInt64(exitoTrevor), formatInt64(exitoFranklin))
 	msg = fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], formatInt64(botin), formatInt64(riesgo), formatInt64(exitoTrevor), formatInt64(exitoFranklin))
-	log.Printf("%s", msg)
 
 	return &pb.OperationResponse{Oferta: &msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: botin}, nil
 }
@@ -163,7 +164,8 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 	return nil, err
 }
 
-func (s *server) activar_aumento_estrellas(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
+func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.Stars, error) {
+	log.Printf(" Aumento de estrellas activado ")
 	// falta ver cual de los dos hace el atraco
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
@@ -194,22 +196,23 @@ func (s *server) activar_aumento_estrellas(ctx context.Context, in *pb.Vacio) (*
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	body := "Subiste 1 estrella, ten mas cuidado"
-	err = ch.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
-	if err != nil {
-		log.Fatalf("No se pudo publicar el mensaje: %v", err)
+	for i := 0; i < 10; i++ {
+		body := fmt.Sprintf("Subiste %v estrella, ten mas cuidado", i)
+		err = ch.PublishWithContext(ctx,
+			"",     // exchange
+			q.Name, // routing key
+			false,  // mandatory
+			false,  // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(body),
+			})
+		if err != nil {
+			log.Fatalf("No se pudo publicar el mensaje: %v", err)
+		}
+		log.Printf(" [°]  Enviado '%s'\n", body)
 	}
-	log.Printf(" [°]  Enviado '%s'\n", body)
-
-	return &pb.Vacio{}, nil
+	return &pb.Stars{Flag: true}, nil
 }
 
 //////////////////////////////////////////////////
@@ -251,6 +254,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterPruebaServer(grpcServer, &server{})
+	pb.RegisterEstrellasServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)

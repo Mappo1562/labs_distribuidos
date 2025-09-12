@@ -29,6 +29,24 @@ func procesarOferta(respuesta *pb.OperationResponse) bool {
 	return true
 }
 
+func activar_estrellas() {
+	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	c := pb.NewEstrellasClient(conn)
+	estrellasInicio, err := c.EmpezarMandarEstrellas(ctx, &pb.Vacio{})
+	if err != nil {
+		log.Fatalf("error en RPC: %v", err)
+	}
+	if !estrellasInicio.GetFlag() {
+		log.Printf("No se pudo mandar estrellas")
+	}
+}
+
 func main() {
 	time.Sleep(time.Second * 3)
 	// Set up a connection to the server.
@@ -180,18 +198,49 @@ func main() {
 		log.Printf("Mando a trevor a la segunda parte")
 
 		// Set up a connection to the server.
-		conn, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		// conn, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		// if err != nil {
+		// 	log.Fatalf("did not connect: %v", err)
+		//}
+		// defer conn.Close()
+		// c3 := pb.NewGolpeClient(conn)
+		// Contact the server and print out its response.
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		conn2, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("did not connect: %v", err)
 		}
-		defer conn.Close()
-		c3 := pb.NewGolpeClient(conn)
+		defer conn2.Close()
 		// Contact the server and print out its response.
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
+		ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel2()
 		turnos := 200 - respuestaOferta.GetExitoTrevor()
 		log.Printf("Tiene que trabajar estos turnos: %v", turnos)
-		respuestaGolpe, err := c3.InicioGolpe(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
+
+		defer conn.Close()
+		c2 := pb.NewGolpeClient(conn2)
+
+		// Contact the server and print out its response.
+
+		go activar_estrellas()
+		respuestaGolpe, err2 := c2.InicioGolpe(ctx2, &pb.Instruccion{NumTurnos: int64(turnos)})
+
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
+		}
+		if err2 != nil {
+			log.Fatalf("could not greet: %v", err2)
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		// defer cancel()
+		// turnos := 200 - respuestaOferta.GetExitoTrevor()
+		// log.Printf("Tiene que trabajar estos turnos: %v", turnos)
+		// respuestaGolpe, err := c3.InicioGolpe(ctx, &pb.Instruccion{NumTurnos: int64(turnos)})
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}

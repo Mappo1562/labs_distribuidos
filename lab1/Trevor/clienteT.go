@@ -71,7 +71,8 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 	return nil, err
 }
 
-func EstablecerConexion() <-chan amqp.Delivery {
+func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+	///////////////
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
 	conn, err := connectWithRetry(amqpURI)
@@ -109,16 +110,6 @@ func EstablecerConexion() <-chan amqp.Delivery {
 	if err != nil {
 		log.Fatalf("No se pudo registrar un consumidor: %v", err)
 	}
-	return msgs
-}
-
-func getEstrellas() int {
-	return 1
-}
-
-func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
-	///////////////
-	msgs := EstablecerConexion()
 	///////////////
 	var turnos int = int(in.GetNumTurnos())
 	var limiteEstrellas int = 5
@@ -128,7 +119,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	for i := 0; i < int(turnos); i++ {
 		//////////////////////////////////////////////////
 		d, ok := <-msgs
-		fmt.Printf("respuesta obtenida:\n %v", string(d.Body))
+		log.Printf("respuesta obtenida:\n %v", string(d.Body))
 		if ok {
 			estrellas = estrellas + 1
 		}
