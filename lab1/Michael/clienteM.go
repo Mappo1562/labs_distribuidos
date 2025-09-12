@@ -36,7 +36,7 @@ func activar_estrellas() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
 	c := pb.NewEstrellasClient(conn)
 	estrellasInicio, err := c.EmpezarMandarEstrellas(ctx, &pb.Stars{Flag: true})

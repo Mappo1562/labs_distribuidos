@@ -26,6 +26,10 @@ service Estrellas {
     rpc TerminarMandarEstrellas(Stars) returns (Stars);
 }
 
+service PagoBotin{
+    rpc EnviarPago(Pago) returns (ConfirmacionPago) {}
+}
+
 message Stars{
     bool flag = 1;
 }
@@ -54,6 +58,15 @@ message OperationResponse{
 	optional int64 ExitoFranklin = 3;
 	optional int64 riesgo = 4;
 	optional int64 botin = 5;
+}
+
+message Pago{
+    int64 BotinTotal = 1;
+    int64 Pago = 2;
+}
+
+message ConfirmacionPago{
+    bool Confirma = 1;
 }
 
 message Vacio{}
