@@ -164,7 +164,7 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 	return nil, err
 }
 
-func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.Stars, error) {
+func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.Stars, error) {
 	log.Printf(" Aumento de estrellas activado ")
 	frecuencia := 100 - int(*riesgo)
 	// falta ver cual de los dos hace el atraco
