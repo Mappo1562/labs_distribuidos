@@ -166,6 +166,7 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 
 func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.Stars, error) {
 	log.Printf(" Aumento de estrellas activado ")
+	frecuencia := 100 - int(*riesgo)
 	// falta ver cual de los dos hace el atraco
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
@@ -196,21 +197,24 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Vacio) (*pb.
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	for i := 0; i < 10; i++ {
-		body := fmt.Sprintf("Subiste %v estrella, ten mas cuidado", i)
-		err = ch.PublishWithContext(ctx,
-			"",     // exchange
-			q.Name, // routing key
-			false,  // mandatory
-			false,  // immediate
-			amqp.Publishing{
-				ContentType: "text/plain",
-				Body:        []byte(body),
-			})
-		if err != nil {
-			log.Fatalf("No se pudo publicar el mensaje: %v", err)
+	for i := 1; i < frecuencia*8; i++ {
+		time.Sleep(100 * time.Millisecond)
+		if i%frecuencia == 0 && frecuencia != 0 {
+			body := "Subiste 1 estrella, ten mas cuidado"
+			err = ch.PublishWithContext(ctx,
+				"",     // exchange
+				q.Name, // routing key
+				false,  // mandatory
+				false,  // immediate|
+				amqp.Publishing{
+					ContentType: "text/plain",
+					Body:        []byte(body),
+				})
+			if err != nil {
+				log.Fatalf("No se pudo publicar el mensaje: %v", err)
+			}
+			log.Printf(" [°]  Enviado '%s'\n", body)
 		}
-		log.Printf(" [°]  Enviado '%s'\n", body)
 	}
 	return &pb.Stars{Flag: true}, nil
 }
