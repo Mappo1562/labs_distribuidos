@@ -16,13 +16,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 )
 
 const (
 	entrada = "ofertas_pequeno.csv"
-	Michael = "M_container:50052"
+	Rabbit  = "rabbitmq:50056"
 	port    = ":50051"
 )
 
@@ -144,53 +144,71 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 //												//
 //////////////////////////////////////////////////
 
-// docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
+func connectWithRetry(uri string) (*amqp.Connection, error) {
+	var conn *amqp.Connection
+	var err error
+	const maxRetries = 10
+	const delay = 5 * time.Second
+
+	for i := 0; i < maxRetries; i++ {
+		conn, err = amqp.Dial(uri)
+		if err == nil {
+			log.Println("[°] Conexión a RabbitMQ exitosa!")
+			return conn, nil
+		}
+		log.Printf("Error de conexión a RabbitMQ (intento %d/%d): %v", i+1, maxRetries, err)
+		time.Sleep(delay)
+	}
+
+	return nil, err
+}
+
 func (s *server) activar_aumento_estrellas(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
-	// conexión
-	conn, err := amqp.Dial("amqp://trevor:trevor@localhost:50054/")
+	// falta ver cual de los dos hace el atraco
+	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
+
+	conn, err := connectWithRetry(amqpURI)
 	if err != nil {
-		log.Fatalf(" Error al conectar : %v", err)
+		log.Fatalf("Se excedió el número máximo de reintentos. No se pudo conectar a RabbitMQ: %v", err)
 	}
 	defer conn.Close()
 
-	// Apertura de canal
-	channel, err := conn.Channel()
+	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalf(" Error al abrir el canal: %v", err)
+		log.Fatalf("No se pudo abrir un canal: %v", err)
 	}
-	defer channel.Close()
+	defer ch.Close()
 
-	// Declaracion de la cola de mensajes
-	queue, err := channel.QueueDeclare(
-		"tareas", // name
-		false,    // durable
-		false,    // delete when unused
-		false,    // exclusive
-		false,    // no-wait
-		nil,      // args
+	q, err := ch.QueueDeclare(
+		"my_queue", // nombre de la cola
+		false,      // durable
+		false,      // auto-delete cuando no se usa
+		false,      // exclusiva
+		false,      // no-wait
+		nil,        // argumentos
 	)
 	if err != nil {
-		log.Fatalf(" Error al declarar la cola de mensajes: %v", err)
+		log.Fatalf("No se pudo declarar la cola: %v", err)
 	}
 
-	defer conn.Close()
-	var frecuencia_estrellas int = 100 - int(*riesgo)
-	for i := 0; i < 1000; i++ {
-		if i%frecuencia_estrellas == frecuencia_estrellas-1 {
-			body := "+1"
-			channel.Publish(
-				"",         // exchange
-				queue.Name, // routing key
-				false,      // mandatory
-				false,      // immediate
-				amqp.Publishing{
-					ContentType: "text/plain",
-					Body:        []byte(body),
-				},
-			)
-			log.Printf("🟢 Enviado: %s", body)
-		}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	body := "Subiste 1 estrella, ten mas cuidado"
+	err = ch.PublishWithContext(ctx,
+		"",     // exchange
+		q.Name, // routing key
+		false,  // mandatory
+		false,  // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(body),
+		})
+	if err != nil {
+		log.Fatalf("No se pudo publicar el mensaje: %v", err)
 	}
+	log.Printf(" [°]  Enviado '%s'\n", body)
+
 	return &pb.Vacio{}, nil
 }
 

@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const LesterAddr = "localhost:50051"
+const LesterAddr = "lester:50051"
 const FranklinAddr = "localhost:50053"
 const TrevorAddr = "localhost:50054"
 

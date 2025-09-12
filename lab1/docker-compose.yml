@@ -4,6 +4,8 @@ services:
   lester:
     build: ./Lester
     container_name: lester
+    depends_on:
+      - rabbitmq
     ports:
       - "50051:50051"  # expone el puerto del servidor
     networks:
@@ -14,10 +16,32 @@ services:
     container_name: michael
     depends_on:
       - lester          # se asegura que el servidor esté arriba
+      - Trevor
+      - Franklin
     networks:
       - grpc-net
     environment:
       - SERVER_ADDR=lester:50051  # variable que tu cliente puede usar para conectarse
+
+  trevor:
+    build: ./Trevor
+    container_name: trevor
+    ports:
+      - "50054:50054"
+    networks:
+      - grpc-net
+    depends_on:
+      - michael
+    
+  franklin:
+    build: ./Franklin
+    container_name: franklin
+    ports:
+      - "50054:50054"
+    networks:
+      - grpc-net
+    depends_on:
+      - michael
 
   rabbitmq:
     image: rabbitmq:3
@@ -25,8 +49,8 @@ services:
     ports:
       - "5672:5672" #productor
       - "15672:15672" #consumidor
-    depends_on:
-      - rabbitmq
+
+      
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
