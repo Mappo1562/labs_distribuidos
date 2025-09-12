@@ -285,6 +285,25 @@ func main() {
 			log.Fatalf("could not greet: %v", err2)
 		}
 
+		///
+
+		conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("did not connect: %v", err)
+		}
+		defer conn.Close()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		defer cancel()
+		c := pb.NewEstrellasClient(conn)
+		estrellasInicio, err := c.TerminarMandarEstrellas(ctx, &pb.Stars{Flag: true})
+		if err != nil {
+			log.Fatalf("error en RPC: %v", err)
+		}
+		if !estrellasInicio.GetFlag() {
+			log.Printf("No se pudo mandar estrellas")
+		}
+		log.Printf("estrellas detenidas")
+
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		// ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

@@ -148,7 +148,6 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 //												//
 //////////////////////////////////////////////////
 
-// falta hacerle el proto a esta wea
 func (s *server) TerminarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.Stars, error) {
 	mu.Lock()
 	estrellear = false
@@ -211,9 +210,6 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 	flag := true
 	i := 0
 	for flag {
-		if i == 130 { // esta wea esta pa probar nomas
-			estrellear = false
-		}
 		mu.Lock()
 		if !estrellear {
 			flag = false
