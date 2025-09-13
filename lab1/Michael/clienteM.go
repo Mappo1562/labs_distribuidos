@@ -596,7 +596,7 @@ func main() {
 		}
 
 		if errEstrellas != nil {
-			log.Fatalf("Erro en Lester: %v", errEstrellas)
+			log.Fatalf("Error en Lester: %v", errEstrellas)
 		}
 
 	} else {
