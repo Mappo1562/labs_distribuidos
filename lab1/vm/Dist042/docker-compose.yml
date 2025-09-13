@@ -9,14 +9,13 @@ services:
     ports:
       - "50051:50051"  # expone el puerto del servidor
     environment:
-      AMQP_URI: amqp://guest:guest@rabbitmq:5672/  # dentro del contenedor sigue siendo 5672
-
+      AMQP_URI: amqp://guest:guest@rabbitmq:5672/
   rabbitmq:
     image: rabbitmq:3.12-management
     container_name: rabbitmq
     ports:
-      - "5673:5672"     # host 5673 -> contenedor 5672
-      - "15673:15672"   # host 15673 -> contenedor 15672 (UI de administración)
+      - "5672:5672"     # AMQP para tus servicios
+      - "15672:15672"   # interfaz de administración web
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -24,4 +23,4 @@ services:
       test: ["CMD", "rabbitmqctl", "status"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 10$
