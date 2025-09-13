@@ -19,6 +19,13 @@ const LesterAddr = "lester:50051"
 const FranklinAddr = "franklin:50053"
 const TrevorAddr = "trevor:50054"
 
+// //////////////////////////////////////////////////////////////////////////
+// ProcesarOferta()
+// //////////////////////////////////////////////////////////////////////////
+// Esta funcion retorna un booleano, y se usa para revisar si la oferta
+// será o no aceptada por Michael
+// //////////////////////////////////////////////////////////////////////////
+
 func procesarOferta(respuesta *pb.OperationResponse) bool {
 	if respuesta.Oferta == nil || respuesta.ExitoFranklin == nil || respuesta.ExitoTrevor == nil || respuesta.Riesgo == nil || respuesta.Botin == nil {
 		return false
@@ -30,6 +37,13 @@ func procesarOferta(respuesta *pb.OperationResponse) bool {
 
 	return true
 }
+
+////////////////////////////////////////////////////////////////////////////
+// confirmarPago()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion retorna un booleano, y se usa para la fase 4, donde se
+// reparte el botin a cada integrante
+////////////////////////////////////////////////////////////////////////////
 
 func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) bool {
 
@@ -57,6 +71,13 @@ func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) boo
 	return true
 }
 
+////////////////////////////////////////////////////////////////////////////
+// generarReporte()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion retorna un booleano, y se usa para la generación del
+// reporte, sea éxito o fracaso
+////////////////////////////////////////////////////////////////////////////
+
 func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo string, motivoFallo string, confLes bool, confFran bool, confTre bool) bool {
 	file, err := os.Create("/app/reportes/Reporte.txt")
 
@@ -83,7 +104,7 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 		var respuestaTre string
 
 		if confLes {
-			respuestaLes = "Un place hacer negocios"
+			respuestaLes = "Un placer hacer negocios"
 		} else {
 			respuestaLes = "Me estafaste, no me busques para más golpes"
 		}
@@ -126,6 +147,13 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 	return true
 }
 
+////////////////////////////////////////////////////////////////////////////
+// activar_estrellas()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion esta hecha para activar a Lester y que comienze a mandar
+// estrellas al involucrado en la fase 3, se llamará en una gorutine
+////////////////////////////////////////////////////////////////////////////
+
 func activar_estrellas() {
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -143,6 +171,13 @@ func activar_estrellas() {
 		log.Printf("No se pudo mandar estrellas")
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////
+// main()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion orquesta todo el proceso del laboratorio, desde la fase 1
+// hasta la 4
+////////////////////////////////////////////////////////////////////////////
 
 func main() {
 	log.Printf("Iniciando...")
