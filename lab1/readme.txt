@@ -14,6 +14,7 @@ EJECUCIÓN
 para ejecutarlo en una sola maquina
 
 - si se quiere ejecutar en las VM, hay que seguir el siguiente orden
+ubicacion (labs_distribuidos/lab1/vm/<dist___>)
 dist042:
     navegar hasta la carpeta Dist042 y ejecutar:
         make docker-lester
@@ -26,6 +27,8 @@ dist101:
 dist043:
     navegar hasta la carpeta Dist043 y ejecutar:
         make docker-michael
+si alguno tira error, ejecutar:
+    make docker-restart
 
 --------------------------------------------------------------------
 CONSIDERACIONES AL MOMENTO DE EJECUTAR
