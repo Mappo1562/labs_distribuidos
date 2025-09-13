@@ -249,9 +249,9 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 //////////////////////////////////////////////////
 
 func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.ConfirmacionPago, error) {
-	var botinTotal float64 = float64(in.BotinTotal)
-	var pagoRecibido float64 = float64(in.Pago)
-	var pagoReal float64 = float64(botinTotal / 4)
+	var botinTotal int64 = in.BotinTotal
+	var pagoRecibido int64 = in.Pago
+	var pagoReal int64 = (botinTotal / int64(4)) + (botinTotal % int64(4))
 	if pagoRecibido == pagoReal {
 		return &pb.ConfirmacionPago{Confirma: true}, nil
 	} else {

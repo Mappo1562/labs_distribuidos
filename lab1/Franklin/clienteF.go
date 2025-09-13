@@ -25,6 +25,7 @@ const (
 type server struct {
 	pb.UnimplementedDistraccionServer
 	pb.UnimplementedGolpeServer
+	pb.UnimplementedPagoBotinServer
 }
 
 //////////////////////////////////////////////////
@@ -192,6 +193,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterDistraccionServer(grpcServer, &server{})
 	pb.RegisterGolpeServer(grpcServer, &server{})
+	pb.RegisterPagoBotinServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
