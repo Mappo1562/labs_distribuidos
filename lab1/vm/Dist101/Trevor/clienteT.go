@@ -75,7 +75,6 @@ func FracasoDistraccion() bool {
 //												//
 //////////////////////////////////////////////////
 
-// Conexion RabbitMQ
 func connectWithRetry(uri string) (*amqp.Connection, error) {
 	var conn *amqp.Connection
 	var err error
@@ -96,7 +95,6 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 }
 
 func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
-	///////////////
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
 	conn, err := connectWithRetry(amqpURI)
@@ -134,14 +132,13 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	if err != nil {
 		log.Fatalf("No se pudo registrar un consumidor: %v", err)
 	}
-	///////////////
+
 	var turnos int = int(in.GetNumTurnos())
 	var limiteEstrellas int = 5
 	var furia bool = false
 	var resultadoGolpe bool = true
 	var estrellas int = 0
 	for i := 0; i < int(turnos); i++ {
-		//////////////////////////////////////////////////
 		select {
 		case d := <-msgs:
 			if len(d.Body) > 0 {
@@ -151,7 +148,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		default:
 			// no hay mensaje, seguimos con la iteración
 		}
-		//////////////////////////////////////////////////
+
 		if estrellas >= limiteEstrellas {
 			if furia {
 				resultadoGolpe = false

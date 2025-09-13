@@ -39,6 +39,13 @@ type server struct {
 //												//
 //////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+// InicioDistraccion()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion corresponde al servidor Distraccion, y se encarga de
+// realizar la fase 2
+////////////////////////////////////////////////////////////////////////////
+
 func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoDistraccion, error) {
 	var turnos int64 = in.GetNumTurnos()
 	log.Printf("Tengo que trabajar %v", turnos)
@@ -54,6 +61,12 @@ func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb
 	return &pb.ResultadoDistraccion{
 		ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: true}, nil
 }
+
+////////////////////////////////////////////////////////////////////////////
+// FracasoDistraccion()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion mide aleatoriamente si fracasa o no la distraccion
+////////////////////////////////////////////////////////////////////////////
 
 func FracasoDistraccion() bool {
 	var ranInt int = rand.Intn(100)
@@ -75,6 +88,12 @@ func FracasoDistraccion() bool {
 //												//
 //////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+// connectWithRetry()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion sirve por si la conexión con rabbitmq falla, se reintenta
+////////////////////////////////////////////////////////////////////////////
+
 func connectWithRetry(uri string) (*amqp.Connection, error) {
 	var conn *amqp.Connection
 	var err error
@@ -94,8 +113,14 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 	return nil, err
 }
 
+////////////////////////////////////////////////////////////////////////////
+// InicioGolpe()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion corresponde al servidor Golpe y se dedica a hacer el golpe
+// con las habilidades de Franklin, revisando las estrellas que manda Lester
+////////////////////////////////////////////////////////////////////////////
+
 func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
-	///////////////
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
 	conn, err := connectWithRetry(amqpURI)
@@ -133,13 +158,13 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	if err != nil {
 		log.Fatalf("No se pudo registrar un consumidor: %v", err)
 	}
-	///////////////
+
 	var turnos int = int(in.GetNumTurnos())
 	var resultadoGolpe bool = true
 	var estrellas int = 0
 	var chopBonus int64 = 0
 	for i := 0; i < int(turnos); i++ {
-		//////////////////////////////////////////////////
+
 		select {
 		case d := <-msgs:
 			if len(d.Body) > 0 {
@@ -149,7 +174,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		default:
 			// no hay mensaje, seguimos con la iteración
 		}
-		//////////////////////////////////////////////////
+
 		if estrellas > 3 {
 			chopBonus += 1000
 		}
@@ -173,6 +198,13 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 //												//
 //////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+// ConfirmarPago()
+////////////////////////////////////////////////////////////////////////////
+// Esta funcion corresponde al servidor PagoBotin, y es para confirmar si
+// el pago recibido es correcto
+////////////////////////////////////////////////////////////////////////////
+
 func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.ConfirmacionPago, error) {
 	var botinTotal int64 = in.BotinTotal
 	var pagoRecibido int64 = in.Pago
@@ -183,6 +215,14 @@ func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.Confirmaci
 		return &pb.ConfirmacionPago{Confirma: false}, nil
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+// main()
+////////////////////////////////////////////////////////////////////////////
+// Abre los servidores y la conexión rpc
+////////////////////////////////////////////////////////////////////////////
 
 func main() {
 	lis, err := net.Listen("tcp", port)

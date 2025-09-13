@@ -32,18 +32,16 @@ func procesarOferta(respuesta *pb.OperationResponse) bool {
 }
 
 func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) bool {
-	// Abrir conexión
+
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect to %s: %v", nombre, err)
 	}
 	defer conn.Close()
 
-	// Timeout
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	// Cliente gRPC
 	c := pb.NewPagoBotinClient(conn)
 	respuesta, err := c.ConfirmarPago(ctx, &pb.Pago{BotinTotal: botinTotal, Pago: pago})
 	if err != nil {
@@ -75,7 +73,6 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 
 	botinTotal := botinBase + botinExtra
 
-	// Resultado según éxito o fallo
 	if exito {
 		pagoFranklin := botinTotal / 4
 		pagoTrevor := pagoFranklin
@@ -124,7 +121,6 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 		fmt.Fprintf(file, "El botin perdido fue de: %d\n", botinTotal)
 	}
 
-	// Cierre
 	fmt.Fprintln(file, "=========================================================")
 
 	return true
@@ -149,8 +145,9 @@ func activar_estrellas() {
 }
 
 func main() {
+	// Fase 1
 	time.Sleep(time.Second * 3)
-	// Set up a connection to the server.
+
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -158,13 +155,11 @@ func main() {
 	defer conn.Close()
 	c := pb.NewPruebaClient(conn)
 
-	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 
 	exitoMision := true
 
-	//Fase La negociación
 	log.Printf("Dame un atraco lester, por favor")
 	respuestaOferta, err := c.SolicitarOferta(ctx, &pb.OperationRequest{SolicitudOferta: "Dame un atraco lester, por favor"})
 
@@ -193,7 +188,8 @@ func main() {
 
 	}
 
-	//Fase La Distracción
+	//Fase 2
+	time.Sleep(time.Second * 3)
 	var mandarGolpe bool
 	botinMision := respuestaOferta.GetBotin()
 
@@ -208,14 +204,14 @@ func main() {
 
 	if mandarGolpe {
 		log.Printf("Mando a franklin a la primera parte")
-		// Set up a connection to the server.
+
 		conn, err := grpc.NewClient(FranklinAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("did not connect: %v", err)
 		}
 		defer conn.Close()
 		c2 := pb.NewDistraccionClient(conn)
-		// Contact the server and print out its response.
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		turnos := 200 - respuestaOferta.GetExitoFranklin()
@@ -231,14 +227,14 @@ func main() {
 
 	} else {
 		log.Printf("Mando a trevor a la primera parte")
-		// Set up a connection to the server.
+
 		conn, err := grpc.NewClient(TrevorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("did not connect: %v", err)
 		}
 		defer conn.Close()
 		c3 := pb.NewDistraccionClient(conn)
-		// Contact the server and print out its response.
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 		turnos := 200 - respuestaOferta.GetExitoTrevor()
@@ -264,7 +260,8 @@ func main() {
 	var exitoGolpe bool
 	var botinAgregado int64
 
-	//Fase El Golpe
+	//Fase 3
+	time.Sleep(time.Second * 3)
 	if !mandarGolpe {
 		log.Printf("Mando a Franklin al Golpe")
 
@@ -273,7 +270,7 @@ func main() {
 			log.Fatalf("did not connect: %v", err)
 		}
 		defer conn2.Close()
-		// Contact the server and print out its response.
+
 		ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel2()
 		turnos := 200 - respuestaOferta.GetExitoFranklin()
@@ -281,8 +278,6 @@ func main() {
 
 		defer conn.Close()
 		c2 := pb.NewGolpeClient(conn2)
-
-		// Contact the server and print out its response.
 
 		go activar_estrellas()
 		respuestaGolpe, err2 := c2.InicioGolpe(ctx2, &pb.Instruccion{NumTurnos: int64(turnos)})
@@ -293,8 +288,6 @@ func main() {
 		if err2 != nil {
 			log.Fatalf("could not greet: %v", err2)
 		}
-
-		///
 
 		conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
@@ -328,7 +321,7 @@ func main() {
 			log.Fatalf("did not connect: %v", err)
 		}
 		defer conn2.Close()
-		// Contact the server and print out its response.
+
 		ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel2()
 		turnos := 200 - respuestaOferta.GetExitoTrevor()
@@ -336,8 +329,6 @@ func main() {
 
 		defer conn.Close()
 		c2 := pb.NewGolpeClient(conn2)
-
-		// Contact the server and print out its response.
 
 		go activar_estrellas()
 		respuestaGolpe, err2 := c2.InicioGolpe(ctx2, &pb.Instruccion{NumTurnos: int64(turnos)})
@@ -348,8 +339,6 @@ func main() {
 		if err2 != nil {
 			log.Fatalf("could not greet: %v", err2)
 		}
-
-		///
 
 		conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
@@ -385,7 +374,8 @@ func main() {
 		return
 	}
 
-	//Fase reparto botin
+	//Fase 4
+	time.Sleep(time.Second * 3)
 	botinTotal := botinMision + botinAgregado
 	pagoLester := botinTotal/4 + botinTotal%4
 	pagoFranklin := botinTotal / 4

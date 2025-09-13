@@ -133,13 +133,13 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	if err != nil {
 		log.Fatalf("No se pudo registrar un consumidor: %v", err)
 	}
-	///////////////
+
 	var turnos int = int(in.GetNumTurnos())
 	var resultadoGolpe bool = true
 	var estrellas int = 0
 	var chopBonus int64 = 0
 	for i := 0; i < int(turnos); i++ {
-		//////////////////////////////////////////////////
+
 		select {
 		case d := <-msgs:
 			if len(d.Body) > 0 {
@@ -149,7 +149,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		default:
 			// no hay mensaje, seguimos con la iteración
 		}
-		//////////////////////////////////////////////////
+
 		if estrellas > 3 {
 			chopBonus += 1000
 		}

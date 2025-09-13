@@ -28,7 +28,7 @@ const (
 )
 
 type server struct {
-	pb.UnimplementedPruebaServer // se define el servidor de prueba.proto
+	pb.UnimplementedPruebaServer
 	pb.UnimplementedEstrellasServer
 	pb.UnimplementedPagoBotinServer
 }
@@ -181,12 +181,12 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"my_queue", // nombre de la cola
-		false,      // durable
-		false,      // auto-delete cuando no se usa
-		false,      // exclusiva
-		false,      // no-wait
-		nil,        // argumentos
+		"my_queue",
+		false,
+		false,
+		false,
+		false,
+		nil,
 	)
 	if err != nil {
 		log.Fatalf("No se pudo declarar la cola: %v", err)
@@ -208,10 +208,10 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 		if i%frecuencia == 0 && i != 0 {
 			body := "Subiste 1 estrella, ten mas cuidado"
 			err = ch.PublishWithContext(ctx,
-				"",     // exchange
-				q.Name, // routing key
-				false,  // mandatory
-				false,  // immediate
+				"",
+				q.Name,
+				false,
+				false,
 				amqp.Publishing{
 					ContentType: "text/plain",
 					Body:        []byte(body),
@@ -248,14 +248,14 @@ func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.Confirmaci
 }
 
 func main() {
-	// abrir archivo
+
 	path := "entradas/" + entrada
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("no se pudo abrir el archivo:\n %v", err)
 	}
 	defer file.Close()
-	// iniciar scanner
+
 	scanner = bufio.NewScanner(file)
 
 	scanner.Scan()
