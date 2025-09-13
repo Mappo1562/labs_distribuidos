@@ -36,7 +36,7 @@ var (
 	contador   int = 0
 	scanner    *bufio.Scanner
 	riesgo     *int64
-	estrellear bool
+	estrellear bool = true
 	mu         sync.Mutex
 )
 
@@ -149,9 +149,9 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 //////////////////////////////////////////////////
 
 func (s *server) TerminarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.Stars, error) {
-	//mu.Lock()
+	mu.Lock()
 	estrellear = false
-	//mu.Unlock()
+	mu.Unlock()
 	return &pb.Stars{Flag: true}, nil
 }
 
@@ -210,12 +210,13 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 	flag := true
 	i := 0
 	for flag {
-		//mu.Lock()
+		mu.Lock()
 		if !estrellear {
 			flag = false
 		}
-		//mu.Unlock()
-		if i%frecuencia == 0 && frecuencia != 0 {
+		mu.Unlock()
+		if i%frecuencia == 0 && i != 0 {
+			log.Printf(" i: '%v'\n", i)
 			body := "Subiste 1 estrella, ten mas cuidado"
 			err = ch.PublishWithContext(ctx,
 				"",     // exchange
@@ -231,7 +232,7 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 			}
 			log.Printf(" [°]  Enviado '%s'\n", body)
 		}
-		i++
+		i = i + 1
 	}
 	return &pb.Stars{Flag: true}, nil
 }
