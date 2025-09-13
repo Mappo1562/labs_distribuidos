@@ -146,7 +146,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		select {
 		case d := <-msgs:
 			if len(d.Body) > 0 {
-				log.Printf("respuesta obtenida: %s \n", d.Body)
+				log.Printf("respuesta obtenida: %s, con i = %v", d.Body, i)
 				estrellas++
 			}
 		default:
