@@ -145,6 +145,7 @@ func activar_estrellas() {
 }
 
 func main() {
+	log.Printf("Iniciando...")
 	// Fase 1
 	time.Sleep(time.Second * 3)
 

@@ -1,2 +1,2 @@
 docker-lester:
-	docker-compose -f docker-compose.lester.yml up --build
+	docker-compose -f docker-compose.yml up --build
