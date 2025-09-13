@@ -310,7 +310,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Franklin dice: %v", respuestaGolpe.GetExitoGolpe())
+		if respuestaGolpe.GetExitoGolpe() {
+			log.Printf("Franklin trabajo bien, ganamos")
+		} else {
+			log.Printf("Franklin fracaso, perdimos")
+		}
 		exitoGolpe = respuestaGolpe.GetExitoGolpe()
 		botinAgregado = respuestaGolpe.GetBotinExtra()
 
@@ -361,7 +365,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Trevor dice: %v", respuestaGolpe.GetExitoGolpe())
+		if respuestaGolpe.GetExitoGolpe() {
+			log.Printf("Trevor trabajo bien, ganamos")
+		} else {
+			log.Printf("Trevor fracaso, perdimos")
+		}
 		exitoGolpe = respuestaGolpe.GetExitoGolpe()
 		botinAgregado = respuestaGolpe.GetBotinExtra()
 	}
