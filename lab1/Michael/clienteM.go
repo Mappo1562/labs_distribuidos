@@ -78,8 +78,8 @@ func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) boo
 ////////////////////////////////////////////////////////////////////////////
 
 func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo string, motivoFallo string, confLes bool, confFran bool, confTre bool) bool {
-	file, err := os.Create("Reporte.txt")
 
+	file, err := os.Create("/app/reportes/Reporte.txt")
 	if err != nil {
 		panic(err)
 	}
