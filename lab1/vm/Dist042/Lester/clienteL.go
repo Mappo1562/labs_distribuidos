@@ -71,6 +71,7 @@ func formatInt64(p *int64) string {
 }
 
 func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (*pb.OperationResponse, error) {
+	contador += 1
 	if contador%3 == 0 && contador != 0 {
 		log.Printf("voy a buscar, espera...")
 		time.Sleep(10 * time.Second)
@@ -80,7 +81,6 @@ func (s *server) SolicitarOferta(ctx context.Context, in *pb.OperationRequest) (
 		log.Printf("%s", msg)
 		return &pb.OperationResponse{Oferta: &msg}, nil
 	}
-	contador += 1
 
 	var (
 		msg           string
