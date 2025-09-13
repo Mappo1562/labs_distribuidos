@@ -58,7 +58,7 @@ func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) boo
 }
 
 func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo string, motivoFallo string, confLes bool, confFran bool, confTre bool) bool {
-	file, err := os.Create("Reporte.txt")
+	file, err := os.Create("/app/reportes/Reporte.txt")
 
 	if err != nil {
 		panic(err)
@@ -105,14 +105,14 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 		fmt.Fprintf(file, "Botin Base : $%d\n", botinBase)
 		fmt.Fprintf(file, "Botin Extra ( Habilidad de Chop ): $%d\n", botinExtra)
 		fmt.Fprintf(file, "Botin Total : $%d\n", botinTotal)
-		fmt.Fprintln(file, "------ ------------ ------------ ------------ ------------ ---")
+		fmt.Fprintf(file, "------ ------------ ------------ ------------ ------------ --- \n")
 		fmt.Fprintf(file, "Pago a Franklin : $%d\n", pagoFranklin)
-		fmt.Fprintf(file, "Respuesta de Franklin : \"%s\"", respuestaFran)
+		fmt.Fprintf(file, "Respuesta de Franklin : \"%s\" \n", respuestaFran)
 		fmt.Fprintf(file, "Pago a Trevor : $%d\n", pagoTrevor)
-		fmt.Fprintf(file, "Respuesta de Trevor : \"%s\"", respuestaTre)
-		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $0 (resto)\n", pagoLester)
-		fmt.Fprintf(file, "Respuesta de Lester : \"%s\"", respuestaLes)
-		fmt.Fprintln(file, "------ ------------ ------------ ------------ ------------ ---")
+		fmt.Fprintf(file, "Respuesta de Trevor : \"%s\"  \n", respuestaTre)
+		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $%d (resto)\n", pagoLester, botinTotal%4)
+		fmt.Fprintf(file, "Respuesta de Lester : \"%s\"\n", respuestaLes)
+		fmt.Fprintf(file, "------ ------------ ------------ ------------ ------------ --- \n")
 		fmt.Fprintf(file, "Saldo Final de la Operacion : $%d\n", botinTotal)
 	} else {
 		fmt.Fprintln(file, "Resultado Global : MISION FALLIDA")
