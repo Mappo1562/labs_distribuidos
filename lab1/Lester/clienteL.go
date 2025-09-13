@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	entrada = "ofertas_pequeno.csv"
+	entrada = "ofertas_mediano.csv"
 	Rabbit  = "rabbitmq:5672"
 	port    = ":50051"
 )
@@ -30,6 +30,7 @@ const (
 type server struct {
 	pb.UnimplementedPruebaServer // se define el servidor de prueba.proto
 	pb.UnimplementedEstrellasServer
+	pb.UnimplementedPagoBotinServer
 }
 
 var (
@@ -123,19 +124,6 @@ func (s *server) AceptarOferta(ctx context.Context, in *pb.Vacio) (*pb.Vacio, er
 	contador = 0
 	return &pb.Vacio{}, nil
 }
-
-//////////////////////////////////////////////////
-//												//
-//  ███████╗░█████╗░░██████╗███████╗  ██████╗░  //
-//  ██╔════╝██╔══██╗██╔════╝██╔════╝  ╚════██╗  //
-//  █████╗░░███████║╚█████╗░█████╗░░  ░░███╔═╝  //
-//  ██╔══╝░░██╔══██║░╚═══██╗██╔══╝░░  ██╔══╝░░  //
-//  ██║░░░░░██║░░██║██████╔╝███████╗  ███████╗  //
-//  ╚═╝░░░░░╚═╝░░╚═╝╚═════╝░╚══════╝  ╚══════╝  //
-//												//
-//////////////////////////////////////////////////
-
-// lester no participa en la 2 pero pa q lo copien si quieren uwu
 
 //////////////////////////////////////////////////
 //												//
@@ -280,6 +268,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterPruebaServer(grpcServer, &server{})
 	pb.RegisterEstrellasServer(grpcServer, &server{})
+	pb.RegisterPagoBotinServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
