@@ -163,7 +163,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 
 		}
 	}
-	log.Print("Fin")
+	log.Print("Fin del atraco")
 	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
 }
 

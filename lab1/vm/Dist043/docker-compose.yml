@@ -1,0 +1,8 @@
+services:
+  michael:
+    build: ./Michael
+    container_name: michael
+    ports:
+      - "50052:50052"
+    environment:
+      - SERVER_ADDR: dist042.inf.santiago.usm.cl:50051  # variable que tu cliente puede usar para conectarse

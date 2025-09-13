@@ -1,0 +1,11 @@
+services:
+  franklin:
+    build: ./Franklin
+    container_name: franklin
+    ports:
+      - "50053:50053"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      AMQP_URI: amqp://guest:guest@dist042.inf.santiago.usm.cl:5672/

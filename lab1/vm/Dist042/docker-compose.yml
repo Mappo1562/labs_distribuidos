@@ -1,0 +1,25 @@
+services:
+  lester:
+    build: ./Lester
+    container_name: lester
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "50051:50051"  # expone el puerto del servidor
+    environment:
+      AMQP_URI: amqp://guest:guest@rabbitmq:5672/
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # AMQP para tus servicios
+      - "15672:15672"   # interfaz de administración web
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

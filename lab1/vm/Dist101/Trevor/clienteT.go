@@ -4,7 +4,7 @@ package main
 // go mod init <nombre_carpeta_cliente>
 // go mod tidy
 import (
-	pb "Franklin/proto/grpc-server/proto"
+	pb "Trevor/proto/grpc-server/proto"
 	"context"
 	"fmt"
 	"log"
@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	MichaelAddr = "M_container:50052"
-	port        = ":50053"
-	Rabbit      = "rabbitmq:5672"
+	MichaelAddr = "dist043.inf.santiago.usm.cl:50052"
+	port        = ":50054"
+	Rabbit      = "dist043.inf.santiago.usm.cl:5672"
 )
 
 type server struct {
@@ -47,7 +47,7 @@ func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb
 			var exito bool = FracasoDistraccion()
 			if !exito {
 				return &pb.ResultadoDistraccion{
-					ExitoDistraccion: "Chop ladró y Franklin perdió la concentración, aborta la misión", Exito: false}, nil
+					ExitoDistraccion: "Trevor se emborrachó antes del atraco, aborta la misión", Exito: false}, nil
 			}
 		}
 	}
@@ -75,6 +75,7 @@ func FracasoDistraccion() bool {
 //												//
 //////////////////////////////////////////////////
 
+// Conexion RabbitMQ
 func connectWithRetry(uri string) (*amqp.Connection, error) {
 	var conn *amqp.Connection
 	var err error
@@ -135,9 +136,10 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	}
 	///////////////
 	var turnos int = int(in.GetNumTurnos())
+	var limiteEstrellas int = 5
+	var furia bool = false
 	var resultadoGolpe bool = true
 	var estrellas int = 0
-	var chopBonus int64 = 0
 	for i := 0; i < int(turnos); i++ {
 		//////////////////////////////////////////////////
 		select {
@@ -150,16 +152,19 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 			// no hay mensaje, seguimos con la iteración
 		}
 		//////////////////////////////////////////////////
-		if estrellas > 3 {
-			chopBonus += 1000
-		}
-		if estrellas > 5 {
-			resultadoGolpe = false
-			return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
+		if estrellas >= limiteEstrellas {
+			if furia {
+				resultadoGolpe = false
+				return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+			} else {
+				limiteEstrellas = 7
+				furia = true
+			}
+
 		}
 	}
 	log.Print("Fin del atraco")
-	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
 }
 
 //////////////////////////////////////////////////
@@ -198,4 +203,5 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
 	}
+
 }

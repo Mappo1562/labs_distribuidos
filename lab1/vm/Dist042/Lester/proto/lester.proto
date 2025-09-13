@@ -1,0 +1,49 @@
+// se compila con:
+// protoc --go_out=. --go-grpc_out=. .\lester.proto
+// crea la carpeta grpc-server
+
+syntax = "proto3";
+
+option go_package = "grpc-server/proto";
+package Atraco;
+
+service Prueba {
+    rpc SolicitarOferta(OperationRequest) returns (OperationResponse) {}
+    rpc AceptarOferta(Vacio) returns (Vacio) {}
+}
+
+service Estrellas {
+    rpc EmpezarMandarEstrellas(Stars) returns (Stars);
+    rpc TerminarMandarEstrellas(Stars) returns (Stars);
+}
+
+message Stars{
+    bool flag = 1;
+}
+
+message OperationRequest{
+    string solicitud_oferta = 1;
+}
+
+message OperationResponse{
+    optional string oferta = 1;
+	optional int64 ExitoTrevor = 2;
+	optional int64 ExitoFranklin = 3;
+	optional int64 riesgo = 4;
+	optional int64 botin = 5;
+}
+
+service PagoBotin{
+    rpc ConfirmarPago(Pago) returns (ConfirmacionPago) {}
+}
+
+message Pago{
+    int64 BotinTotal = 1;
+    int64 Pago = 2;
+}
+
+message ConfirmacionPago{
+    bool Confirma = 1;
+}
+
+message Vacio{}
