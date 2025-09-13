@@ -1,2 +1,2 @@
 docker-franklin:
-	sudo docker-compose -f docker-compose.franklin.yml up --build
+	sudo docker-compose -f docker-compose.yml up --build
