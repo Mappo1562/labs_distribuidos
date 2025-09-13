@@ -14,7 +14,7 @@ services:
     image: rabbitmq:3.12-management
     container_name: rabbitmq
     ports:
-      - "50070:5672"     # AMQP para tus servicios
+      - "5672:5672"     # AMQP para tus servicios
       - "15672:15672"   # interfaz de administración web
     environment:
       RABBITMQ_DEFAULT_USER: guest
