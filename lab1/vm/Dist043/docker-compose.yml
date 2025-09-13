@@ -6,3 +6,5 @@ services:
       - "50052:50052"
     environment:
       SERVER_ADDR: "dist042.inf.santiago.usm.cl:50051"
+    volumes:
+      - ./reportes:/app
