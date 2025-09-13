@@ -30,6 +30,7 @@ const (
 type server struct {
 	pb.UnimplementedPruebaServer // se define el servidor de prueba.proto
 	pb.UnimplementedEstrellasServer
+	pb.UnimplementedPagoBotinServer
 }
 
 var (
@@ -267,6 +268,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterPruebaServer(grpcServer, &server{})
 	pb.RegisterEstrellasServer(grpcServer, &server{})
+	pb.RegisterPagoBotinServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
