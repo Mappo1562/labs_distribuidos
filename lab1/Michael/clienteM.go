@@ -6,7 +6,9 @@ package main
 import (
 	pb "Michael/proto/grpc-server/proto"
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -37,6 +39,55 @@ func newClientConn(addr string) (*grpc.ClientConn, context.Context, context.Canc
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	return conn, ctx, cancel
+}
+
+func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo string, motivoFallo string) bool {
+	file, err := os.Create("Reporte.txt")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	fmt.Fprintln(file, "=========================================================")
+	fmt.Fprintln(file, "== REPORTE FINAL DE LA MISION ==")
+	fmt.Fprintln(file, "=========================================================")
+	//fmt.Fprintf(file, "Mision : Asalto al Banco # %d\n", misionID)
+
+	botinTotal := botinBase + botinExtra
+
+	pagoFranklin := botinTotal / 4
+	pagoTrevor := pagoFranklin
+	pagoLester := pagoTrevor
+
+	// Resultado según éxito o fallo
+	if exito {
+		fmt.Fprintln(file, "Resultado Global : MISION COMPLETADA CON EXITO !")
+		fmt.Fprintln(file, "--- REPARTO DEL BOTIN ---")
+		fmt.Fprintf(file, "Botin Base : $%d\n", botinBase)
+		fmt.Fprintf(file, "Botin Extra ( Habilidad de Chop ): $%d\n", botinExtra)
+		fmt.Fprintf(file, "Botin Total : $%d\n", botinTotal)
+		fmt.Fprintln(file, "------ ------------ ------------ ------------ ------------ ---")
+		fmt.Fprintf(file, "Pago a Franklin : $%d\n", pagoFranklin)
+		fmt.Fprintln(file, "Respuesta de Franklin : \"Excelente ! El pago es correcto.\"")
+		fmt.Fprintf(file, "Pago a Trevor : $%d\n", pagoTrevor)
+		fmt.Fprintln(file, "Respuesta de Trevor : \"Justo lo que esperaba !\"")
+		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $0 (resto)\n", pagoLester)
+		fmt.Fprintln(file, "Respuesta de Lester : \"Un placer hacer negocios.\"")
+		fmt.Fprintln(file, "------ ------------ ------------ ------------ ------------ ---")
+		fmt.Fprintf(file, "Saldo Final de la Operacion : $%d\n", botinTotal)
+	} else {
+		fmt.Fprintln(file, "Resultado Global : MISION FALLIDA")
+		fmt.Fprintf(file, "La misión terminó en: %s\n", faseFallo)
+		fmt.Fprintf(file, "El motivo del fallo fue: %s\n", motivoFallo)
+		fmt.Fprintf(file, "El botin perdido fue de: %d\n", botinTotal)
+	}
+
+	// Cierre
+	fmt.Fprintln(file, "=========================================================")
+
+	return true
 }
 
 /*
@@ -357,6 +408,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 
+	exitoMision := true
+
 	//Fase La negociación
 	//var ofertaValida bool = false
 	log.Printf("Dame un atraco lester, por favor")
@@ -390,12 +443,16 @@ func main() {
 
 	//Fase La Distracción
 	var mandarGolpe bool
+	botinMision := respuestaOferta.GetBotin()
 
 	if respuestaOferta.GetExitoFranklin() > respuestaOferta.GetExitoTrevor() {
 		mandarGolpe = true
 	} else {
 		mandarGolpe = false
 	}
+
+	var mensajeDistraccion string
+	var distraccionExito bool
 
 	if mandarGolpe {
 		log.Printf("Mando a franklin a la primera parte")
@@ -417,6 +474,8 @@ func main() {
 			log.Fatalf("could not greet: %v", err)
 		}
 		log.Printf("Franklin dice: %s", respuestaDistraccion.GetExitoDistraccion())
+		mensajeDistraccion = respuestaDistraccion.GetExitoDistraccion()
+		distraccionExito = respuestaDistraccion.GetExito()
 
 	} else {
 		log.Printf("Mando a trevor a la primera parte")
@@ -437,8 +496,17 @@ func main() {
 			log.Fatalf("could not greet: %v", err)
 		}
 		log.Printf("Trevor dice: %s", respuestaDistraccion.GetExitoDistraccion())
+		mensajeDistraccion = respuestaDistraccion.GetExitoDistraccion()
+		distraccionExito = respuestaDistraccion.GetExito()
 	}
 
+	if !distraccionExito {
+		exitoMision = false
+	}
+
+	if !exitoMision {
+		generarReporte(exitoMision, botinMision, 0, "Fase distracción", mensajeDistraccion)
+	}
 	//Fase El Golpe
 	if !mandarGolpe {
 		log.Printf("Mando a franklin a la segunda parte")
