@@ -110,7 +110,7 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 		fmt.Fprintf(file, "Respuesta de Franklin : \"%s\" \n", respuestaFran)
 		fmt.Fprintf(file, "Pago a Trevor : $%d\n", pagoTrevor)
 		fmt.Fprintf(file, "Respuesta de Trevor : \"%s\"  \n", respuestaTre)
-		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $0 (resto)\n", pagoLester)
+		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $%d (resto)\n", pagoLester, botinTotal%4)
 		fmt.Fprintf(file, "Respuesta de Lester : \"%s\"\n", respuestaLes)
 		fmt.Fprintf(file, "------ ------------ ------------ ------------ ------------ --- \n")
 		fmt.Fprintf(file, "Saldo Final de la Operacion : $%d\n", botinTotal)

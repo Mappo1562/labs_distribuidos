@@ -19,13 +19,6 @@ const LesterAddr = "lester:50051"
 const FranklinAddr = "franklin:50053"
 const TrevorAddr = "trevor:50054"
 
-// //////////////////////////////////////////////////////////////////////////
-// ProcesarOferta()
-// //////////////////////////////////////////////////////////////////////////
-// Esta funcion retorna un booleano, y se usa para revisar si la oferta
-// será o no aceptada por Michael
-// //////////////////////////////////////////////////////////////////////////
-
 func procesarOferta(respuesta *pb.OperationResponse) bool {
 	if respuesta.Oferta == nil || respuesta.ExitoFranklin == nil || respuesta.ExitoTrevor == nil || respuesta.Riesgo == nil || respuesta.Botin == nil {
 		return false
@@ -38,14 +31,8 @@ func procesarOferta(respuesta *pb.OperationResponse) bool {
 	return true
 }
 
-////////////////////////////////////////////////////////////////////////////
-// confirmarPago()
-////////////////////////////////////////////////////////////////////////////
-// Esta funcion retorna un booleano, y se usa para la fase 4, donde se
-// reparte el botin a cada integrante
-////////////////////////////////////////////////////////////////////////////
-
 func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) bool {
+
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect to %s: %v", nombre, err)
@@ -70,16 +57,9 @@ func confirmarPago(addr string, nombre string, botinTotal int64, pago int64) boo
 	return true
 }
 
-////////////////////////////////////////////////////////////////////////////
-// generarReporte()
-////////////////////////////////////////////////////////////////////////////
-// Esta funcion retorna un booleano, y se usa para la generación del
-// reporte, sea éxito o fracaso
-////////////////////////////////////////////////////////////////////////////
-
 func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo string, motivoFallo string, confLes bool, confFran bool, confTre bool) bool {
+	file, err := os.Create("/app/reportes/Reporte.txt")
 
-	file, err := os.Create("/reportes/Reporte.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -125,14 +105,14 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 		fmt.Fprintf(file, "Botin Base : $%d\n", botinBase)
 		fmt.Fprintf(file, "Botin Extra ( Habilidad de Chop ): $%d\n", botinExtra)
 		fmt.Fprintf(file, "Botin Total : $%d\n", botinTotal)
-		fmt.Fprintln(file, "------ ------------ ------------ ------------ ------------ ---")
+		fmt.Fprintf(file, "------ ------------ ------------ ------------ ------------ --- \n")
 		fmt.Fprintf(file, "Pago a Franklin : $%d\n", pagoFranklin)
-		fmt.Fprintf(file, "Respuesta de Franklin : \"%s\"", respuestaFran)
+		fmt.Fprintf(file, "Respuesta de Franklin : \"%s\" \n", respuestaFran)
 		fmt.Fprintf(file, "Pago a Trevor : $%d\n", pagoTrevor)
-		fmt.Fprintf(file, "Respuesta de Trevor : \"%s\"", respuestaTre)
-		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $0 (resto)\n", pagoLester)
-		fmt.Fprintf(file, "Respuesta de Lester : \"%s\"", respuestaLes)
-		fmt.Fprintln(file, "------ ------------ ------------ ------------ ------------ ---")
+		fmt.Fprintf(file, "Respuesta de Trevor : \"%s\"  \n", respuestaTre)
+		fmt.Fprintf(file, "Pago a Lester : $%d (reparto) + $%d (resto)\n", pagoLester, botinTotal%4)
+		fmt.Fprintf(file, "Respuesta de Lester : \"%s\"\n", respuestaLes)
+		fmt.Fprintf(file, "------ ------------ ------------ ------------ ------------ --- \n")
 		fmt.Fprintf(file, "Saldo Final de la Operacion : $%d\n", botinTotal)
 	} else {
 		fmt.Fprintln(file, "Resultado Global : MISION FALLIDA")
@@ -145,13 +125,6 @@ func generarReporte(exito bool, botinBase int64, botinExtra int64, faseFallo str
 
 	return true
 }
-
-////////////////////////////////////////////////////////////////////////////
-// activar_estrellas()
-////////////////////////////////////////////////////////////////////////////
-// Esta funcion esta hecha para activar a Lester y que comienze a mandar
-// estrellas al involucrado en la fase 3, se llamará en una gorutine
-////////////////////////////////////////////////////////////////////////////
 
 func activar_estrellas() {
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -171,15 +144,9 @@ func activar_estrellas() {
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////
-// main()
-////////////////////////////////////////////////////////////////////////////
-// Esta funcion orquesta todo el proceso del laboratorio, desde la fase 1
-// hasta la 4
-////////////////////////////////////////////////////////////////////////////
-
 func main() {
-	//Fase 1
+	log.Printf("Iniciando...")
+	// Fase 1
 	time.Sleep(time.Second * 3)
 
 	conn, err := grpc.NewClient(LesterAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -343,7 +310,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Franklin dice: %v", respuestaGolpe.GetExitoGolpe())
+		if respuestaGolpe.GetExitoGolpe() {
+			log.Printf("Franklin trabajo bien, ganamos")
+		} else {
+			log.Printf("Franklin fracaso, perdimos")
+		}
 		exitoGolpe = respuestaGolpe.GetExitoGolpe()
 		botinAgregado = respuestaGolpe.GetBotinExtra()
 
@@ -394,7 +365,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not greet: %v", err)
 		}
-		log.Printf("Trevor dice: %v", respuestaGolpe.GetExitoGolpe())
+		if respuestaGolpe.GetExitoGolpe() {
+			log.Printf("Trevor trabajo bien, ganamos")
+		} else {
+			log.Printf("Trevor fracaso, perdimos")
+		}
 		exitoGolpe = respuestaGolpe.GetExitoGolpe()
 		botinAgregado = respuestaGolpe.GetBotinExtra()
 	}
