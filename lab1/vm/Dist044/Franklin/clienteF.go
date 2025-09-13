@@ -19,7 +19,7 @@ import (
 const (
 	MichaelAddr = "dist043.inf.santiago.usm.cl:50052"
 	port        = ":50053"
-	Rabbit      = "dist043.inf.santiago.usm.cl:5672"
+	Rabbit      = "dist042.inf.santiago.usm.cl:5672"
 )
 
 type server struct {
