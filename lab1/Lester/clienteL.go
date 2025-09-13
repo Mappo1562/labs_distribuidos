@@ -218,7 +218,6 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 		}
 		mu.Unlock()
 		if i%frecuencia == 0 && i != 0 {
-			// log.Printf(" i: '%v'\n", i)
 			body := "Subiste 1 estrella, ten mas cuidado"
 			err = ch.PublishWithContext(ctx,
 				"",     // exchange
@@ -232,7 +231,6 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 			if err != nil {
 				log.Fatalf("No se pudo publicar el mensaje: %v", err)
 			}
-			log.Printf(" [°]  Enviado '%s'\n", body)
 		}
 		i = i + 1
 	}
@@ -250,12 +248,15 @@ func (s *server) EmpezarMandarEstrellas(ctx context.Context, in *pb.Stars) (*pb.
 //												//
 //////////////////////////////////////////////////
 
-func recibir_pago() {
-
-}
-
-func verificar_pago() {
-
+func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.ConfirmacionPago, error) {
+	var botinTotal float64 = float64(in.BotinTotal)
+	var pagoRecibido float64 = float64(in.Pago)
+	var pagoReal float64 = float64(botinTotal / 4)
+	if pagoRecibido == pagoReal {
+		return &pb.ConfirmacionPago{Confirma: true}, nil
+	} else {
+		return &pb.ConfirmacionPago{Confirma: false}, nil
+	}
 }
 
 func main() {

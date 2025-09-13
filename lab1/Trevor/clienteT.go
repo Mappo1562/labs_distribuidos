@@ -141,12 +141,11 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	var resultadoGolpe bool = true
 	var estrellas int = 0
 	for i := 0; i < int(turnos); i++ {
-		log.Print(i)
 		//////////////////////////////////////////////////
 		select {
 		case d := <-msgs:
 			if len(d.Body) > 0 {
-				log.Printf("respuesta obtenida: %s, con i = %v", d.Body, i)
+				log.Printf("respuesta obtenida: %s", d.Body)
 				estrellas++
 			}
 		default:
@@ -165,7 +164,7 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 		}
 	}
 	log.Print("Fin")
-	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 10}, nil
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
 }
 
 //////////////////////////////////////////////////

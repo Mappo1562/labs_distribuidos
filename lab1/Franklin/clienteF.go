@@ -74,7 +74,6 @@ func FracasoDistraccion() bool {
 //												//
 //////////////////////////////////////////////////
 
-// Conexion RabbitMQ
 func connectWithRetry(uri string) (*amqp.Connection, error) {
 	var conn *amqp.Connection
 	var err error
@@ -135,32 +134,31 @@ func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.Resul
 	}
 	///////////////
 	var turnos int = int(in.GetNumTurnos())
-	var limiteEstrellas int = 5
-	var chopBonus int64 = 0
 	var resultadoGolpe bool = true
 	var estrellas int = 0
+	var chopBonus int64 = 0
 	for i := 0; i < int(turnos); i++ {
 		//////////////////////////////////////////////////
 		select {
 		case d := <-msgs:
 			if len(d.Body) > 0 {
-				log.Printf("respuesta obtenida: %s \n", d.Body)
+				log.Printf("respuesta obtenida: %s", d.Body)
 				estrellas++
 			}
 		default:
 			// no hay mensaje, seguimos con la iteración
 		}
 		//////////////////////////////////////////////////
-
-		if estrellas > limiteEstrellas {
-			resultadoGolpe = false
-			return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
-		}
 		if estrellas > 3 {
 			chopBonus += 1000
 		}
+		if estrellas > 5 {
+			resultadoGolpe = false
+			return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
+		}
 	}
-	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: 0}, nil
+	log.Print("Fin")
+	return &pb.ResultadoGolpe{ExitoGolpe: resultadoGolpe, BotinExtra: chopBonus}, nil
 }
 
 //////////////////////////////////////////////////
