@@ -41,7 +41,7 @@ type server struct {
 
 func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoDistraccion, error) {
 	var turnos int64 = in.GetNumTurnos()
-	log.Printf("Tengo que trabajar %v", turnos)
+	log.Printf("Tengo que distraer durante %v turnos", turnos)
 	for i := 0; i < int(turnos); i++ {
 		if i == int(turnos/2) {
 			var exito bool = FracasoDistraccion()
@@ -51,6 +51,7 @@ func (s *server) InicioDistraccion(ctx context.Context, in *pb.Instruccion) (*pb
 			}
 		}
 	}
+	log.Printf("Termine la distraccion")
 	return &pb.ResultadoDistraccion{
 		ExitoDistraccion: "Consegui terminar, sigue con la siguiente fase", Exito: true}, nil
 }
@@ -95,6 +96,7 @@ func connectWithRetry(uri string) (*amqp.Connection, error) {
 }
 
 func (s *server) InicioGolpe(ctx context.Context, in *pb.Instruccion) (*pb.ResultadoGolpe, error) {
+	log.Print("Iniciare el atraco")
 	amqpURI := "amqp://guest:guest@" + Rabbit + "/"
 
 	conn, err := connectWithRetry(amqpURI)
