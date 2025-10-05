@@ -1,0 +1,34 @@
+// se compila con:
+// protoc --go_out=. --go-grpc_out=. .\michael.proto
+// crea la carpeta grpc-server
+
+syntax = "proto3";
+
+option go_package = "grpc-server/proto";
+package CyberDay;
+
+service  Broker{
+    rpc GenerarOferta(Oferta) returns (Bool) {}
+    rpc Registrarse(Registro) returns (Bool) {}
+}
+
+message Registro{
+    string nombre = 1;
+    string rol = 2;
+}
+
+message Oferta{
+    string oferta_id = 1;
+    string tienda = 2;
+	string categoria = 3;
+	string producto = 4;
+	int64 precio = 5;
+	int64 stock = 6;
+    string fecha = 7;
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+message Vacio{}
