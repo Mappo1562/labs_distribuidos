@@ -23,17 +23,17 @@ import (
 	pb "en/alguna/parte"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
-	"strings"
 	"sync"
-	"time"
 
 	"google.golang.org/grpc"
 )
 
 const (
-	port = ":50051"
+	port  = ":50050"
+	addn1 = "localhost:50051"
+	addn2 = "localhost:50052"
+	addn3 = "localhost:50053"
 )
 
 type server struct {
@@ -48,77 +48,54 @@ var (
 func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
 	_, ok := registrados[in.nombre]
 	if ok {
-		log.Printf("Entidad ya registrada, error.")
+		log.Printf("Entidad %d ya registrada, error.", in.nombre)
 		err := fmt.Errorf("No se pudo registrar la entidad en el broker, ya estaba registrada.\n")
 		return &pb.Bool{flag: false}, err
 	}
 	registrados[in.Nombre] = in.rol
+	log.Printf("Entidad %d registrada correctamente.", in.nombre)
 	return &pb.Bool{Value: true}, nil
 }
 
-// identidad y oferta son un ID
-func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
-	if contador%3 == 0 && contador != 0 {
-		log.Printf("voy a buscar, espera...")
-		time.Sleep(10 * time.Second)
+func GenerarOfertaHelp(in *pb.Oferta, dir string) int {
+	conn, err := grpc.Dial(dir, grpc.WithInsecure())
+	if err != nil {
+		log.Printf("[°] El cliente no se pudo conectar con %v \nerror: %v", dir, err)
+		return false, err
 	}
-	if rand.Float64() > 0.9 {
-		msg := "No hay ofertas actualmente... \n"
-		log.Printf("%s", msg)
-		return &pb.OperationResponse{Oferta: &msg}, nil
-	}
-	contador += 1
-
-	var (
-		msg           string
-		exitoTrevor   *int64
-		exitoFranklin *int64
-		botin         *int64
-	)
-	if scanner.Scan() {
-		fmt.Println("Propuesta obtenida:", scanner.Text())
-		arr := strings.Split(scanner.Text(), ",")
-		botin = parseIntOpt(arr[0])
-		exitoFranklin = parseIntOpt(arr[1])
-		exitoTrevor = parseIntOpt(arr[2])
-		riesgo = parseIntOpt(arr[3])
+	defer conn.Close()
+	client := pb.NewNodeServiceClient(conn)
+	response, err := client.GuardarOferta(context.Background(), in)
+	if response.Flag {
+		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
+		return 1
 	} else {
-		e := scanner.Err()
-		if e != nil {
-			fmt.Println("Error al leer el archivo:", e)
-			msg = "Error al buscar atracos"
-		} else {
-			fmt.Println("Fin del archivo")
-			msg = "No quedan atracos disponibles"
-		}
-		exitoTrevor = nil
-		exitoFranklin = nil
-		riesgo = nil
-		botin = nil
+		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
+		return 0
 	}
-	// extras :v
-	lugares := [5]string{"Liberty city", "Los santos", "San Andreas", "Vice City", "Cayo Perico"}
-	objetivo := [4]string{"un banco", "una joyeria", "una mansión", "un barco"}
-
-	log.Printf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], formatInt64(botin), formatInt64(riesgo), formatInt64(exitoTrevor), formatInt64(exitoFranklin))
-	msg = fmt.Sprintf("Encontré una opción, es en %v y se trata de %v, el botín esperado sería %v, pero hay un riesgo asociado de %v, si va trevor las probabilidades de exito son %v y si va franklin son %v \n", lugares[rand.Intn(5)], objetivo[rand.Intn(4)], formatInt64(botin), formatInt64(riesgo), formatInt64(exitoTrevor), formatInt64(exitoFranklin))
-
-	return &pb.OperationResponse{Oferta: &msg, ExitoTrevor: exitoTrevor, ExitoFranklin: exitoFranklin, Riesgo: riesgo, Botin: botin}, nil
 }
 
-func (s *server) ConfirmarPago(ctx context.Context, in *pb.Pago) (*pb.ConfirmacionPago, error) {
-	var botinTotal int64 = in.BotinTotal
-	var pagoRecibido int64 = in.Pago
-	var pagoReal int64 = (botinTotal / int64(4)) + (botinTotal % int64(4))
-	if pagoRecibido == pagoReal {
-		return &pb.ConfirmacionPago{Confirma: true}, nil
-	} else {
-		return &pb.ConfirmacionPago{Confirma: false}, nil
+func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
+	// conexión nodo 1
+	f1 := GenerarOfertaHelp(in, addn1)
+
+	// conexión nodo 2
+	f2 := GenerarOfertaHelp(in, addn2)
+
+	// conexión nodo 3
+	f3 := GenerarOfertaHelp(in, addn3)
+
+	if f1+f2+f3 > 1 {
+		log.Printf("Oferta guardada correctamente por dos o mas nodos")
+		return &pb.Bool{Flag: true}, nil
 	}
+	err := fmt.Errorf("No se pudo guardar la oferta exitosamente\n")
+	log.Printf("No se pudo guardar correctamente la oferta por mas de un nodo \nerror: %v", err)
+	return &pb.Bool{Flag: false}, nil
 }
 
 func main() {
-	productores_registrados = make(map[string]string)
+	registrados = make(map[string]string)
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -126,9 +103,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterPruebaServer(grpcServer, &server{})
-	pb.RegisterEstrellasServer(grpcServer, &server{})
-	pb.RegisterPagoBotinServer(grpcServer, &server{})
+	pb.RegisterBrokerServer(grpcServer, &server{})
 	fmt.Println("server en ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)

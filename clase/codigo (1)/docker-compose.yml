@@ -1,0 +1,17 @@
+services:
+  server:
+    build: .    
+    volumes:
+      - ./server.go:/app/server.go
+    ports:
+      - "8080:8080"
+    command: ["go", "run", "server.go"]    
+    
+  client:
+    build:
+      context: .
+    volumes:
+      - ./client.go:/app/client.go
+    depends_on:
+      - server
+    command: ["go", "run", "client.go"]    

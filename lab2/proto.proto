@@ -12,6 +12,10 @@ service  Broker{
     rpc Registrarse(Registro) returns (Bool) {}
 }
 
+service  NodeService{
+    rpc GuardarOferta(Oferta) returns (Bool) {}
+}
+
 message Registro{
     string nombre = 1;
     string rol = 2;
