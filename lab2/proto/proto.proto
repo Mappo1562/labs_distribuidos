@@ -1,11 +1,11 @@
-// se compila con:
-// protoc --go_out=. --go-grpc_out=. .\michael.proto
-// crea la carpeta grpc-server
+// se compila con desde /lab2:
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
 
 syntax = "proto3";
 
-option go_package = "grpc-server/proto";
 package CyberDay;
+
+option go_package = "/proto";
 
 service  Broker{
     rpc GenerarOferta(Oferta) returns (Bool) {}
@@ -18,7 +18,7 @@ service  NodeService{
 
 message Registro{
     string nombre = 1;
-    string rol = 2;
+    int32 rol = 2; //Tienda = 0, Consumidor = 1
 }
 
 message Oferta{

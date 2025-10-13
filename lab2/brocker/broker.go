@@ -20,8 +20,8 @@ package main
 // go mod tidy
 import (
 	"context"
-	pb "en/alguna/parte"
 	"fmt"
+	pb "lab2/proto"
 	"log"
 	"net"
 	"sync"
@@ -37,31 +37,31 @@ const (
 )
 
 type server struct {
-	pb.UnimplementedBroker
+	pb.UnimplementedBrokerServer
 }
 
 var (
 	mu          sync.Mutex
-	registrados map[string]string // queria agregarle contraseña pero pisco piscola wea, el segundo valor es el rol nomas
+	registrados map[string]int32 // queria agregarle contraseña pero pisco piscola wea, el segundo valor es el rol nomas
 )
 
 func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
-	_, ok := registrados[in.nombre]
+	_, ok := registrados[in.Nombre]
 	if ok {
-		log.Printf("Entidad %d ya registrada, error.", in.nombre)
+		log.Printf("Entidad %s ya registrada, error.", in.Nombre)
 		err := fmt.Errorf("No se pudo registrar la entidad en el broker, ya estaba registrada.\n")
-		return &pb.Bool{flag: false}, err
+		return &pb.Bool{Flag: false}, err
 	}
-	registrados[in.Nombre] = in.rol
-	log.Printf("Entidad %d registrada correctamente.", in.nombre)
-	return &pb.Bool{Value: true}, nil
+	registrados[in.Nombre] = in.Rol
+	log.Printf("Entidad %s registrada correctamente.", in.Nombre)
+	return &pb.Bool{Flag: true}, nil
 }
 
 func GenerarOfertaHelp(in *pb.Oferta, dir string) int {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] El cliente no se pudo conectar con %v \nerror: %v", dir, err)
-		return false, err
+		return 0
 	}
 	defer conn.Close()
 	client := pb.NewNodeServiceClient(conn)
@@ -95,7 +95,7 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 }
 
 func main() {
-	registrados = make(map[string]string)
+	registrados = make(map[string]int32)
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

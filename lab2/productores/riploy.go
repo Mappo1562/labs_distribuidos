@@ -2,40 +2,60 @@ package main
 
 import (
 	"context"
-	pb "example/example_goproto/pb"
 	"fmt"
+	pb "lab2/proto"
 	"log"
 	"time"
 
 	"google.golang.org/grpc"
 )
 
-func cordinationProcess(client pb.CordinationServiceClient, idNode int32) {
-	var value int32 = 123
-	response, err := client.Cordination(context.Background(), &pb.Request{Message: value})
-	fmt.Println("[°] Mensaje enviado.")
+func main() {
+	// Conectarse al broker
+	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
 	if err != nil {
-		fmt.Println("[°] El cliente falló ", err)
-		return
-	}
-	fmt.Println("[°] Mensaje recibido del servidor:", response.Message)
-
-}
-
-func calculateValue(value1 int32, value2 int32) {
-	conn, err := grpc.Dial("localhost:50100", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("[°] El cliente no se pudo conectar %v", err)
-		return
+		log.Fatalf("No se pudo conectar: %v", err)
 	}
 	defer conn.Close()
-	client := pb.NewCordinationServiceClient(conn)
-	cordinationProcess(client, 1)
-}
 
-func main() {
-	time.Sleep(5 * time.Second)
-	fmt.Println("[°] Proceso operativo ")
-	calculateValue(5, 8)
+	client := pb.NewBrokerClient(conn)
 
+	// Registro del productor
+	registro := &pb.Registro{
+		Nombre: "Riploy",
+		Rol:    0, // 0 = Tienda
+	}
+
+	resp, err := client.Registrarse(context.Background(), registro)
+	if err != nil {
+		log.Fatalf("Error al registrarse: %v", err)
+	}
+	if resp.Flag {
+		fmt.Println("Riploy registrado en el broker")
+	} else {
+		fmt.Println("Falló el registro")
+		return
+	}
+
+	// Enviar oferta de ejemplo
+	oferta := &pb.Oferta{
+		OfertaId:  "123-uuid",
+		Tienda:    "Riploy",
+		Categoria: "Electronica",
+		Producto:  "Laptop X",
+		Precio:    499990,
+		Stock:     10,
+		Fecha:     time.Now().Format("2006-01-02 15:04:05"),
+	}
+
+	respOferta, err := client.GenerarOferta(context.Background(), oferta)
+	if err != nil {
+		log.Fatalf("Error al enviar oferta: %v", err)
+	}
+
+	if respOferta.Flag {
+		fmt.Println("[✓] Oferta enviada correctamente")
+	} else {
+		fmt.Println("[✗] Broker rechazó la oferta")
+	}
 }
