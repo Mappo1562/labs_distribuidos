@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Conectarse al broker
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("broker:50050", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("No se pudo conectar: %v", err)
 	}

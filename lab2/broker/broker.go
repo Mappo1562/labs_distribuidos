@@ -76,22 +76,24 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) int {
 }
 
 func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
-	// conexión nodo 1
-	f1 := GenerarOfertaHelp(in, addn1)
+	flag := true
+	for flag {
+		// conexión nodo 1
+		f1 := GenerarOfertaHelp(in, addn1)
 
-	// conexión nodo 2
-	f2 := GenerarOfertaHelp(in, addn2)
+		// conexión nodo 2
+		f2 := GenerarOfertaHelp(in, addn2)
 
-	// conexión nodo 3
-	f3 := GenerarOfertaHelp(in, addn3)
+		// conexión nodo 3
+		f3 := GenerarOfertaHelp(in, addn3)
 
-	if f1+f2+f3 > 1 {
-		log.Printf("Oferta guardada correctamente por dos o mas nodos")
-		return &pb.Bool{Flag: true}, nil
+		if f1+f2+f3 > 1 {
+			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
+			flag = false
+		}
+		log.Printf("No se pudo guardar correctamente la oferta proveniente de %v\\Intentando nuevamente", in.Tienda)
 	}
-	err := fmt.Errorf("No se pudo guardar la oferta exitosamente\n")
-	log.Printf("No se pudo guardar correctamente la oferta por mas de un nodo \nerror: %v", err)
-	return &pb.Bool{Flag: false}, nil
+	return &pb.Bool{Flag: true}, nil
 }
 
 func main() {
@@ -104,7 +106,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterBrokerServer(grpcServer, &server{})
-	fmt.Println("server en ", port)
+	fmt.Println("Broker activo en el puerto ", port)
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
 	}

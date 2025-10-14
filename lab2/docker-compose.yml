@@ -1,0 +1,21 @@
+
+services:
+  broker:
+    build: ./broker
+    container_name: broker
+    ports:
+      - "50050:50050"
+    networks:
+      - grpc-net
+
+  productores:
+    build: ./productores
+    container_name: productores
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
+networks:
+  grpc-net:
+    driver: bridge
