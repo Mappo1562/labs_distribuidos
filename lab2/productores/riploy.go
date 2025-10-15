@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	pb "lab2/proto"
 	"log"
+	pb "productores/proto"
 	"time"
 
 	"google.golang.org/grpc"

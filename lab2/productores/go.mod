@@ -1,4 +1,4 @@
-module lab2
+module productores
 
 go 1.25.0
 

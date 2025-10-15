@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN go run riploy 
+RUN go mod tidy
+RUN go build -o riploy .
 
-CMD ["./riploy"]
+
+CMD [ "./riploy" ]

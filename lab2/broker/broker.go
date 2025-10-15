@@ -19,9 +19,9 @@ package main
 // go mod init <nombre_carpeta_cliente>
 // go mod tidy
 import (
+	pb "broker/proto"
 	"context"
 	"fmt"
-	pb "lab2/proto"
 	"log"
 	"net"
 	"sync"
