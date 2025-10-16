@@ -1,0 +1,23 @@
+FROM golang:latest
+
+# Carpeta de trabajo
+WORKDIR /app
+
+# Copiar dependencias primero
+COPY . .
+
+RUN go mod tidy
+RUN go build -o Nodo1 .
+
+# Carpeta persistente para datos
+ENV DATA_PATH=/data/data.jsonl
+VOLUME ["/data"]
+
+# Variables de entorno (definidas al correr el contenedor)
+ENV NODE_ID=DB1
+ENV PORT=50051
+
+EXPOSE 50051
+
+# Ejecutar el nodo
+CMD ["./Nodo1"]

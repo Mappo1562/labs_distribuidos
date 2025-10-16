@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package CyberDay;
+
+option go_package = "/proto";
+
+
+message Oferta{
+  string oferta_id = 1;
+  string tienda = 2;
+	string categoria = 3;
+	string producto = 4;
+	int64 precio = 5;
+	int64 stock = 6;
+  string fecha = 7;
+}
+
+message StoreRequest {
+  Oferta oferta = 1;
+}
+
+message StoreResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message GetRequest {
+  string oferta_id = 1;
+}
+
+message GetResponse {
+  Oferta oferta = 1;
+  bool found = 2;
+}
+
+message RangeSinceRequest {
+  int64 since_unix = 1;
+}
+
+message RangeSinceResponse {
+  repeated Oferta Ofertas = 1;
+}
+
+service DBNode {
+  rpc Store(StoreRequest) returns (StoreResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse); // para resincronizar
+}

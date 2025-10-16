@@ -1,0 +1,14 @@
+services:
+  db1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: db1
+    ports:
+      - "50051:50051"
+    environment:
+      - NODE_ID=DB1
+      - PORT=50051
+      - DATA_PATH=/data/data.jsonl
+    volumes:
+      - ./data:/data
