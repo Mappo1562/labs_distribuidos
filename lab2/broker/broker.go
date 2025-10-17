@@ -25,6 +25,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -41,8 +42,12 @@ type server struct {
 }
 
 var (
-	mu          sync.Mutex
-	registrados map[string]int32 // queria agregarle contraseña pero pisco piscola wea, el segundo valor es el rol nomas
+	registrados map[string]int32 // map[nombre] = rol
+	mapeoRoles  = map[int]string{
+		0: "Productor",
+		1: "Consumidor",
+		2: "nodo BD",
+	}
 )
 
 func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
@@ -57,44 +62,165 @@ func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, er
 	return &pb.Bool{Flag: true}, nil
 }
 
-func GenerarOfertaHelp(in *pb.Oferta, dir string) int {
+func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
-		log.Printf("[°] El cliente no se pudo conectar con %v \nerror: %v", dir, err)
-		return 0
+		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+		return false
 	}
 	defer conn.Close()
 	client := pb.NewNodeServiceClient(conn)
-	response, err := client.GuardarOferta(context.Background(), in)
-	if response.Flag {
-		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
-		return 1
-	} else {
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	response, err := client.GuardarOferta(ctx, in)
+	if err != nil {
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
-		return 0
+		return false
 	}
+	if response != nil && response.Flag {
+		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
+		return true
+	}
+
+	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
+	return false
 }
 
 func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
 	flag := true
+	var mugenof sync.Mutex
 	for flag {
-		// conexión nodo 1
-		f1 := GenerarOfertaHelp(in, addn1)
+		var wg sync.WaitGroup
+		c := 0
+		wg.Add(3)
 
+		// conexión nodo 1
+		go func() {
+			defer wg.Done()
+			if GenerarOfertaHelp(in, addn1) {
+				mugenof.Lock()
+				c++
+				mugenof.Unlock()
+			}
+		}()
 		// conexión nodo 2
-		f2 := GenerarOfertaHelp(in, addn2)
+		go func() {
+			defer wg.Done()
+			if GenerarOfertaHelp(in, addn2) {
+				mugenof.Lock()
+				c++
+				mugenof.Unlock()
+			}
+		}()
 
 		// conexión nodo 3
-		f3 := GenerarOfertaHelp(in, addn3)
+		go func() {
+			defer wg.Done()
+			if GenerarOfertaHelp(in, addn3) {
+				mugenof.Lock()
+				c++
+				mugenof.Unlock()
+			}
+		}()
 
-		if f1+f2+f3 > 1 {
+		wg.Wait()
+
+		if c > 1 {
 			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
 			flag = false
+		} else {
+			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
 		}
-		log.Printf("No se pudo guardar correctamente la oferta proveniente de %v\\Intentando nuevamente", in.Tienda)
 	}
 	return &pb.Bool{Flag: true}, nil
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+Hay q buscar alguna forma de ver todas las categorias de los productos
+se me ocurre un arreglo;
+var categorias = []string{categoria, tienda, precio maximo}
+*/
+
+func GenerarConsultaHelp(in *pb.Oferta, dir string) bool {
+	conn, err := grpc.Dial(dir, grpc.WithInsecure())
+	if err != nil {
+		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+		return false
+	}
+	defer conn.Close()
+	client := pb.NewNodeServiceClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	response, err := client.SolicitarOferta(ctx, in)
+	if err != nil {
+		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
+		return false
+	}
+	if response != nil && response.Flag {
+		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
+		return true
+	}
+
+	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
+	return false
+}
+
+func (s *server) GenerarConsulta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
+	flag := true
+	var mugenof sync.Mutex
+	for flag {
+		var wg sync.WaitGroup
+		c := 0
+		wg.Add(3)
+
+		// conexión nodo 1
+		go func() {
+			defer wg.Done()
+			if GenerarConsultaHelp(in, addn1) {
+				mugenof.Lock()
+				c++
+				mugenof.Unlock()
+			}
+		}()
+		// conexión nodo 2
+		go func() {
+			defer wg.Done()
+			if GenerarConsultaHelp(in, addn2) {
+				mugenof.Lock()
+				c++
+				mugenof.Unlock()
+			}
+		}()
+
+		// conexión nodo 3
+		go func() {
+			defer wg.Done()
+			if GenerarConsultaHelp(in, addn3) {
+				mugenof.Lock()
+				c++
+				mugenof.Unlock()
+			}
+		}()
+
+		wg.Wait()
+
+		if c > 1 {
+			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
+			flag = false
+		} else {
+			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
+		}
+	}
+	return &pb.Bool{Flag: true}, nil
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
 
 func main() {
 	registrados = make(map[string]int32)
