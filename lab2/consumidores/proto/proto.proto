@@ -36,3 +36,7 @@ message Bool{
 }
 
 message Vacio{}
+
+service Consumidor {
+    rpc NotificarOferta(Oferta) returns (Bool);
+}
