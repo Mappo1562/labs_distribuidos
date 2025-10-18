@@ -11,11 +11,36 @@ services:
   riploy:
     build: ./productores
     container_name: riploy
+    environment:
+      - NOMBRE_TIENDA=Riploy
+      - CATALOGO=catalogos/riploy_catalogo.csv
     depends_on:
       - broker
     networks:
       - grpc-net
   
+  falabellox:
+    build: ./productores
+    container_name: falabellox
+    environment:
+      - NOMBRE_TIENDA=Falabellox
+      - CATALOGO=catalogos/falabellox_catalogo.csv
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
+  parisio:
+    build: ./productores
+    container_name: parisio
+    environment:
+      - NOMBRE_TIENDA=Parisio
+      - CATALOGO=catalogos/parisio_catalogo.csv
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
   db1:
     build: ./db/Nodo1
     container_name: db1

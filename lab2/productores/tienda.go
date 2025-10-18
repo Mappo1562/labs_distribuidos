@@ -25,6 +25,7 @@ type Producto struct {
 }
 
 var catalogo []Producto
+var nombreTienda string
 
 func leerCatalogo(path string) ([]Producto, error) {
 
@@ -139,11 +140,17 @@ func generarOfertaAleatoria() *pb.Oferta {
 
 func main() {
 
+	nombreTienda = os.Getenv("NOMBRE_TIENDA")
+	path := os.Getenv("CATALOGO")
+
+	if nombreTienda == "" || path == "" {
+		log.Fatal("Debes definir NOMBRE_TIENDA y CATALOGO como variables de entorno en docker-compose.yml")
+	}
 	var err error
-	catalogo, err = leerCatalogo("catalogos/riploy_catalogo.csv")
+	catalogo, err = leerCatalogo(path)
 
 	if err != nil {
-		log.Fatalf("Error leyendo el catalogo: %v", err)
+		log.Fatalf("Error leyendo el catalogo de la tienda %s: %v", nombreTienda, err)
 	}
 
 	// Conectarse al broker
@@ -160,7 +167,7 @@ func main() {
 	defer cancel()
 	// Registro del productor
 	registro := &pb.Registro{
-		Nombre: "Riploy",
+		Nombre: nombreTienda,
 		Rol:    0, // 0 = Tienda
 	}
 
@@ -169,25 +176,30 @@ func main() {
 		log.Fatalf("Error al registrarse: %v", err)
 	}
 	if resp.Flag {
-		fmt.Println("Riploy registrado en el broker")
+		fmt.Printf("%s registrado en el broker", nombreTienda)
 	} else {
 		fmt.Println("Falló el registro")
 		return
 	}
 
-	oferta := generarOfertaAleatoria()
-	if oferta == nil {
-		log.Println("No se pudo generar oferta")
-	}
+	for {
+		oferta := generarOfertaAleatoria()
+		if oferta == nil {
+			log.Printf("%s no tiene más stock", nombreTienda)
+			break
+		}
 
-	respOferta, err := client.GenerarOferta(context.Background(), oferta)
-	if err != nil {
-		log.Fatalf("Error al enviar oferta: %v", err)
-	}
+		respOferta, err := client.GenerarOferta(context.Background(), oferta)
+		if err != nil {
+			log.Fatalf("Error al enviar oferta: %v", err)
+		}
 
-	if respOferta.Flag {
-		fmt.Println("Oferta enviada correctamente")
-	} else {
-		fmt.Println("Broker rechazó la oferta")
+		if respOferta.Flag {
+			fmt.Println("Oferta enviada correctamente")
+		} else {
+			fmt.Println("Broker rechazó la oferta")
+		}
+
+		time.Sleep(time.Duration(rand.Intn(3)+1) * time.Second)
 	}
 }
