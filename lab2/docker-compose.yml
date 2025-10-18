@@ -34,7 +34,7 @@ services:
     build: ./db/Nodo2
     container_name: db2
     ports:
-      - "50052:50051"
+      - "50052:50052"
     environment:
       - NODE_ID=DB2
       - PORT=50051
@@ -48,7 +48,7 @@ services:
     build: ./db/Nodo3
     container_name: db3
     ports:
-      - "50053:50051"
+      - "50053:50053"
     environment:
       - NODE_ID=DB3
       - PORT=50051

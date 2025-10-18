@@ -35,9 +35,9 @@ import (
 
 const (
 	port  = ":50050"
-	addn1 = "localhost:50051"
-	addn2 = "localhost:50052"
-	addn3 = "localhost:50053"
+	addn1 = "db1:50051"
+	addn2 = "db2:50052"
+	addn3 = "db3:50053"
 )
 
 type server struct {
@@ -81,7 +81,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string, now string) bool {
 		return false
 	}
 	defer conn.Close()
-	client := pb.NewNodeServiceClient(conn)
+	client := pb.NewDBNodeClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -95,13 +95,16 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string, now string) bool {
 		Stock:     in.Stock,
 		Fecha:     now,
 	}
+	req := &pb.StoreRequest{
+		Oferta: oferta,
+	}
 
-	response, err := client.GuardarOferta(ctx, oferta)
+	response, err := client.Store(ctx, req)
 	if err != nil {
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
 		return false
 	}
-	if response != nil && response.Flag {
+	if response != nil && response.Ok {
 		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
 		return true
 	}
@@ -118,33 +121,34 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 		log.Printf("La tienda %v no está registrada en el broker. Oferta rechazada.", in.Tienda)
 		return &pb.Bool{Flag: false}, nil
 	}
-
+	log.Printf("Guardare una oferta para la tienda %v", in.Tienda)
 	publicado := [3]int{0, 0, 0}
 	now := time.Now().Format("02 15:04:05.000")
 	for flag {
 		var wg sync.WaitGroup
-		wg.Add(3 - publicado[0] - publicado[1] - publicado[2])
 
-		i := 0
-		for i < 3 {
+		for i := 0; i < 3; i++ {
 			mugenof.Lock()
-			if publicado[i] == 0 {
-				go func() {
+			pendiente := (publicado[i] == 0)
+			mugenof.Unlock()
+			if pendiente {
+				wg.Add(1)
+				idx := i
+				go func(idx int) {
 					defer wg.Done()
-					if GenerarOfertaHelp(in, AddBD[i], now) {
+					if GenerarOfertaHelp(in, AddBD[idx], now) {
 						mugenof.Lock()
-						publicado[i] = 1
+						publicado[idx] = 1
 						mugenof.Unlock()
 					}
-				}()
+				}(idx)
 			}
-			mugenof.Unlock()
-			i++
 		}
 
 		wg.Wait()
 
-		if publicado[0]+publicado[1]+publicado[2] > 1 {
+		sum := publicado[0] + publicado[1] + publicado[2]
+		if sum > 1 {
 			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
 			flag = false
 		} else {

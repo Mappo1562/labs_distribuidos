@@ -106,7 +106,7 @@ func (s *DBServer) RangeSince(ctx context.Context, req *pb.RangeSinceRequest) (*
 }
 
 func main() {
-	port := flag.String("port", "50051", "port")
+	port := flag.String("port", "50053", "port")
 	data := flag.String("data", os.Getenv("DATA_PATH"), "data file") // <--- lee la variable del contenedor
 	flag.Parse()
 
