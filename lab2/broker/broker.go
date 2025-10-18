@@ -91,43 +91,61 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
 	flag := true
 	var mugenof sync.Mutex
+	rol, ok := registrados[in.Tienda]
+	if !ok || rol != 0 {
+		log.Printf("La tienda %v no está registrada en el broker. Oferta rechazada.", in.Tienda)
+		return &pb.Bool{Flag: false}, nil
+	}
+
+	publicado := [3]int{0, 0, 0}
 	for flag {
 		var wg sync.WaitGroup
-		c := 0
 		wg.Add(3)
 
 		// conexión nodo 1
-		go func() {
-			defer wg.Done()
-			if GenerarOfertaHelp(in, addn1) {
-				mugenof.Lock()
-				c++
-				mugenof.Unlock()
-			}
-		}()
+		mugenof.Lock()
+		if publicado[0] == 0 {
+			go func() {
+				defer wg.Done()
+				if GenerarOfertaHelp(in, addn1) {
+					mugenof.Lock()
+					publicado[0] = 1
+					mugenof.Unlock()
+				}
+			}()
+		}
+		mugenof.Unlock()
+
 		// conexión nodo 2
-		go func() {
-			defer wg.Done()
-			if GenerarOfertaHelp(in, addn2) {
-				mugenof.Lock()
-				c++
-				mugenof.Unlock()
-			}
-		}()
+		mugenof.Lock()
+		if publicado[1] == 0 {
+			go func() {
+				defer wg.Done()
+				if GenerarOfertaHelp(in, addn2) {
+					mugenof.Lock()
+					publicado[1] = 1
+					mugenof.Unlock()
+				}
+			}()
+		}
+		mugenof.Unlock()
 
 		// conexión nodo 3
-		go func() {
-			defer wg.Done()
-			if GenerarOfertaHelp(in, addn3) {
-				mugenof.Lock()
-				c++
-				mugenof.Unlock()
-			}
-		}()
-
+		mugenof.Lock()
+		if publicado[2] == 0 {
+			go func() {
+				defer wg.Done()
+				if GenerarOfertaHelp(in, addn3) {
+					mugenof.Lock()
+					publicado[2] = 1
+					mugenof.Unlock()
+				}
+			}()
+		}
+		mugenof.Unlock()
 		wg.Wait()
 
-		if c > 1 {
+		if publicado[0]+publicado[1]+publicado[2] > 1 {
 			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
 			flag = false
 		} else {
