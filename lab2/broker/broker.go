@@ -27,6 +27,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -55,7 +56,9 @@ var (
 	consumidores = make(map[string][]string)
 )
 
-// Registro de entidades
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Registrarse permite que una entidad (productor, consumidor o BD) se registre en el broker
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
 	_, ok := registrados[in.Nombre]
@@ -106,12 +109,102 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string, now string) bool {
 	}
 	if response != nil && response.Ok {
 		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
+
 		return true
 	}
 
 	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
 	return false
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// notificarHelp a enviar la oferta al consumidor, se encarga de la conexión grpc
+// y enviar la oferta
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
+	dir := id + ":" + puerto
+	conn, err := grpc.Dial(dir, grpc.WithInsecure())
+	if err != nil {
+		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+		return false
+	}
+	defer conn.Close()
+	client := pb.NewConsumidorClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	response, err := client.NotificarOferta(ctx, oferta)
+	if err != nil {
+		log.Printf("No se pudo notificar correctamente la oferta al consumidor %v\nerror: %v", dir, err)
+		return false
+	}
+	if response != nil && response.Flag {
+		log.Printf("Oferta notificada correctamente al consumidor %v", dir)
+		return true
+	}
+	log.Printf("No se pudo notificar correctamente la oferta al consumidor %v", dir)
+	return false
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// notificar se encarga de la logica de notificación a los consumidores, si todos
+// los filtros coinciden, llama a notificarHelp para enviar la oferta
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+func notificar(in *pb.Oferta) bool {
+	todobien := true
+	for id, filtros := range consumidores {
+		puerto := filtros[0]
+		categoria := filtros[1]
+		tienda := filtros[2]
+		precioStr := filtros[3]
+
+		if precioStr != "null" {
+			precioMax, _ := strconv.Atoi(precioStr)
+			if int64(precioMax) < in.Precio {
+				continue
+			}
+		}
+
+		if categoria != "null" {
+			categorias := strings.Split(categoria, ";")
+			match := false
+			for _, cat := range categorias {
+				if cat == in.Categoria {
+					match = true
+					break
+				}
+			}
+			if !match {
+				continue
+			}
+		}
+
+		if tienda != "null" {
+			tiendas := strings.Split(tienda, ";")
+			match := false
+			for _, tie := range tiendas {
+				if tie == in.Tienda {
+					match = true
+					break
+				}
+			}
+			if !match {
+				continue
+			}
+		}
+		if !notificarHelp(id, puerto, in) {
+			todobien = false
+		}
+	}
+	return todobien
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// GenerarOferta es la función que maneja la solicitud de un productor para guardar una
+// oferta en la base de datos distribuida
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
 	flag := true
@@ -155,9 +248,12 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
 		}
 	}
-	////////////////////
-	//  FALTA NOTIFICAR A LOS CONSUMIDORES
-	///////////////////
+
+	if notificar(in) {
+		log.Printf("Consumidores notificados correctamente de la nueva oferta de %v", in.Tienda)
+	} else {
+		log.Printf("Hubo errores notificando a algunos consumidores de la nueva oferta de %v", in.Tienda)
+	}
 	return &pb.Bool{Flag: true}, nil
 }
 
@@ -253,6 +349,10 @@ func mostrarConsumidores() {
 		fmt.Printf("ID: %s, Filtros: %v\n", id, filtros)
 	}
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Inicia el diccionario de consumidores y sus filtros leyendo el archivo consumidores.csv
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 func initConsumidores() {
 	file, err := os.Open("consumidores.csv")

@@ -69,3 +69,11 @@ message RangeSinceRequest {
 message RangeSinceResponse {
   repeated Oferta Ofertas = 1;
 }
+
+// ------------------ //
+// * Operaciones Consumidor * //
+// ------------------ //
+
+service Consumidor {
+    rpc NotificarOferta(Oferta) returns (Bool);
+}

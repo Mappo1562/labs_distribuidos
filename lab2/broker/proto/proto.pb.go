@@ -579,7 +579,10 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x05Store\x12\x16.CyberDay.StoreRequest\x1a\x17.CyberDay.StoreResponse\x122\n" +
 	"\x03Get\x12\x14.CyberDay.GetRequest\x1a\x15.CyberDay.GetResponse\x12G\n" +
 	"\n" +
-	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponseB\bZ\x06/protob\x06proto3"
+	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse2A\n" +
+	"\n" +
+	"Consumidor\x123\n" +
+	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -615,13 +618,15 @@ var file_proto_proto_proto_depIdxs = []int32{
 	4, // 5: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
 	6, // 6: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
 	8, // 7: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
-	2, // 8: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
-	2, // 9: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
-	5, // 10: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
-	7, // 11: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
-	9, // 12: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
-	8, // [8:13] is the sub-list for method output_type
-	3, // [3:8] is the sub-list for method input_type
+	1, // 8: CyberDay.Consumidor.NotificarOferta:input_type -> CyberDay.Oferta
+	2, // 9: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
+	2, // 10: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
+	5, // 11: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
+	7, // 12: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
+	9, // 13: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
+	2, // 14: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
+	9, // [9:15] is the sub-list for method output_type
+	3, // [3:9] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
 	3, // [3:3] is the sub-list for extension extendee
 	0, // [0:3] is the sub-list for field type_name
@@ -640,7 +645,7 @@ func file_proto_proto_proto_init() {
 			NumEnums:      0,
 			NumMessages:   10,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_proto_proto_proto_goTypes,
 		DependencyIndexes: file_proto_proto_proto_depIdxs,
