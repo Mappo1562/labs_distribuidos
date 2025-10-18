@@ -43,12 +43,15 @@ type server struct {
 
 var (
 	registrados map[string]int32 // map[nombre] = rol
+	AddBD       = [3]string{addn1, addn2, addn3}
 	mapeoRoles  = map[int]string{
 		0: "Productor",
 		1: "Consumidor",
 		2: "nodo BD",
 	}
 )
+
+// Registro de entidades
 
 func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
 	_, ok := registrados[in.Nombre]
@@ -58,11 +61,16 @@ func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, er
 		return &pb.Bool{Flag: false}, err
 	}
 	registrados[in.Nombre] = in.Rol
-	log.Printf("Entidad %s registrada correctamente.", in.Nombre)
+	log.Printf("Entidad %s registrada correctamente como %s.", in.Nombre, mapeoRoles[int(in.Rol)])
 	return &pb.Bool{Flag: true}, nil
 }
 
-func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
+/////////////////////////////////////////////////////////////////////////////////////////////
+// GenerarOfertaHelp conecta con un nodo y le envía la oferta para que la guarde
+// Devuelve true si el nodo guardó la oferta correctamente, false en caso contrario
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+func GenerarOfertaHelp(in *pb.Oferta, dir string, now string) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
@@ -74,7 +82,17 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	response, err := client.GuardarOferta(ctx, in)
+	oferta := &pb.Oferta{
+		OfertaId:  in.OfertaId,
+		Tienda:    in.Tienda,
+		Categoria: in.Categoria,
+		Producto:  in.Producto,
+		Precio:    in.Precio,
+		Stock:     in.Stock,
+		Fecha:     now,
+	}
+
+	response, err := client.GuardarOferta(ctx, oferta)
 	if err != nil {
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
 		return false
@@ -98,51 +116,28 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	}
 
 	publicado := [3]int{0, 0, 0}
+	now := time.Now().Format("02 15:04:05.000")
 	for flag {
 		var wg sync.WaitGroup
 		wg.Add(3)
 
-		// conexión nodo 1
-		mugenof.Lock()
-		if publicado[0] == 0 {
-			go func() {
-				defer wg.Done()
-				if GenerarOfertaHelp(in, addn1) {
-					mugenof.Lock()
-					publicado[0] = 1
-					mugenof.Unlock()
-				}
-			}()
+		i := 0
+		for i < 3 {
+			mugenof.Lock()
+			if publicado[i] == 0 {
+				go func() {
+					defer wg.Done()
+					if GenerarOfertaHelp(in, AddBD[i], now) {
+						mugenof.Lock()
+						publicado[i] = 1
+						mugenof.Unlock()
+					}
+				}()
+			}
+			mugenof.Unlock()
+			i++
 		}
-		mugenof.Unlock()
 
-		// conexión nodo 2
-		mugenof.Lock()
-		if publicado[1] == 0 {
-			go func() {
-				defer wg.Done()
-				if GenerarOfertaHelp(in, addn2) {
-					mugenof.Lock()
-					publicado[1] = 1
-					mugenof.Unlock()
-				}
-			}()
-		}
-		mugenof.Unlock()
-
-		// conexión nodo 3
-		mugenof.Lock()
-		if publicado[2] == 0 {
-			go func() {
-				defer wg.Done()
-				if GenerarOfertaHelp(in, addn3) {
-					mugenof.Lock()
-					publicado[2] = 1
-					mugenof.Unlock()
-				}
-			}()
-		}
-		mugenof.Unlock()
 		wg.Wait()
 
 		if publicado[0]+publicado[1]+publicado[2] > 1 {
@@ -152,6 +147,9 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
 		}
 	}
+	////////////////////
+	//  FALTA NOTIFICAR A LOS CONSUMIDORES
+	///////////////////
 	return &pb.Bool{Flag: true}, nil
 }
 
@@ -162,8 +160,9 @@ Hay q buscar alguna forma de ver todas las categorias de los productos
 se me ocurre un arreglo;
 var categorias = []string{categoria, tienda, precio maximo}
 */
+// devolverle todas las ofertas al consumidor basta segun el video
 
-func GenerarConsultaHelp(in *pb.Oferta, dir string) bool {
+func GenerarConsultaHistoricaHelp(dir string) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
@@ -175,7 +174,7 @@ func GenerarConsultaHelp(in *pb.Oferta, dir string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	response, err := client.SolicitarOferta(ctx, in)
+	response, err := client.GuardarOferta(ctx, oferta)
 	if err != nil {
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
 		return false
@@ -189,52 +188,51 @@ func GenerarConsultaHelp(in *pb.Oferta, dir string) bool {
 	return false
 }
 
-func (s *server) GenerarConsulta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
+/*
+reviso si 2 son iguales, si no es asi, llamo a las bd para hacer la consistencia eventual,
+*/
+func (s *server) GenerarConsultaHistorica(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
 	flag := true
 	var mugenof sync.Mutex
+	rol, ok := registrados[in.Nombre]
+	if !ok || rol != 1 {
+		log.Printf("El consumidor %v no está registrada en el broker. Oferta rechazada.", in.Nombre)
+		return &pb.Bool{Flag: false}, nil
+	}
+
+	recibido := [3]int{0, 0, 0}
+	now := time.Now().Format("02 15:04:05.000")
 	for flag {
 		var wg sync.WaitGroup
-		c := 0
 		wg.Add(3)
 
-		// conexión nodo 1
-		go func() {
-			defer wg.Done()
-			if GenerarConsultaHelp(in, addn1) {
-				mugenof.Lock()
-				c++
-				mugenof.Unlock()
+		i := 0
+		for i < 3 {
+			mugenof.Lock()
+			if publicado[i] == 0 {
+				go func() {
+					defer wg.Done()
+					if GenerarOfertaHelp(in, AddBD[i], now) {
+						mugenof.Lock()
+						publicado[i] = 1
+						mugenof.Unlock()
+					}
+				}()
 			}
-		}()
-		// conexión nodo 2
-		go func() {
-			defer wg.Done()
-			if GenerarConsultaHelp(in, addn2) {
-				mugenof.Lock()
-				c++
-				mugenof.Unlock()
-			}
-		}()
-
-		// conexión nodo 3
-		go func() {
-			defer wg.Done()
-			if GenerarConsultaHelp(in, addn3) {
-				mugenof.Lock()
-				c++
-				mugenof.Unlock()
-			}
-		}()
+			mugenof.Unlock()
+			i++
+		}
 
 		wg.Wait()
 
-		if c > 1 {
+		if publicado[0]+publicado[1]+publicado[2] > 1 {
 			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
 			flag = false
 		} else {
 			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
 		}
 	}
+
 	return &pb.Bool{Flag: true}, nil
 }
 
