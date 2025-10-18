@@ -13,6 +13,7 @@ message Oferta{
 	int64 precio = 5;
 	int64 stock = 6;
   string fecha = 7;
+  string fechaModificacion = 8;
 }
 
 message StoreRequest {

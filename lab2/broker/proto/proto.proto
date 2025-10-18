@@ -18,7 +18,7 @@ service  NodeService{
 
 message Registro{
     string nombre = 1;
-    int32 rol = 2; //Tienda = 0, Consumidor = 1
+    int32 rol = 2; //Tienda = 0, Consumidor = 1, Nodo = 2
 }
 
 message Oferta{
@@ -29,6 +29,7 @@ message Oferta{
 	int64 precio = 5;
 	int64 stock = 6;
     string fecha = 7;
+    string fechaModificacion = 8; // Solo para DB
 }
 
 message Bool{

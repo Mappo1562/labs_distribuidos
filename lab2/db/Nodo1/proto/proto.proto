@@ -4,7 +4,9 @@ package CyberDay;
 
 option go_package = "/proto";
 
-
+// ------------------ //
+// *   Oferta  DB   * //
+// ------------------ //
 message Oferta{
   string oferta_id = 1;
   string tienda = 2;
@@ -13,8 +15,12 @@ message Oferta{
 	int64 precio = 5;
 	int64 stock = 6;
   string fecha = 7;
+  string fechaModificacion = 8;
 }
 
+// ------------------ //
+// * Operaciones DB * //
+// ------------------ //
 message StoreRequest {
   Oferta oferta = 1;
 }
@@ -41,8 +47,21 @@ message RangeSinceResponse {
   repeated Oferta Ofertas = 1;
 }
 
+// ------------------- //
+// * Registro Broker * //
+// ------------------- //
+message Registro{
+    string nombre = 1;
+    int32 rol = 2; //Tienda = 0, Consumidor = 1, Nodo = 2
+}
+
+message Bool{
+    bool flag = 1;
+}
+
 service DBNode {
   rpc Store(StoreRequest) returns (StoreResponse);
   rpc Get(GetRequest) returns (GetResponse);
   rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse); // para resincronizar
+  rpc Registrarse(Registro) returns (Bool) {}
 }
