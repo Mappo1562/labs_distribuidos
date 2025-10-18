@@ -21,9 +21,12 @@ package main
 import (
 	pb "broker/proto"
 	"context"
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -49,6 +52,7 @@ var (
 		1: "Consumidor",
 		2: "nodo BD",
 	}
+	consumidores = make(map[string][]string)
 )
 
 // Registro de entidades
@@ -119,7 +123,7 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	now := time.Now().Format("02 15:04:05.000")
 	for flag {
 		var wg sync.WaitGroup
-		wg.Add(3)
+		wg.Add(3 - publicado[0] - publicado[1] - publicado[2])
 
 		i := 0
 		for i < 3 {
@@ -161,7 +165,7 @@ se me ocurre un arreglo;
 var categorias = []string{categoria, tienda, precio maximo}
 */
 // devolverle todas las ofertas al consumidor basta segun el video
-
+/*
 func GenerarConsultaHistoricaHelp(dir string) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
@@ -191,6 +195,7 @@ func GenerarConsultaHistoricaHelp(dir string) bool {
 /*
 reviso si 2 son iguales, si no es asi, llamo a las bd para hacer la consistencia eventual,
 */
+/*
 func (s *server) GenerarConsultaHistorica(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
 	flag := true
 	var mugenof sync.Mutex
@@ -204,7 +209,7 @@ func (s *server) GenerarConsultaHistorica(ctx context.Context, in *pb.Registro) 
 	now := time.Now().Format("02 15:04:05.000")
 	for flag {
 		var wg sync.WaitGroup
-		wg.Add(3)
+		wg.Add(3 - publicado[0] - publicado[1] - publicado[2])
 
 		i := 0
 		for i < 3 {
@@ -235,12 +240,60 @@ func (s *server) GenerarConsultaHistorica(ctx context.Context, in *pb.Registro) 
 
 	return &pb.Bool{Flag: true}, nil
 }
-
+*/
 ////////////////////////////////////////////////////////////////////////////////////////////
+
+func mostrarConsumidores() {
+	fmt.Println("Consumidores cargados:")
+	for id, filtros := range consumidores {
+		fmt.Printf("ID: %s, Filtros: %v\n", id, filtros)
+	}
+}
+
+func initConsumidores() {
+	file, err := os.Open("consumidores.csv")
+	if err != nil {
+		log.Fatalf("No se pudo abrir el archivo de filtros para consumidores: %v", err)
+		return
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	reader.Comma = ','
+
+	rows, err := reader.ReadAll()
+	if err != nil {
+		log.Fatalf("No se pudo leer el archivo de filtros para consumidores: %v", err)
+		return
+	}
+
+	consumidores = make(map[string][]string)
+	puerto := "50500"
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		id := row[0]
+		categorias := row[1]
+		tiendas := row[2]
+		precio := row[3]
+
+		// Guardamos en el map
+		consumidores[id] = []string{puerto, categorias, tiendas, precio}
+
+		numPuerto, err := strconv.Atoi(puerto)
+		if err != nil {
+			fmt.Println("Error convirtiendo el puerto:", err)
+			return
+		}
+		puerto = fmt.Sprintf("%d", numPuerto+1)
+	}
+}
 
 func main() {
 	registrados = make(map[string]int32)
-
+	initConsumidores()
+	mostrarConsumidores()
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
