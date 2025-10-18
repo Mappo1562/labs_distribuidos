@@ -21,17 +21,21 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ------------------ //
+// *   Oferta  DB   * //
+// ------------------ //
 type Oferta struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OfertaId      string                 `protobuf:"bytes,1,opt,name=oferta_id,json=ofertaId,proto3" json:"oferta_id,omitempty"`
-	Tienda        string                 `protobuf:"bytes,2,opt,name=tienda,proto3" json:"tienda,omitempty"`
-	Categoria     string                 `protobuf:"bytes,3,opt,name=categoria,proto3" json:"categoria,omitempty"`
-	Producto      string                 `protobuf:"bytes,4,opt,name=producto,proto3" json:"producto,omitempty"`
-	Precio        int64                  `protobuf:"varint,5,opt,name=precio,proto3" json:"precio,omitempty"`
-	Stock         int64                  `protobuf:"varint,6,opt,name=stock,proto3" json:"stock,omitempty"`
-	Fecha         string                 `protobuf:"bytes,7,opt,name=fecha,proto3" json:"fecha,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	OfertaId          string                 `protobuf:"bytes,1,opt,name=oferta_id,json=ofertaId,proto3" json:"oferta_id,omitempty"`
+	Tienda            string                 `protobuf:"bytes,2,opt,name=tienda,proto3" json:"tienda,omitempty"`
+	Categoria         string                 `protobuf:"bytes,3,opt,name=categoria,proto3" json:"categoria,omitempty"`
+	Producto          string                 `protobuf:"bytes,4,opt,name=producto,proto3" json:"producto,omitempty"`
+	Precio            int64                  `protobuf:"varint,5,opt,name=precio,proto3" json:"precio,omitempty"`
+	Stock             int64                  `protobuf:"varint,6,opt,name=stock,proto3" json:"stock,omitempty"`
+	Fecha             string                 `protobuf:"bytes,7,opt,name=fecha,proto3" json:"fecha,omitempty"`
+	FechaModificacion string                 `protobuf:"bytes,8,opt,name=fechaModificacion,proto3" json:"fechaModificacion,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *Oferta) Reset() {
@@ -113,6 +117,16 @@ func (x *Oferta) GetFecha() string {
 	return ""
 }
 
+func (x *Oferta) GetFechaModificacion() string {
+	if x != nil {
+		return x.FechaModificacion
+	}
+	return ""
+}
+
+// ------------------ //
+// * Operaciones DB * //
+// ------------------ //
 type StoreRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Oferta        *Oferta                `protobuf:"bytes,1,opt,name=oferta,proto3" json:"oferta,omitempty"`
@@ -393,11 +407,297 @@ func (x *RangeSinceResponse) GetOfertas() []*Oferta {
 	return nil
 }
 
+type FilterRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Oferta        *Oferta                `protobuf:"bytes,1,opt,name=oferta,proto3" json:"oferta,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FilterRequest) Reset() {
+	*x = FilterRequest{}
+	mi := &file_proto_proto_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FilterRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FilterRequest) ProtoMessage() {}
+
+func (x *FilterRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FilterRequest.ProtoReflect.Descriptor instead.
+func (*FilterRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *FilterRequest) GetOferta() *Oferta {
+	if x != nil {
+		return x.Oferta
+	}
+	return nil
+}
+
+type FilterResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Oferta        *Oferta                `protobuf:"bytes,1,opt,name=oferta,proto3" json:"oferta,omitempty"`
+	Ofertas       []*Oferta              `protobuf:"bytes,2,rep,name=Ofertas,proto3" json:"Ofertas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FilterResponse) Reset() {
+	*x = FilterResponse{}
+	mi := &file_proto_proto_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FilterResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FilterResponse) ProtoMessage() {}
+
+func (x *FilterResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FilterResponse.ProtoReflect.Descriptor instead.
+func (*FilterResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *FilterResponse) GetOferta() *Oferta {
+	if x != nil {
+		return x.Oferta
+	}
+	return nil
+}
+
+func (x *FilterResponse) GetOfertas() []*Oferta {
+	if x != nil {
+		return x.Ofertas
+	}
+	return nil
+}
+
+// ------------------- //
+// * Registro Broker * //
+// ------------------- //
+type Registro struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Nombre        string                 `protobuf:"bytes,1,opt,name=nombre,proto3" json:"nombre,omitempty"`
+	Rol           int32                  `protobuf:"varint,2,opt,name=rol,proto3" json:"rol,omitempty"` //Tienda = 0, Consumidor = 1, Nodo = 2
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Registro) Reset() {
+	*x = Registro{}
+	mi := &file_proto_proto_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Registro) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Registro) ProtoMessage() {}
+
+func (x *Registro) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Registro.ProtoReflect.Descriptor instead.
+func (*Registro) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *Registro) GetNombre() string {
+	if x != nil {
+		return x.Nombre
+	}
+	return ""
+}
+
+func (x *Registro) GetRol() int32 {
+	if x != nil {
+		return x.Rol
+	}
+	return 0
+}
+
+type Bool struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Flag          bool                   `protobuf:"varint,1,opt,name=flag,proto3" json:"flag,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Bool) Reset() {
+	*x = Bool{}
+	mi := &file_proto_proto_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Bool) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Bool) ProtoMessage() {}
+
+func (x *Bool) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Bool.ProtoReflect.Descriptor instead.
+func (*Bool) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *Bool) GetFlag() bool {
+	if x != nil {
+		return x.Flag
+	}
+	return false
+}
+
+// ------------------- //
+// *   Sincronizar   * //
+// ------------------- //
+type SincronizarRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Oferta        *Oferta                `protobuf:"bytes,1,opt,name=oferta,proto3" json:"oferta,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SincronizarRequest) Reset() {
+	*x = SincronizarRequest{}
+	mi := &file_proto_proto_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SincronizarRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SincronizarRequest) ProtoMessage() {}
+
+func (x *SincronizarRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SincronizarRequest.ProtoReflect.Descriptor instead.
+func (*SincronizarRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SincronizarRequest) GetOferta() *Oferta {
+	if x != nil {
+		return x.Oferta
+	}
+	return nil
+}
+
+type SincronizarResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ofertas       []*Oferta              `protobuf:"bytes,1,rep,name=ofertas,proto3" json:"ofertas,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SincronizarResponse) Reset() {
+	*x = SincronizarResponse{}
+	mi := &file_proto_proto_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SincronizarResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SincronizarResponse) ProtoMessage() {}
+
+func (x *SincronizarResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SincronizarResponse.ProtoReflect.Descriptor instead.
+func (*SincronizarResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SincronizarResponse) GetOfertas() []*Oferta {
+	if x != nil {
+		return x.Ofertas
+	}
+	return nil
+}
+
 var File_proto_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/proto.proto\x12\bCyberDay\"\xbb\x01\n" +
+	"\x11proto/proto.proto\x12\bCyberDay\"\xe9\x01\n" +
 	"\x06Oferta\x12\x1b\n" +
 	"\toferta_id\x18\x01 \x01(\tR\bofertaId\x12\x16\n" +
 	"\x06tienda\x18\x02 \x01(\tR\x06tienda\x12\x1c\n" +
@@ -405,7 +705,8 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\bproducto\x18\x04 \x01(\tR\bproducto\x12\x16\n" +
 	"\x06precio\x18\x05 \x01(\x03R\x06precio\x12\x14\n" +
 	"\x05stock\x18\x06 \x01(\x03R\x05stock\x12\x14\n" +
-	"\x05fecha\x18\a \x01(\tR\x05fecha\"8\n" +
+	"\x05fecha\x18\a \x01(\tR\x05fecha\x12,\n" +
+	"\x11fechaModificacion\x18\b \x01(\tR\x11fechaModificacion\"8\n" +
 	"\fStoreRequest\x12(\n" +
 	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\"9\n" +
 	"\rStoreResponse\x12\x0e\n" +
@@ -421,12 +722,29 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"since_unix\x18\x01 \x01(\x03R\tsinceUnix\"@\n" +
 	"\x12RangeSinceResponse\x12*\n" +
-	"\aOfertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aOfertas2\xbf\x01\n" +
+	"\aOfertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aOfertas\"9\n" +
+	"\rFilterRequest\x12(\n" +
+	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\"f\n" +
+	"\x0eFilterResponse\x12(\n" +
+	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\x12*\n" +
+	"\aOfertas\x18\x02 \x03(\v2\x10.CyberDay.OfertaR\aOfertas\"4\n" +
+	"\bRegistro\x12\x16\n" +
+	"\x06nombre\x18\x01 \x01(\tR\x06nombre\x12\x10\n" +
+	"\x03rol\x18\x02 \x01(\x05R\x03rol\"\x1a\n" +
+	"\x04Bool\x12\x12\n" +
+	"\x04flag\x18\x01 \x01(\bR\x04flag\">\n" +
+	"\x12SincronizarRequest\x12(\n" +
+	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\"A\n" +
+	"\x13SincronizarResponse\x12*\n" +
+	"\aofertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aofertas2\xff\x02\n" +
 	"\x06DBNode\x128\n" +
 	"\x05Store\x12\x16.CyberDay.StoreRequest\x1a\x17.CyberDay.StoreResponse\x122\n" +
 	"\x03Get\x12\x14.CyberDay.GetRequest\x1a\x15.CyberDay.GetResponse\x12G\n" +
 	"\n" +
-	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponseB\bZ\x06/protob\x06proto3"
+	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse\x123\n" +
+	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x12L\n" +
+	"\vSincronizar\x12\x1c.CyberDay.SincronizarRequest\x1a\x1d.CyberDay.SincronizarResponse\"\x00\x12;\n" +
+	"\x06Filter\x12\x17.CyberDay.FilterRequest\x1a\x18.CyberDay.FilterResponseB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -440,31 +758,48 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_proto_proto_goTypes = []any{
-	(*Oferta)(nil),             // 0: CyberDay.Oferta
-	(*StoreRequest)(nil),       // 1: CyberDay.StoreRequest
-	(*StoreResponse)(nil),      // 2: CyberDay.StoreResponse
-	(*GetRequest)(nil),         // 3: CyberDay.GetRequest
-	(*GetResponse)(nil),        // 4: CyberDay.GetResponse
-	(*RangeSinceRequest)(nil),  // 5: CyberDay.RangeSinceRequest
-	(*RangeSinceResponse)(nil), // 6: CyberDay.RangeSinceResponse
+	(*Oferta)(nil),              // 0: CyberDay.Oferta
+	(*StoreRequest)(nil),        // 1: CyberDay.StoreRequest
+	(*StoreResponse)(nil),       // 2: CyberDay.StoreResponse
+	(*GetRequest)(nil),          // 3: CyberDay.GetRequest
+	(*GetResponse)(nil),         // 4: CyberDay.GetResponse
+	(*RangeSinceRequest)(nil),   // 5: CyberDay.RangeSinceRequest
+	(*RangeSinceResponse)(nil),  // 6: CyberDay.RangeSinceResponse
+	(*FilterRequest)(nil),       // 7: CyberDay.FilterRequest
+	(*FilterResponse)(nil),      // 8: CyberDay.FilterResponse
+	(*Registro)(nil),            // 9: CyberDay.Registro
+	(*Bool)(nil),                // 10: CyberDay.Bool
+	(*SincronizarRequest)(nil),  // 11: CyberDay.SincronizarRequest
+	(*SincronizarResponse)(nil), // 12: CyberDay.SincronizarResponse
 }
 var file_proto_proto_proto_depIdxs = []int32{
-	0, // 0: CyberDay.StoreRequest.oferta:type_name -> CyberDay.Oferta
-	0, // 1: CyberDay.GetResponse.oferta:type_name -> CyberDay.Oferta
-	0, // 2: CyberDay.RangeSinceResponse.Ofertas:type_name -> CyberDay.Oferta
-	1, // 3: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
-	3, // 4: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
-	5, // 5: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
-	2, // 6: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
-	4, // 7: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
-	6, // 8: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
-	6, // [6:9] is the sub-list for method output_type
-	3, // [3:6] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0,  // 0: CyberDay.StoreRequest.oferta:type_name -> CyberDay.Oferta
+	0,  // 1: CyberDay.GetResponse.oferta:type_name -> CyberDay.Oferta
+	0,  // 2: CyberDay.RangeSinceResponse.Ofertas:type_name -> CyberDay.Oferta
+	0,  // 3: CyberDay.FilterRequest.oferta:type_name -> CyberDay.Oferta
+	0,  // 4: CyberDay.FilterResponse.oferta:type_name -> CyberDay.Oferta
+	0,  // 5: CyberDay.FilterResponse.Ofertas:type_name -> CyberDay.Oferta
+	0,  // 6: CyberDay.SincronizarRequest.oferta:type_name -> CyberDay.Oferta
+	0,  // 7: CyberDay.SincronizarResponse.ofertas:type_name -> CyberDay.Oferta
+	1,  // 8: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
+	3,  // 9: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
+	5,  // 10: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
+	9,  // 11: CyberDay.DBNode.Registrarse:input_type -> CyberDay.Registro
+	11, // 12: CyberDay.DBNode.Sincronizar:input_type -> CyberDay.SincronizarRequest
+	7,  // 13: CyberDay.DBNode.Filter:input_type -> CyberDay.FilterRequest
+	2,  // 14: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
+	4,  // 15: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
+	6,  // 16: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
+	10, // 17: CyberDay.DBNode.Registrarse:output_type -> CyberDay.Bool
+	12, // 18: CyberDay.DBNode.Sincronizar:output_type -> CyberDay.SincronizarResponse
+	8,  // 19: CyberDay.DBNode.Filter:output_type -> CyberDay.FilterResponse
+	14, // [14:20] is the sub-list for method output_type
+	8,  // [8:14] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_proto_init() }
@@ -478,7 +813,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
