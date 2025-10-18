@@ -176,6 +176,10 @@ func main() {
 	}
 
 	oferta := generarOfertaAleatoria()
+	if oferta == nil {
+		log.Println("No se pudo generar oferta")
+	}
+
 	respOferta, err := client.GenerarOferta(context.Background(), oferta)
 	if err != nil {
 		log.Fatalf("Error al enviar oferta: %v", err)
