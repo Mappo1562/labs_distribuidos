@@ -10,6 +10,7 @@ option go_package = "/proto";
 service  Broker{
     rpc GenerarOferta(Oferta) returns (Bool) {}
     rpc Registrarse(Registro) returns (Bool) {}
+    rpc GenerarHistorico(Registro) returns (RangeSinceResponse) {}
 }
 
 service  NodeService{
@@ -43,5 +44,4 @@ message RangeSinceResponse {
 
 service Consumidor {
     rpc NotificarOferta(Oferta) returns (Bool);
-    rpc EnviarHistorico(RangeSinceResponse) returns (Bool);
 }

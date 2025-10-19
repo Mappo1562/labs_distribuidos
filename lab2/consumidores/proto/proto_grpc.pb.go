@@ -22,8 +22,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Broker_GenerarOferta_FullMethodName = "/CyberDay.Broker/GenerarOferta"
-	Broker_Registrarse_FullMethodName   = "/CyberDay.Broker/Registrarse"
+	Broker_GenerarOferta_FullMethodName    = "/CyberDay.Broker/GenerarOferta"
+	Broker_Registrarse_FullMethodName      = "/CyberDay.Broker/Registrarse"
+	Broker_GenerarHistorico_FullMethodName = "/CyberDay.Broker/GenerarHistorico"
 )
 
 // BrokerClient is the client API for Broker service.
@@ -32,6 +33,7 @@ const (
 type BrokerClient interface {
 	GenerarOferta(ctx context.Context, in *Oferta, opts ...grpc.CallOption) (*Bool, error)
 	Registrarse(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error)
+	GenerarHistorico(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*RangeSinceResponse, error)
 }
 
 type brokerClient struct {
@@ -60,12 +62,22 @@ func (c *brokerClient) Registrarse(ctx context.Context, in *Registro, opts ...gr
 	return out, nil
 }
 
+func (c *brokerClient) GenerarHistorico(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*RangeSinceResponse, error) {
+	out := new(RangeSinceResponse)
+	err := c.cc.Invoke(ctx, Broker_GenerarHistorico_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BrokerServer is the server API for Broker service.
 // All implementations must embed UnimplementedBrokerServer
 // for forward compatibility
 type BrokerServer interface {
 	GenerarOferta(context.Context, *Oferta) (*Bool, error)
 	Registrarse(context.Context, *Registro) (*Bool, error)
+	GenerarHistorico(context.Context, *Registro) (*RangeSinceResponse, error)
 	mustEmbedUnimplementedBrokerServer()
 }
 
@@ -78,6 +90,9 @@ func (UnimplementedBrokerServer) GenerarOferta(context.Context, *Oferta) (*Bool,
 }
 func (UnimplementedBrokerServer) Registrarse(context.Context, *Registro) (*Bool, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Registrarse not implemented")
+}
+func (UnimplementedBrokerServer) GenerarHistorico(context.Context, *Registro) (*RangeSinceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerarHistorico not implemented")
 }
 func (UnimplementedBrokerServer) mustEmbedUnimplementedBrokerServer() {}
 
@@ -128,6 +143,24 @@ func _Broker_Registrarse_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Broker_GenerarHistorico_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Registro)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrokerServer).GenerarHistorico(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Broker_GenerarHistorico_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrokerServer).GenerarHistorico(ctx, req.(*Registro))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Broker_ServiceDesc is the grpc.ServiceDesc for Broker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -142,6 +175,10 @@ var Broker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Registrarse",
 			Handler:    _Broker_Registrarse_Handler,
+		},
+		{
+			MethodName: "GenerarHistorico",
+			Handler:    _Broker_GenerarHistorico_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
