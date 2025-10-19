@@ -75,5 +75,5 @@ message RangeSinceResponse {
 // ------------------ //
 
 service Consumidor {
-    rpc NotificarOferta(Oferta) returns (Bool);
+    rpc NotificarOferta(Oferta) returns (Bool){}
 }

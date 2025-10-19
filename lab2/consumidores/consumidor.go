@@ -23,10 +23,9 @@ type Consumidor struct {
 	archivo_ofertas string
 }
 
-type server struct {
-	//pb.UnimplementedConsumidorServer
-	Grupo        int
-	Consumidores []Consumidor
+type servidorConsumidor struct {
+	pb.UnimplementedConsumidorServer
+	Consumidor Consumidor
 }
 
 var consumidores []Consumidor
@@ -116,31 +115,35 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	registro := &pb.Registro{
-		Nombre: "C1-1",
-		Rol:    1,
-	}
-
-	resp, err := cliente.Registrarse(ctx, registro)
-	if err != nil {
-		log.Fatalf("Error al registrarse: %v", err)
-	}
-	if resp.Flag {
-		fmt.Println("C1-1 registrado en el broker")
-	} else {
-		fmt.Println("Falló el registro")
-		return
-	}
-
 	consumidores, err = leerConsumidores("consumidores.csv")
 
 	if err != nil {
 		log.Fatalf("Error leyendo los consumidores: %v", err)
 	}
 
+	grupo := 1
+	inicio := (grupo - 1) * 4
+	fin := inicio + 4
+	consumidoresGrupo := consumidores[inicio:fin]
+	_ = consumidoresGrupo
+
 	for i := range len(consumidores) {
 		c := consumidores[i]
 
-		fmt.Printf("El consumidor %s se recupero correctamente\n", c.id_consumidor)
+		registro := &pb.Registro{
+			Nombre: c.id_consumidor,
+			Rol:    1,
+		}
+
+		resp, err := cliente.Registrarse(ctx, registro)
+		if err != nil {
+			log.Fatalf("Error al registrarse: %v", err)
+		}
+		if resp.Flag {
+			fmt.Printf("%s registrado en el broker", c.id_consumidor)
+		} else {
+			fmt.Println("Falló el registro")
+			return
+		}
 	}
 }
