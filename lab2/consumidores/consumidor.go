@@ -35,6 +35,21 @@ type servidorConsumidor struct {
 
 var consumidores []Consumidor
 
+var categoriasValidas = map[string]struct{}{
+	"Electronica":       {},
+	"Moda":              {},
+	"Hogar":             {},
+	"Deportes":          {},
+	"Belleza":           {},
+	"Infantil":          {},
+	"Computacion":       {},
+	"Electrodomesticos": {},
+	"Herramientas":      {},
+	"Juguetes":          {},
+	"Automotriz":        {},
+	"Mascotas":          {},
+}
+
 func leerConsumidores(path string) ([]Consumidor, error) {
 
 	archivo, err := os.Open(path)
@@ -114,6 +129,12 @@ func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Ofe
 	if !s.activo {
 		s.mu.Unlock()
 		return nil, fmt.Errorf("el consumidor %s esta caido", s.Consumidor.id_consumidor)
+	}
+
+	if !categoriasValida(oferta.Categoria) {
+		log.Printf("[%s] Categoria invalida: %s \n", s.Consumidor.id_consumidor, oferta.Categoria)
+		s.mu.Unlock()
+		return &pb.Bool{Flag: false}, nil
 	}
 
 	//Simulación caida
@@ -303,6 +324,11 @@ func (s *servidorConsumidor) recuperarOfertas() {
 	}
 
 	log.Printf("[%s] Recuperadas las ofertas", s.Consumidor.id_consumidor)
+}
+
+func categoriasValida(cat string) bool {
+	_, ok := categoriasValidas[cat]
+	return ok
 }
 
 func main() {

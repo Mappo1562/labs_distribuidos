@@ -26,6 +26,7 @@ type Producto struct {
 
 var catalogo []Producto
 var nombreTienda string
+var r *rand.Rand
 
 func leerCatalogo(path string) ([]Producto, error) {
 
@@ -79,28 +80,28 @@ func leerCatalogo(path string) ([]Producto, error) {
 
 func elegirProducto() *Producto {
 
-	i := rand.Intn(len(catalogo))
+	i := r.Intn(len(catalogo))
 	return &catalogo[i]
 }
 
 func aplicarDescuento(precioBase int64) int64 {
-	desc := rand.Intn(41) + 10
+	desc := r.Intn(41) + 10
 	precio_final := precioBase * int64(100-desc) / 100
 
 	return precio_final
 }
 
 func generarStock(stockActual int64) int64 {
-	stock_oferta := rand.Intn(int(stockActual)) + 1
+	stock_oferta := r.Intn(int(stockActual)) + 1
 
 	return int64(stock_oferta)
 }
 
 func generarID() string {
 	t := time.Now().UnixNano()
-	r := rand.Intn(100000000000)
+	ro := r.Intn(100000000000)
 	tiempo := strconv.FormatInt(t, 36)
-	random := strconv.FormatInt(int64(r), 36)
+	random := strconv.FormatInt(int64(ro), 36)
 
 	return fmt.Sprintf("%s-%s", tiempo, random)
 }
@@ -138,6 +139,18 @@ func generarOfertaAleatoria() *pb.Oferta {
 	return nil
 }
 
+func nuevoGenerador(nombre string) *rand.Rand {
+
+	seed := int64(0)
+
+	for _, c := range nombre {
+		seed += int64(c)
+	}
+
+	src := rand.NewSource(seed)
+	return rand.New(src)
+}
+
 func main() {
 
 	nombreTienda = os.Getenv("NOMBRE_TIENDA")
@@ -153,6 +166,7 @@ func main() {
 		log.Fatalf("Error leyendo el catalogo de la tienda %s: %v", nombreTienda, err)
 	}
 
+	r = nuevoGenerador(nombreTienda)
 	// Conectarse al broker
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -201,6 +215,6 @@ func main() {
 			fmt.Println("Broker rechazó la oferta")
 		}
 
-		time.Sleep(time.Duration(rand.Intn(3)+2) * time.Second)
+		time.Sleep(time.Duration(r.Intn(3)+2) * time.Second)
 	}
 }
