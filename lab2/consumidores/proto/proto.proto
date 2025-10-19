@@ -37,6 +37,11 @@ message Bool{
 
 message Vacio{}
 
+message RangeSinceResponse {
+  repeated Oferta Ofertas = 1;
+}
+
 service Consumidor {
     rpc NotificarOferta(Oferta) returns (Bool);
+    rpc EnviarHistorico(RangeSinceResponse) returns (Bool);
 }

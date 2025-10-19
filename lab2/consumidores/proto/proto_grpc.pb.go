@@ -237,3 +237,93 @@ var NodeService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/proto.proto",
 }
+
+const (
+	Consumidor_NotificarOferta_FullMethodName = "/CyberDay.Consumidor/NotificarOferta"
+)
+
+// ConsumidorClient is the client API for Consumidor service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ConsumidorClient interface {
+	NotificarOferta(ctx context.Context, in *Oferta, opts ...grpc.CallOption) (*Bool, error)
+}
+
+type consumidorClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewConsumidorClient(cc grpc.ClientConnInterface) ConsumidorClient {
+	return &consumidorClient{cc}
+}
+
+func (c *consumidorClient) NotificarOferta(ctx context.Context, in *Oferta, opts ...grpc.CallOption) (*Bool, error) {
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, Consumidor_NotificarOferta_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ConsumidorServer is the server API for Consumidor service.
+// All implementations must embed UnimplementedConsumidorServer
+// for forward compatibility
+type ConsumidorServer interface {
+	NotificarOferta(context.Context, *Oferta) (*Bool, error)
+	mustEmbedUnimplementedConsumidorServer()
+}
+
+// UnimplementedConsumidorServer must be embedded to have forward compatible implementations.
+type UnimplementedConsumidorServer struct {
+}
+
+func (UnimplementedConsumidorServer) NotificarOferta(context.Context, *Oferta) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NotificarOferta not implemented")
+}
+func (UnimplementedConsumidorServer) mustEmbedUnimplementedConsumidorServer() {}
+
+// UnsafeConsumidorServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ConsumidorServer will
+// result in compilation errors.
+type UnsafeConsumidorServer interface {
+	mustEmbedUnimplementedConsumidorServer()
+}
+
+func RegisterConsumidorServer(s grpc.ServiceRegistrar, srv ConsumidorServer) {
+	s.RegisterService(&Consumidor_ServiceDesc, srv)
+}
+
+func _Consumidor_NotificarOferta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Oferta)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConsumidorServer).NotificarOferta(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Consumidor_NotificarOferta_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConsumidorServer).NotificarOferta(ctx, req.(*Oferta))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Consumidor_ServiceDesc is the grpc.ServiceDesc for Consumidor service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Consumidor_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "CyberDay.Consumidor",
+	HandlerType: (*ConsumidorServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "NotificarOferta",
+			Handler:    _Consumidor_NotificarOferta_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/proto.proto",
+}

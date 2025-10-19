@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -23,10 +24,9 @@ type Consumidor struct {
 	archivo_ofertas string
 }
 
-type server struct {
-	//pb.UnimplementedConsumidorServer
-	Grupo        int
-	Consumidores []Consumidor
+type servidorConsumidor struct {
+	pb.UnimplementedConsumidorServer
+	Consumidor Consumidor
 }
 
 var consumidores []Consumidor
@@ -102,6 +102,29 @@ func parsePrecio(campo string) int64 {
 	val, _ := strconv.ParseInt(campo, 10, 64)
 	return val
 }
+
+func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Oferta) (*pb.Bool, error) {
+	fmt.Printf("Se leyo la oferta para %s", s.Consumidor.id_consumidor)
+	return &pb.Bool{Flag: true}, nil
+}
+
+func levantarServidor(c Consumidor, puerto int) {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", puerto))
+
+	if err != nil {
+		log.Fatalf("[%s] Error al escuchar en puerto %d: %v", c.id_consumidor, puerto, err)
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterConsumidorServer(s, &servidorConsumidor{Consumidor: c})
+	go func() {
+		fmt.Printf("[%s] Escuchando en puerto %d\n", c.id_consumidor, puerto)
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("[%s] Error sirviendo: %v", c.id_consumidor, err)
+		}
+	}()
+}
+
 func main() {
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -116,31 +139,44 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	registro := &pb.Registro{
-		Nombre: "C1-1",
-		Rol:    1,
-	}
-
-	resp, err := cliente.Registrarse(ctx, registro)
-	if err != nil {
-		log.Fatalf("Error al registrarse: %v", err)
-	}
-	if resp.Flag {
-		fmt.Println("C1-1 registrado en el broker")
-	} else {
-		fmt.Println("Falló el registro")
-		return
-	}
-
+	grupo, _ := strconv.Atoi(os.Getenv("GRUPO"))
 	consumidores, err = leerConsumidores("consumidores.csv")
 
 	if err != nil {
 		log.Fatalf("Error leyendo los consumidores: %v", err)
 	}
 
-	for i := range len(consumidores) {
-		c := consumidores[i]
+	inicio := (grupo - 1) * 4
+	fin := inicio + 4
+	consumidoresGrupo := consumidores[inicio:fin]
 
-		fmt.Printf("El consumidor %s se recupero correctamente\n", c.id_consumidor)
+	basePort := 60060 + ((grupo - 1) * 10) + 1
+
+	for i := range len(consumidoresGrupo) {
+		c := consumidoresGrupo[i]
+
+		registro := &pb.Registro{
+			Nombre: c.id_consumidor,
+			Rol:    1,
+		}
+
+		resp, err := cliente.Registrarse(ctx, registro)
+		if err != nil {
+			log.Fatalf("Error al registrarse: %v", err)
+		}
+		if resp.Flag {
+			fmt.Printf("%s registrado en el broker", c.id_consumidor)
+		} else {
+			fmt.Println("Falló el registro")
+			return
+		}
 	}
+
+	for i := range len(consumidoresGrupo) {
+		c := consumidoresGrupo[i]
+		puerto := basePort + i
+		levantarServidor(c, puerto)
+	}
+
+	select {}
 }
