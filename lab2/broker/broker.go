@@ -114,7 +114,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
-	dir := id + ":" + puerto
+	dir := puerto
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
@@ -369,6 +369,7 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 			return nil, nil
 		}
 	}
+	// faltan los casos donde uno se acabe antes
 
 	return &pb.RangeSinceResponse{Ofertas: H}, nil
 }
@@ -404,7 +405,8 @@ func initConsumidores() {
 	}
 
 	consumidores = make(map[string][]string)
-	puerto := "50500"
+	nGrupo := 0
+	var puertoInt int
 	for i, row := range rows {
 		if i == 0 {
 			continue
@@ -414,15 +416,15 @@ func initConsumidores() {
 		tiendas := row[2]
 		precio := row[3]
 
-		// Guardamos en el map
-		consumidores[id] = []string{puerto, categorias, tiendas, precio}
-
-		numPuerto, err := strconv.Atoi(puerto)
-		if err != nil {
-			fmt.Println("Error convirtiendo el puerto:", err)
-			return
+		if nGrupo != int(id[1])-48 {
+			nGrupo = int(id[1]) - 48
+			puertoInt = 60050 + 10*nGrupo
 		}
-		puerto = fmt.Sprintf("%d", numPuerto+1)
+		puertoInt = puertoInt + 1
+		direccion := "grupo" + strconv.Itoa(nGrupo) + ":" + strconv.Itoa(puertoInt)
+		// Guardamos en el map
+		consumidores[id] = []string{direccion, categorias, tiendas, precio}
+		log.Printf("agregado uno con direccion %v", direccion)
 	}
 }
 
