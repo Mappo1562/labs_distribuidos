@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -104,8 +105,16 @@ func parsePrecio(campo string) int64 {
 }
 
 func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Oferta) (*pb.Bool, error) {
-	fmt.Printf("Se leyo la oferta para %s", s.Consumidor.id_consumidor)
-	return &pb.Bool{Flag: true}, nil
+
+	if rand.Float64() < 0.01 {
+		simularCaida(s.Consumidor)
+		return &pb.Bool{Flag: false}, nil
+	}
+
+	log.Printf("Se leyo la oferta para %s\n", s.Consumidor.id_consumidor)
+
+	ok := guardarOferta(s.Consumidor, oferta)
+	return &pb.Bool{Flag: ok}, nil
 }
 
 func levantarServidor(c Consumidor, puerto int) {
@@ -125,6 +134,70 @@ func levantarServidor(c Consumidor, puerto int) {
 	}()
 }
 
+func guardarOferta(c Consumidor, oferta *pb.Oferta) bool {
+	path := fmt.Sprintf("/app/ofertas/%s", c.archivo_ofertas)
+
+	existeArchivo := true
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		existeArchivo = false
+	} else if err != nil {
+		log.Printf("[%s] Error al revisar archivo: %v", c.id_consumidor, err)
+		return false
+	}
+
+	archivo, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Printf("[%s] Error al abrir el archivo: %v", c.id_consumidor, err)
+		return false
+	}
+	defer archivo.Close()
+
+	writer := csv.NewWriter(archivo)
+	defer writer.Flush()
+
+	if !existeArchivo || info.Size() == 0 {
+		header := []string{
+			"ID Oferta",
+			"Tienda",
+			"Categoria",
+			"Producto",
+			"Precio",
+			"Stock",
+			"Fecha",
+		}
+		if err := writer.Write(header); err != nil {
+			log.Printf("[%s] Error al escribir el encabezado CSV: %v", c.id_consumidor, err)
+			return false
+		}
+	}
+
+	record := []string{
+		oferta.OfertaId,
+		oferta.Tienda,
+		oferta.Categoria,
+		oferta.Producto,
+		strconv.FormatInt(oferta.Precio, 10),
+		strconv.FormatInt(oferta.Stock, 10),
+		oferta.Fecha,
+	}
+
+	if err := writer.Write(record); err != nil {
+		log.Printf("[%s] Error al escribir CSV: %v", c.id_consumidor, err)
+		return false
+	}
+
+	return true
+}
+
+func simularCaida(c Consumidor) {
+	duracion := time.Duration(rand.Intn(5)+5) * time.Second
+	log.Printf("El consumidor %s se cayó", c.id_consumidor)
+	time.Sleep(duracion)
+
+	recuperarOfertas(c)
+}
 func main() {
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))

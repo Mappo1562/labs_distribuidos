@@ -50,6 +50,8 @@ services:
       - broker
     networks:
       - grpc-net
+    volumes:
+      - ./consumidores/ofertas/grupo1:/app/ofertas
 
   grupo2:
     build: ./consumidores
@@ -60,6 +62,9 @@ services:
       - broker
     networks:
       - grpc-net
+    volumes:
+      - ./consumidores/ofertas/grupo1:/app/ofertas
+
   grupo3:
     build: ./consumidores
     container_name: grupo3
@@ -69,6 +74,8 @@ services:
       - broker
     networks:
       - grpc-net
+    volumes:
+      - ./consumidores/ofertas/grupo1:/app/ofertas
 
   db1:
     build: ./db/Nodo1
