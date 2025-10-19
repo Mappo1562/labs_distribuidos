@@ -41,9 +41,30 @@ services:
     networks:
       - grpc-net
 
-  consumidor:
+  grupo1:
     build: ./consumidores
-    container_name: consumidor
+    container_name: grupo1
+    environment:
+      - GRUPO=1
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
+  grupo2:
+    build: ./consumidores
+    container_name: grupo2
+    environment:
+      - GRUPO=2
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+  grupo3:
+    build: ./consumidores
+    container_name: grupo3
+    environment:
+      - GRUPO=3
     depends_on:
       - broker
     networks:

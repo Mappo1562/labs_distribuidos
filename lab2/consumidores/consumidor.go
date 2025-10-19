@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -101,6 +102,29 @@ func parsePrecio(campo string) int64 {
 	val, _ := strconv.ParseInt(campo, 10, 64)
 	return val
 }
+
+func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Oferta) (*pb.Bool, error) {
+	fmt.Printf("Se leyo la oferta para %s", s.Consumidor.id_consumidor)
+	return &pb.Bool{Flag: true}, nil
+}
+
+func levantarServidor(c Consumidor, puerto int) {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", puerto))
+
+	if err != nil {
+		log.Fatalf("[%s] Error al escuchar en puerto %d: %v", c.id_consumidor, puerto, err)
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterConsumidorServer(s, &servidorConsumidor{Consumidor: c})
+	go func() {
+		fmt.Printf("[%s] Escuchando en puerto %d\n", c.id_consumidor, puerto)
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("[%s] Error sirviendo: %v", c.id_consumidor, err)
+		}
+	}()
+}
+
 func main() {
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -115,20 +139,21 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
+	grupo, _ := strconv.Atoi(os.Getenv("GRUPO"))
 	consumidores, err = leerConsumidores("consumidores.csv")
 
 	if err != nil {
 		log.Fatalf("Error leyendo los consumidores: %v", err)
 	}
 
-	grupo := 1
 	inicio := (grupo - 1) * 4
 	fin := inicio + 4
 	consumidoresGrupo := consumidores[inicio:fin]
-	_ = consumidoresGrupo
 
-	for i := range len(consumidores) {
-		c := consumidores[i]
+	basePort := 60060 + ((grupo - 1) * 10) + 1
+
+	for i := range len(consumidoresGrupo) {
+		c := consumidoresGrupo[i]
 
 		registro := &pb.Registro{
 			Nombre: c.id_consumidor,
@@ -146,4 +171,12 @@ func main() {
 			return
 		}
 	}
+
+	for i := range len(consumidoresGrupo) {
+		c := consumidoresGrupo[i]
+		puerto := basePort + i
+		levantarServidor(c, puerto)
+	}
+
+	select {}
 }
