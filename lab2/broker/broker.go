@@ -123,7 +123,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 	defer conn.Close()
 	client := pb.NewConsumidorClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	response, err := client.NotificarOferta(ctx, oferta)
 	if err != nil {
@@ -131,7 +131,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 		return false
 	}
 	if response != nil && response.Flag {
-		log.Printf("Oferta notificada correctamente al consumidor %v", dir)
+		log.Printf("Oferta notificada correctamente al consumidor %v en %v", id, dir)
 		return true
 	}
 	log.Printf("No se pudo notificar correctamente la oferta al consumidor %v", dir)
