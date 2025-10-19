@@ -104,7 +104,7 @@ func parsePrecio(campo string) int64 {
 }
 
 func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Oferta) (*pb.Bool, error) {
-	fmt.Printf("Se leyo la oferta para %s", s.Consumidor.id_consumidor)
+	log.Printf("Se leyo la oferta para %s", s.Consumidor.id_consumidor)
 	return &pb.Bool{Flag: true}, nil
 }
 

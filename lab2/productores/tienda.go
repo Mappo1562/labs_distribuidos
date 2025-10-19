@@ -163,7 +163,7 @@ func main() {
 
 	client := pb.NewBrokerClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 	// Registro del productor
 	registro := &pb.Registro{
