@@ -176,12 +176,13 @@ func main() {
 		log.Fatalf("Error al registrarse: %v", err)
 	}
 	if resp.Flag {
-		fmt.Printf("%s registrado en el broker", nombreTienda)
+		fmt.Printf("%s registrado en el broker\n", nombreTienda)
 	} else {
 		fmt.Println("Falló el registro")
 		return
 	}
 
+	time.Sleep(time.Second * 5)
 	for {
 		oferta := generarOfertaAleatoria()
 		if oferta == nil {
@@ -200,6 +201,6 @@ func main() {
 			fmt.Println("Broker rechazó la oferta")
 		}
 
-		time.Sleep(time.Duration(rand.Intn(3)+1) * time.Second)
+		time.Sleep(time.Duration(rand.Intn(3)+2) * time.Second)
 	}
 }

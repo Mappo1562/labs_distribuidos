@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"google.golang.org/grpc"
@@ -28,6 +29,8 @@ type Consumidor struct {
 type servidorConsumidor struct {
 	pb.UnimplementedConsumidorServer
 	Consumidor Consumidor
+	mu         sync.Mutex
+	activo     bool
 }
 
 var consumidores []Consumidor
@@ -105,15 +108,24 @@ func parsePrecio(campo string) int64 {
 }
 
 func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Oferta) (*pb.Bool, error) {
+	s.mu.Lock()
 
+	//si esta caido no recibe nuevas ofertas
+	if !s.activo {
+		s.mu.Unlock()
+		return nil, fmt.Errorf("el consumidor %s esta caido", s.Consumidor.id_consumidor)
+	}
+
+	//Simulación caida
 	if rand.Float64() < 0.01 {
-		simularCaida(s.Consumidor)
-		return &pb.Bool{Flag: false}, nil
+		s.mu.Unlock()
+		go simularCaida(s)
+		return nil, fmt.Errorf("el consumidor %s se cayó", s.Consumidor.id_consumidor)
 	}
 
 	log.Printf("Se leyo la oferta para %s\n", s.Consumidor.id_consumidor)
-
 	ok := guardarOferta(s.Consumidor, oferta)
+	s.mu.Unlock()
 	return &pb.Bool{Flag: ok}, nil
 }
 
@@ -121,15 +133,21 @@ func levantarServidor(c Consumidor, puerto int) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", puerto))
 
 	if err != nil {
-		log.Fatalf("[%s] Error al escuchar en puerto %d: %v", c.id_consumidor, puerto, err)
+		log.Fatalf("[%s] Error al escuchar en puerto %d: %v\n", c.id_consumidor, puerto, err)
+	}
+
+	srv := &servidorConsumidor{
+		Consumidor: c,
+		activo:     true,
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterConsumidorServer(s, &servidorConsumidor{Consumidor: c})
+	pb.RegisterConsumidorServer(s, srv)
+
 	go func() {
 		fmt.Printf("[%s] Escuchando en puerto %d\n", c.id_consumidor, puerto)
 		if err := s.Serve(lis); err != nil {
-			log.Fatalf("[%s] Error sirviendo: %v", c.id_consumidor, err)
+			log.Fatalf("[%s] Error sirviendo: %v\n", c.id_consumidor, err)
 		}
 	}()
 }
@@ -142,14 +160,14 @@ func guardarOferta(c Consumidor, oferta *pb.Oferta) bool {
 	if os.IsNotExist(err) {
 		existeArchivo = false
 	} else if err != nil {
-		log.Printf("[%s] Error al revisar archivo: %v", c.id_consumidor, err)
+		log.Printf("[%s] Error al revisar archivo: %v\n", c.id_consumidor, err)
 		return false
 	}
 
 	archivo, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
 	if err != nil {
-		log.Printf("[%s] Error al abrir el archivo: %v", c.id_consumidor, err)
+		log.Printf("[%s] Error al abrir el archivo: %v\n", c.id_consumidor, err)
 		return false
 	}
 	defer archivo.Close()
@@ -168,7 +186,7 @@ func guardarOferta(c Consumidor, oferta *pb.Oferta) bool {
 			"Fecha",
 		}
 		if err := writer.Write(header); err != nil {
-			log.Printf("[%s] Error al escribir el encabezado CSV: %v", c.id_consumidor, err)
+			log.Printf("[%s] Error al escribir el encabezado CSV: %v\n", c.id_consumidor, err)
 			return false
 		}
 	}
@@ -184,20 +202,109 @@ func guardarOferta(c Consumidor, oferta *pb.Oferta) bool {
 	}
 
 	if err := writer.Write(record); err != nil {
-		log.Printf("[%s] Error al escribir CSV: %v", c.id_consumidor, err)
+		log.Printf("[%s] Error al escribir CSV: %v\n", c.id_consumidor, err)
 		return false
 	}
 
 	return true
 }
 
-func simularCaida(c Consumidor) {
+func simularCaida(s *servidorConsumidor) {
+	s.mu.Lock()
+	s.activo = false
+	s.mu.Unlock()
+
 	duracion := time.Duration(rand.Intn(5)+5) * time.Second
-	log.Printf("El consumidor %s se cayó", c.id_consumidor)
+	log.Printf("El consumidor %s se cayó\n", s.Consumidor.id_consumidor)
 	time.Sleep(duracion)
 
-	recuperarOfertas(c)
+	s.mu.Lock()
+	s.activo = true
+	s.mu.Unlock()
+
+	s.recuperarOfertas()
 }
+
+func (s *servidorConsumidor) recuperarOfertas() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Printf("[%s] No se pudo conectar: %v\n", s.Consumidor.id_consumidor, err)
+		return
+	}
+
+	defer conn.Close()
+
+	cliente := pb.NewBrokerClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	registro := &pb.Registro{
+		Nombre: s.Consumidor.id_consumidor,
+		Rol:    1,
+	}
+	resp, err := cliente.GenerarHistorico(ctx, registro)
+
+	if err != nil {
+		log.Printf("[%s] Error al recuperar historial: %v\n", s.Consumidor.id_consumidor, err)
+	}
+	ofertas := resp.Ofertas
+
+	if len(ofertas) == 0 {
+		log.Printf("[%s] No hay ofertas que recuperar\n", s.Consumidor.id_consumidor)
+		return
+	}
+
+	path := fmt.Sprintf("/app/ofertas/%s", s.Consumidor.id_consumidor)
+	archivo, err := os.Create(path)
+
+	if err != nil {
+		log.Printf("[%s] Error al crear el archivo: %v\n", s.Consumidor.id_consumidor, err)
+		return
+	}
+
+	defer archivo.Close()
+
+	writer := csv.NewWriter(archivo)
+	defer writer.Flush()
+
+	header := []string{
+		"ID Oferta",
+		"Tienda",
+		"Categoria",
+		"Producto",
+		"Precio",
+		"Stock",
+		"Fecha",
+	}
+
+	if err := writer.Write(header); err != nil {
+		log.Printf("[%s] Error al escribir encabezado en recuperación: %v\n", s.Consumidor.id_consumidor, err)
+		return
+	}
+
+	for _, oferta := range ofertas {
+		record := []string{
+			oferta.OfertaId,
+			oferta.Tienda,
+			oferta.Categoria,
+			oferta.Producto,
+			strconv.FormatInt(oferta.Precio, 10),
+			strconv.FormatInt(oferta.Stock, 10),
+			oferta.Fecha,
+		}
+
+		if err := writer.Write(record); err != nil {
+			log.Printf("[%s] Error al escribir oferta recuperada: %v\n", s.Consumidor.id_consumidor, err)
+			continue
+		}
+	}
+
+	log.Printf("[%s] Recuperadas las ofertas", s.Consumidor.id_consumidor)
+}
+
 func main() {
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -235,10 +342,10 @@ func main() {
 
 		resp, err := cliente.Registrarse(ctx, registro)
 		if err != nil {
-			log.Fatalf("Error al registrarse: %v", err)
+			log.Fatalf("Error al registrarse: %v\n", err)
 		}
 		if resp.Flag {
-			fmt.Printf("%s registrado en el broker", c.id_consumidor)
+			fmt.Printf("%s registrado en el broker\n", c.id_consumidor)
 		} else {
 			fmt.Println("Falló el registro")
 			return

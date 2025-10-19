@@ -63,7 +63,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./consumidores/ofertas/grupo1:/app/ofertas
+      - ./consumidores/ofertas/grupo2:/app/ofertas
 
   grupo3:
     build: ./consumidores
@@ -75,7 +75,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./consumidores/ofertas/grupo1:/app/ofertas
+      - ./consumidores/ofertas/grupo3:/app/ofertas
 
   db1:
     build: ./db/Nodo1
