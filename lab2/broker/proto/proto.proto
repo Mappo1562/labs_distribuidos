@@ -96,10 +96,6 @@ message Filtro {
 // ------------------ //
 
 service Consumidor {
-<<<<<<< HEAD
-    rpc NotificarOferta(Oferta) returns (Bool){}
-=======
     rpc NotificarOferta(Oferta) returns (Bool);
     rpc EnviarHistorico(RangeSinceResponse) returns (Bool);
->>>>>>> a6c0ecee0ce0b83ef6c6a7366b8b95f262e95e20
 }
