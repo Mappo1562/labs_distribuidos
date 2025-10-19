@@ -129,7 +129,7 @@ func generarOfertaAleatoria() *pb.Oferta {
 				Producto:  p.producto_nombre,
 				Precio:    precio_oferta,
 				Stock:     stock,
-				Fecha:     time.Now().Format("2006-01-02"),
+				Fecha:     time.Now().Format("02/01/2006 15:04:05.000"),
 			}
 		}
 

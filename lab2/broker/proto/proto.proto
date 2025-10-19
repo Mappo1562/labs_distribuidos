@@ -10,6 +10,15 @@ option go_package = "/proto";
 service  Broker{
     rpc GenerarOferta(Oferta) returns (Bool) {}
     rpc Registrarse(Registro) returns (Bool) {}
+    rpc GenerarHistorico(Registro) returns (Bool) {}
+}
+
+// por ahora no se usa
+message HistoricoRequest {
+  string nombre = 1;
+  // Oferta UltimaOferta = 2; este sirve si queremos pasar solo las ofertas que no recibió
+  // en la ayudantía dice q se puede entregar todo el historico
+  // y el consumidor se encarga de filtrar lo que ya tiene.
 }
 
 message Registro{
@@ -42,6 +51,8 @@ service DBNode {
   rpc Store(StoreRequest) returns (StoreResponse);
   rpc Get(GetRequest) returns (GetResponse);
   rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse);
+  // agregada por mappo:
+  rpc GetHistoric(Filtro) returns (RangeSinceResponse);
 }
 
 message StoreRequest {
@@ -70,10 +81,25 @@ message RangeSinceResponse {
   repeated Oferta Ofertas = 1;
 }
 
+
+// Agregadas mias:
+
+message Filtro {
+  string Tienda = 1;
+  string Categoria = 2;
+  string PrecioMax = 3;
+}
+
+
 // ------------------ //
 // * Operaciones Consumidor * //
 // ------------------ //
 
 service Consumidor {
+<<<<<<< HEAD
     rpc NotificarOferta(Oferta) returns (Bool){}
+=======
+    rpc NotificarOferta(Oferta) returns (Bool);
+    rpc EnviarHistorico(RangeSinceResponse) returns (Bool);
+>>>>>>> a6c0ecee0ce0b83ef6c6a7366b8b95f262e95e20
 }
