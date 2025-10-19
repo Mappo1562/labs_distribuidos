@@ -682,21 +682,20 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x06Filtro\x12\x16\n" +
 	"\x06Tienda\x18\x01 \x01(\tR\x06Tienda\x12\x1c\n" +
 	"\tCategoria\x18\x02 \x01(\tR\tCategoria\x12\x1c\n" +
-	"\tPrecioMax\x18\x03 \x01(\tR\tPrecioMax2\xac\x01\n" +
+	"\tPrecioMax\x18\x03 \x01(\tR\tPrecioMax2\xba\x01\n" +
 	"\x06Broker\x123\n" +
 	"\rGenerarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.Bool\"\x00\x123\n" +
-	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x128\n" +
-	"\x10GenerarHistorico\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x002\xfe\x01\n" +
+	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x12F\n" +
+	"\x10GenerarHistorico\x12\x12.CyberDay.Registro\x1a\x1c.CyberDay.RangeSinceResponse\"\x002\xfe\x01\n" +
 	"\x06DBNode\x128\n" +
 	"\x05Store\x12\x16.CyberDay.StoreRequest\x1a\x17.CyberDay.StoreResponse\x122\n" +
 	"\x03Get\x12\x14.CyberDay.GetRequest\x1a\x15.CyberDay.GetResponse\x12G\n" +
 	"\n" +
 	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse\x12=\n" +
-	"\vGetHistoric\x12\x10.CyberDay.Filtro\x1a\x1c.CyberDay.RangeSinceResponse2\x82\x01\n" +
+	"\vGetHistoric\x12\x10.CyberDay.Filtro\x1a\x1c.CyberDay.RangeSinceResponse2A\n" +
 	"\n" +
 	"Consumidor\x123\n" +
-	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.Bool\x12?\n" +
-	"\x0fEnviarHistorico\x12\x1c.CyberDay.RangeSinceResponse\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
+	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -737,18 +736,16 @@ var file_proto_proto_proto_depIdxs = []int32{
 	9,  // 8: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
 	11, // 9: CyberDay.DBNode.GetHistoric:input_type -> CyberDay.Filtro
 	2,  // 10: CyberDay.Consumidor.NotificarOferta:input_type -> CyberDay.Oferta
-	10, // 11: CyberDay.Consumidor.EnviarHistorico:input_type -> CyberDay.RangeSinceResponse
-	3,  // 12: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
-	3,  // 13: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
-	3,  // 14: CyberDay.Broker.GenerarHistorico:output_type -> CyberDay.Bool
-	6,  // 15: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
-	8,  // 16: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
-	10, // 17: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
-	10, // 18: CyberDay.DBNode.GetHistoric:output_type -> CyberDay.RangeSinceResponse
-	3,  // 19: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
-	3,  // 20: CyberDay.Consumidor.EnviarHistorico:output_type -> CyberDay.Bool
-	12, // [12:21] is the sub-list for method output_type
-	3,  // [3:12] is the sub-list for method input_type
+	3,  // 11: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
+	3,  // 12: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
+	10, // 13: CyberDay.Broker.GenerarHistorico:output_type -> CyberDay.RangeSinceResponse
+	6,  // 14: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
+	8,  // 15: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
+	10, // 16: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
+	10, // 17: CyberDay.DBNode.GetHistoric:output_type -> CyberDay.RangeSinceResponse
+	3,  // 18: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
+	11, // [11:19] is the sub-list for method output_type
+	3,  // [3:11] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name

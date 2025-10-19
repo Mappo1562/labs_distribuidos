@@ -33,7 +33,7 @@ const (
 type BrokerClient interface {
 	GenerarOferta(ctx context.Context, in *Oferta, opts ...grpc.CallOption) (*Bool, error)
 	Registrarse(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error)
-	GenerarHistorico(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error)
+	GenerarHistorico(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*RangeSinceResponse, error)
 }
 
 type brokerClient struct {
@@ -64,9 +64,9 @@ func (c *brokerClient) Registrarse(ctx context.Context, in *Registro, opts ...gr
 	return out, nil
 }
 
-func (c *brokerClient) GenerarHistorico(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error) {
+func (c *brokerClient) GenerarHistorico(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*RangeSinceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Bool)
+	out := new(RangeSinceResponse)
 	err := c.cc.Invoke(ctx, Broker_GenerarHistorico_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func (c *brokerClient) GenerarHistorico(ctx context.Context, in *Registro, opts 
 type BrokerServer interface {
 	GenerarOferta(context.Context, *Oferta) (*Bool, error)
 	Registrarse(context.Context, *Registro) (*Bool, error)
-	GenerarHistorico(context.Context, *Registro) (*Bool, error)
+	GenerarHistorico(context.Context, *Registro) (*RangeSinceResponse, error)
 	mustEmbedUnimplementedBrokerServer()
 }
 
@@ -97,7 +97,7 @@ func (UnimplementedBrokerServer) GenerarOferta(context.Context, *Oferta) (*Bool,
 func (UnimplementedBrokerServer) Registrarse(context.Context, *Registro) (*Bool, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Registrarse not implemented")
 }
-func (UnimplementedBrokerServer) GenerarHistorico(context.Context, *Registro) (*Bool, error) {
+func (UnimplementedBrokerServer) GenerarHistorico(context.Context, *Registro) (*RangeSinceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerarHistorico not implemented")
 }
 func (UnimplementedBrokerServer) mustEmbedUnimplementedBrokerServer() {}
@@ -419,7 +419,6 @@ var DBNode_ServiceDesc = grpc.ServiceDesc{
 
 const (
 	Consumidor_NotificarOferta_FullMethodName = "/CyberDay.Consumidor/NotificarOferta"
-	Consumidor_EnviarHistorico_FullMethodName = "/CyberDay.Consumidor/EnviarHistorico"
 )
 
 // ConsumidorClient is the client API for Consumidor service.
@@ -427,7 +426,6 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ConsumidorClient interface {
 	NotificarOferta(ctx context.Context, in *Oferta, opts ...grpc.CallOption) (*Bool, error)
-	EnviarHistorico(ctx context.Context, in *RangeSinceResponse, opts ...grpc.CallOption) (*Bool, error)
 }
 
 type consumidorClient struct {
@@ -448,22 +446,11 @@ func (c *consumidorClient) NotificarOferta(ctx context.Context, in *Oferta, opts
 	return out, nil
 }
 
-func (c *consumidorClient) EnviarHistorico(ctx context.Context, in *RangeSinceResponse, opts ...grpc.CallOption) (*Bool, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Bool)
-	err := c.cc.Invoke(ctx, Consumidor_EnviarHistorico_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ConsumidorServer is the server API for Consumidor service.
 // All implementations must embed UnimplementedConsumidorServer
 // for forward compatibility.
 type ConsumidorServer interface {
 	NotificarOferta(context.Context, *Oferta) (*Bool, error)
-	EnviarHistorico(context.Context, *RangeSinceResponse) (*Bool, error)
 	mustEmbedUnimplementedConsumidorServer()
 }
 
@@ -476,9 +463,6 @@ type UnimplementedConsumidorServer struct{}
 
 func (UnimplementedConsumidorServer) NotificarOferta(context.Context, *Oferta) (*Bool, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NotificarOferta not implemented")
-}
-func (UnimplementedConsumidorServer) EnviarHistorico(context.Context, *RangeSinceResponse) (*Bool, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EnviarHistorico not implemented")
 }
 func (UnimplementedConsumidorServer) mustEmbedUnimplementedConsumidorServer() {}
 func (UnimplementedConsumidorServer) testEmbeddedByValue()                    {}
@@ -519,24 +503,6 @@ func _Consumidor_NotificarOferta_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Consumidor_EnviarHistorico_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RangeSinceResponse)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ConsumidorServer).EnviarHistorico(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Consumidor_EnviarHistorico_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ConsumidorServer).EnviarHistorico(ctx, req.(*RangeSinceResponse))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Consumidor_ServiceDesc is the grpc.ServiceDesc for Consumidor service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -547,10 +513,6 @@ var Consumidor_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "NotificarOferta",
 			Handler:    _Consumidor_NotificarOferta_Handler,
-		},
-		{
-			MethodName: "EnviarHistorico",
-			Handler:    _Consumidor_EnviarHistorico_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

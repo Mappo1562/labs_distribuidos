@@ -291,12 +291,12 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 	return nil, false
 }
 
-func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
+func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
 	flag := true
 	rol, ok := registrados[in.Nombre]
 	if !ok || rol != 1 {
 		log.Printf("El consumidor %v no está registrada en el broker. Peticion rechazada.", in.Nombre)
-		return &pb.Bool{Flag: false}, nil // explicar errores <--------------------------------------------------AQUI
+		return nil, nil // explicar errores <--------------------------------------------------AQUI
 	}
 	log.Printf("Solicitare el historial para %v", in.Nombre)
 	recibido := [3]int{0, 0, 0}
@@ -366,31 +366,11 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Boo
 		} else {
 			// los 3 son diferentes
 			log.Printf("No se pudo guardar correctamente los historicos.")
-			return &pb.Bool{Flag: false}, nil
+			return nil, nil
 		}
 	}
 
-	// enviar H al consumidor
-	dir := in.Nombre + ":" + consumidores[in.Nombre][0]
-	conn, err := grpc.Dial(dir, grpc.WithInsecure())
-	if err != nil {
-		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
-		return &pb.Bool{Flag: false}, nil
-	}
-	defer conn.Close()
-	client := pb.NewConsumidorClient(conn)
-	ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*20)
-	defer cancel2()
-
-	ret := &pb.RangeSinceResponse{
-		Ofertas: H,
-	}
-	response, err := client.EnviarHistorico(ctx2, ret)
-	if err != nil || response.Flag == false {
-		log.Printf("No se pudo enviar el historico al consumidor %v\nerror: %v", dir, err)
-		return &pb.Bool{Flag: false}, nil
-	}
-	return &pb.Bool{Flag: true}, nil
+	return &pb.RangeSinceResponse{Ofertas: H}, nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

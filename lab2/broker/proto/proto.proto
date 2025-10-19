@@ -10,7 +10,7 @@ option go_package = "/proto";
 service  Broker{
     rpc GenerarOferta(Oferta) returns (Bool) {}
     rpc Registrarse(Registro) returns (Bool) {}
-    rpc GenerarHistorico(Registro) returns (Bool) {}
+    rpc GenerarHistorico(Registro) returns (RangeSinceResponse) {}
 }
 
 // por ahora no se usa
@@ -97,5 +97,4 @@ message Filtro {
 
 service Consumidor {
     rpc NotificarOferta(Oferta) returns (Bool);
-    rpc EnviarHistorico(RangeSinceResponse) returns (Bool);
 }
