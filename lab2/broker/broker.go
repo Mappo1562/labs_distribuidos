@@ -77,7 +77,7 @@ func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, er
 // Devuelve true si el nodo guardó la oferta correctamente, false en caso contrario
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-func GenerarOfertaHelp(in *pb.Oferta, dir string, now string) bool {
+func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
@@ -89,17 +89,8 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string, now string) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	oferta := &pb.Oferta{
-		OfertaId:  in.OfertaId,
-		Tienda:    in.Tienda,
-		Categoria: in.Categoria,
-		Producto:  in.Producto,
-		Precio:    in.Precio,
-		Stock:     in.Stock,
-		Fecha:     now,
-	}
 	req := &pb.StoreRequest{
-		Oferta: oferta,
+		Oferta: in,
 	}
 
 	response, err := client.Store(ctx, req)
@@ -216,7 +207,6 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	}
 	log.Printf("Guardare una oferta para la tienda %v", in.Tienda)
 	publicado := [3]int{0, 0, 0}
-	now := time.Now().Format("02 15:04:05.000")
 	for flag {
 		var wg sync.WaitGroup
 
@@ -229,7 +219,7 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 				idx := i
 				go func(idx int) {
 					defer wg.Done()
-					if GenerarOfertaHelp(in, AddBD[idx], now) {
+					if GenerarOfertaHelp(in, AddBD[idx]) {
 						mugenof.Lock()
 						publicado[idx] = 1
 						mugenof.Unlock()
@@ -257,7 +247,7 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	return &pb.Bool{Flag: true}, nil
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
 Hay q buscar alguna forma de ver todas las categorias de los productos
@@ -265,83 +255,145 @@ se me ocurre un arreglo;
 var categorias = []string{categoria, tienda, precio maximo}
 */
 // devolverle todas las ofertas al consumidor basta segun el video
-/*
-func GenerarConsultaHistoricaHelp(dir string) bool {
-	conn, err := grpc.Dial(dir, grpc.WithInsecure())
-	if err != nil {
-		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
-		return false
-	}
-	defer conn.Close()
-	client := pb.NewNodeServiceClient(conn)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	response, err := client.GuardarOferta(ctx, oferta)
-	if err != nil {
-		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
-		return false
-	}
-	if response != nil && response.Flag {
-		log.Printf("Oferta guardada correctamente por el nodo %v", dir)
-		return true
-	}
-
-	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
-	return false
-}
 
 /*
 reviso si 2 son iguales, si no es asi, llamo a las bd para hacer la consistencia eventual,
 */
-/*
-func (s *server) GenerarConsultaHistorica(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
+
+func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse, bool) {
+	conn, err := grpc.Dial(dir, grpc.WithInsecure())
+	if err != nil {
+		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+		return nil, false
+	}
+	defer conn.Close()
+	client := pb.NewDBNodeClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel()
+
+	response, err := client.GetHistoric(ctx, &pb.Filtro{
+		Tienda:    filtros[2],
+		Categoria: filtros[1],
+		PrecioMax: filtros[3],
+	})
+
+	if err != nil {
+		log.Printf("No se pudo obtener el historico por el nodo %v\nerror: %v", dir, err)
+		return nil, false
+	}
+	if response != nil {
+		log.Printf("Historico obtenido correctamente por el nodo %v", dir)
+		return response, true
+	}
+
+	log.Printf("No se pudo obtener el historico por el nodo %v", dir)
+	return nil, false
+}
+
+func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
 	flag := true
-	var mugenof sync.Mutex
 	rol, ok := registrados[in.Nombre]
 	if !ok || rol != 1 {
-		log.Printf("El consumidor %v no está registrada en el broker. Oferta rechazada.", in.Nombre)
-		return &pb.Bool{Flag: false}, nil
+		log.Printf("El consumidor %v no está registrada en el broker. Peticion rechazada.", in.Nombre)
+		return &pb.Bool{Flag: false}, nil // explicar errores <--------------------------------------------------AQUI
 	}
-
+	log.Printf("Solicitare el historial para %v", in.Nombre)
 	recibido := [3]int{0, 0, 0}
-	now := time.Now().Format("02 15:04:05.000")
+	var (
+		H1 *pb.RangeSinceResponse
+		H2 *pb.RangeSinceResponse
+		H3 *pb.RangeSinceResponse
+		f1 bool
+		f2 bool
+		f3 bool
+	)
 	for flag {
-		var wg sync.WaitGroup
-		wg.Add(3 - publicado[0] - publicado[1] - publicado[2])
-
-		i := 0
-		for i < 3 {
-			mugenof.Lock()
-			if publicado[i] == 0 {
-				go func() {
-					defer wg.Done()
-					if GenerarOfertaHelp(in, AddBD[i], now) {
-						mugenof.Lock()
-						publicado[i] = 1
-						mugenof.Unlock()
-					}
-				}()
+		if recibido[0] == 0 {
+			H1, f1 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[0])
+			if f1 {
+				recibido[0] = 1
 			}
-			mugenof.Unlock()
-			i++
+		}
+		if recibido[1] == 0 {
+			H2, f2 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[1])
+			if f2 {
+				recibido[1] = 1
+			}
+		}
+		if recibido[2] == 0 {
+			H3, f3 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
+			if f3 {
+				recibido[2] = 1
+			}
 		}
 
-		wg.Wait()
-
-		if publicado[0]+publicado[1]+publicado[2] > 1 {
-			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
+		sum := recibido[0] + recibido[1] + recibido[2]
+		if sum > 2 {
+			log.Printf("**** Historicos recibidos de los 3 nodos ****")
 			flag = false
 		} else {
-			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
+			log.Printf("No se pudo guardar correctamente los historicos. Intentando nuevamente")
 		}
 	}
 
+	// analizar los historicos recibidos y enviarselos al consumidor
+	H := make([]*pb.Oferta, 0)
+	i := 0
+	j := 0
+	k := 0
+	for i < len(H1.Ofertas) && j < len(H2.Ofertas) && k < len(H3.Ofertas) {
+		of1 := H1.Ofertas[i].OfertaId
+		of2 := H2.Ofertas[j].OfertaId
+		of3 := H3.Ofertas[k].OfertaId
+		if of1[0] == of2[0] && of2[0] == of3[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			j++
+			k++
+		} else if of1[0] == of2[0] && of1[0] != of3[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			j++
+		} else if of1[0] == of3[0] && of1[0] != of2[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			k++
+		} else if of2[0] == of3[0] && of2[0] != of1[0] {
+			H = append(H, H2.Ofertas[i])
+			j++
+			k++
+		} else {
+			// los 3 son diferentes
+			log.Printf("No se pudo guardar correctamente los historicos.")
+			return &pb.Bool{Flag: false}, nil
+		}
+	}
+
+	// enviar H al consumidor
+	dir := in.Nombre + ":" + consumidores[in.Nombre][0]
+	conn, err := grpc.Dial(dir, grpc.WithInsecure())
+	if err != nil {
+		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+		return &pb.Bool{Flag: false}, nil
+	}
+	defer conn.Close()
+	client := pb.NewConsumidorClient(conn)
+	ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second*20)
+	defer cancel2()
+
+	ret := &pb.RangeSinceResponse{
+		Ofertas: H,
+	}
+	response, err := client.EnviarHistorico(ctx2, ret)
+	if err != nil || response.Flag == false {
+		log.Printf("No se pudo enviar el historico al consumidor %v\nerror: %v", dir, err)
+		return &pb.Bool{Flag: false}, nil
+	}
 	return &pb.Bool{Flag: true}, nil
 }
-*/
-////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func mostrarConsumidores() {
 	fmt.Println("Consumidores cargados:")

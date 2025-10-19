@@ -24,6 +24,51 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// por ahora no se usa
+type HistoricoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Nombre        string                 `protobuf:"bytes,1,opt,name=nombre,proto3" json:"nombre,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HistoricoRequest) Reset() {
+	*x = HistoricoRequest{}
+	mi := &file_proto_proto_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HistoricoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HistoricoRequest) ProtoMessage() {}
+
+func (x *HistoricoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HistoricoRequest.ProtoReflect.Descriptor instead.
+func (*HistoricoRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *HistoricoRequest) GetNombre() string {
+	if x != nil {
+		return x.Nombre
+	}
+	return ""
+}
+
 type Registro struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Nombre        string                 `protobuf:"bytes,1,opt,name=nombre,proto3" json:"nombre,omitempty"`
@@ -34,7 +79,7 @@ type Registro struct {
 
 func (x *Registro) Reset() {
 	*x = Registro{}
-	mi := &file_proto_proto_proto_msgTypes[0]
+	mi := &file_proto_proto_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +91,7 @@ func (x *Registro) String() string {
 func (*Registro) ProtoMessage() {}
 
 func (x *Registro) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[0]
+	mi := &file_proto_proto_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +104,7 @@ func (x *Registro) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Registro.ProtoReflect.Descriptor instead.
 func (*Registro) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{0}
+	return file_proto_proto_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Registro) GetNombre() string {
@@ -92,7 +137,7 @@ type Oferta struct {
 
 func (x *Oferta) Reset() {
 	*x = Oferta{}
-	mi := &file_proto_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -104,7 +149,7 @@ func (x *Oferta) String() string {
 func (*Oferta) ProtoMessage() {}
 
 func (x *Oferta) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,7 +162,7 @@ func (x *Oferta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Oferta.ProtoReflect.Descriptor instead.
 func (*Oferta) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{1}
+	return file_proto_proto_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Oferta) GetOfertaId() string {
@@ -185,7 +230,7 @@ type Bool struct {
 
 func (x *Bool) Reset() {
 	*x = Bool{}
-	mi := &file_proto_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -197,7 +242,7 @@ func (x *Bool) String() string {
 func (*Bool) ProtoMessage() {}
 
 func (x *Bool) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -210,7 +255,7 @@ func (x *Bool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bool.ProtoReflect.Descriptor instead.
 func (*Bool) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{2}
+	return file_proto_proto_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Bool) GetFlag() bool {
@@ -228,7 +273,7 @@ type Vacio struct {
 
 func (x *Vacio) Reset() {
 	*x = Vacio{}
-	mi := &file_proto_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -240,7 +285,7 @@ func (x *Vacio) String() string {
 func (*Vacio) ProtoMessage() {}
 
 func (x *Vacio) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -253,7 +298,7 @@ func (x *Vacio) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vacio.ProtoReflect.Descriptor instead.
 func (*Vacio) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{3}
+	return file_proto_proto_proto_rawDescGZIP(), []int{4}
 }
 
 type StoreRequest struct {
@@ -265,7 +310,7 @@ type StoreRequest struct {
 
 func (x *StoreRequest) Reset() {
 	*x = StoreRequest{}
-	mi := &file_proto_proto_proto_msgTypes[4]
+	mi := &file_proto_proto_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -277,7 +322,7 @@ func (x *StoreRequest) String() string {
 func (*StoreRequest) ProtoMessage() {}
 
 func (x *StoreRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[4]
+	mi := &file_proto_proto_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -290,7 +335,7 @@ func (x *StoreRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreRequest.ProtoReflect.Descriptor instead.
 func (*StoreRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{4}
+	return file_proto_proto_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *StoreRequest) GetOferta() *Oferta {
@@ -310,7 +355,7 @@ type StoreResponse struct {
 
 func (x *StoreResponse) Reset() {
 	*x = StoreResponse{}
-	mi := &file_proto_proto_proto_msgTypes[5]
+	mi := &file_proto_proto_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -322,7 +367,7 @@ func (x *StoreResponse) String() string {
 func (*StoreResponse) ProtoMessage() {}
 
 func (x *StoreResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[5]
+	mi := &file_proto_proto_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -335,7 +380,7 @@ func (x *StoreResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StoreResponse.ProtoReflect.Descriptor instead.
 func (*StoreResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{5}
+	return file_proto_proto_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *StoreResponse) GetOk() bool {
@@ -361,7 +406,7 @@ type GetRequest struct {
 
 func (x *GetRequest) Reset() {
 	*x = GetRequest{}
-	mi := &file_proto_proto_proto_msgTypes[6]
+	mi := &file_proto_proto_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -373,7 +418,7 @@ func (x *GetRequest) String() string {
 func (*GetRequest) ProtoMessage() {}
 
 func (x *GetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[6]
+	mi := &file_proto_proto_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -386,7 +431,7 @@ func (x *GetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
 func (*GetRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{6}
+	return file_proto_proto_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetRequest) GetOfertaId() string {
@@ -406,7 +451,7 @@ type GetResponse struct {
 
 func (x *GetResponse) Reset() {
 	*x = GetResponse{}
-	mi := &file_proto_proto_proto_msgTypes[7]
+	mi := &file_proto_proto_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -418,7 +463,7 @@ func (x *GetResponse) String() string {
 func (*GetResponse) ProtoMessage() {}
 
 func (x *GetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[7]
+	mi := &file_proto_proto_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -431,7 +476,7 @@ func (x *GetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetResponse.ProtoReflect.Descriptor instead.
 func (*GetResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{7}
+	return file_proto_proto_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetResponse) GetOferta() *Oferta {
@@ -457,7 +502,7 @@ type RangeSinceRequest struct {
 
 func (x *RangeSinceRequest) Reset() {
 	*x = RangeSinceRequest{}
-	mi := &file_proto_proto_proto_msgTypes[8]
+	mi := &file_proto_proto_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -469,7 +514,7 @@ func (x *RangeSinceRequest) String() string {
 func (*RangeSinceRequest) ProtoMessage() {}
 
 func (x *RangeSinceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[8]
+	mi := &file_proto_proto_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -482,7 +527,7 @@ func (x *RangeSinceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RangeSinceRequest.ProtoReflect.Descriptor instead.
 func (*RangeSinceRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{8}
+	return file_proto_proto_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RangeSinceRequest) GetSinceUnix() int64 {
@@ -501,7 +546,7 @@ type RangeSinceResponse struct {
 
 func (x *RangeSinceResponse) Reset() {
 	*x = RangeSinceResponse{}
-	mi := &file_proto_proto_proto_msgTypes[9]
+	mi := &file_proto_proto_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -513,7 +558,7 @@ func (x *RangeSinceResponse) String() string {
 func (*RangeSinceResponse) ProtoMessage() {}
 
 func (x *RangeSinceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[9]
+	mi := &file_proto_proto_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -526,7 +571,7 @@ func (x *RangeSinceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RangeSinceResponse.ProtoReflect.Descriptor instead.
 func (*RangeSinceResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{9}
+	return file_proto_proto_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RangeSinceResponse) GetOfertas() []*Oferta {
@@ -536,11 +581,73 @@ func (x *RangeSinceResponse) GetOfertas() []*Oferta {
 	return nil
 }
 
+type Filtro struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tienda        string                 `protobuf:"bytes,1,opt,name=Tienda,proto3" json:"Tienda,omitempty"`
+	Categoria     string                 `protobuf:"bytes,2,opt,name=Categoria,proto3" json:"Categoria,omitempty"`
+	PrecioMax     string                 `protobuf:"bytes,3,opt,name=PrecioMax,proto3" json:"PrecioMax,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Filtro) Reset() {
+	*x = Filtro{}
+	mi := &file_proto_proto_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Filtro) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Filtro) ProtoMessage() {}
+
+func (x *Filtro) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Filtro.ProtoReflect.Descriptor instead.
+func (*Filtro) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *Filtro) GetTienda() string {
+	if x != nil {
+		return x.Tienda
+	}
+	return ""
+}
+
+func (x *Filtro) GetCategoria() string {
+	if x != nil {
+		return x.Categoria
+	}
+	return ""
+}
+
+func (x *Filtro) GetPrecioMax() string {
+	if x != nil {
+		return x.PrecioMax
+	}
+	return ""
+}
+
 var File_proto_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/proto.proto\x12\bCyberDay\"4\n" +
+	"\x11proto/proto.proto\x12\bCyberDay\"*\n" +
+	"\x10HistoricoRequest\x12\x16\n" +
+	"\x06nombre\x18\x01 \x01(\tR\x06nombre\"4\n" +
 	"\bRegistro\x12\x16\n" +
 	"\x06nombre\x18\x01 \x01(\tR\x06nombre\x12\x10\n" +
 	"\x03rol\x18\x02 \x01(\x05R\x03rol\"\xe9\x01\n" +
@@ -571,18 +678,25 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"since_unix\x18\x01 \x01(\x03R\tsinceUnix\"@\n" +
 	"\x12RangeSinceResponse\x12*\n" +
-	"\aOfertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aOfertas2r\n" +
+	"\aOfertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aOfertas\"\\\n" +
+	"\x06Filtro\x12\x16\n" +
+	"\x06Tienda\x18\x01 \x01(\tR\x06Tienda\x12\x1c\n" +
+	"\tCategoria\x18\x02 \x01(\tR\tCategoria\x12\x1c\n" +
+	"\tPrecioMax\x18\x03 \x01(\tR\tPrecioMax2\xac\x01\n" +
 	"\x06Broker\x123\n" +
 	"\rGenerarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.Bool\"\x00\x123\n" +
-	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x002\xbf\x01\n" +
+	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x128\n" +
+	"\x10GenerarHistorico\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x002\xfe\x01\n" +
 	"\x06DBNode\x128\n" +
 	"\x05Store\x12\x16.CyberDay.StoreRequest\x1a\x17.CyberDay.StoreResponse\x122\n" +
 	"\x03Get\x12\x14.CyberDay.GetRequest\x1a\x15.CyberDay.GetResponse\x12G\n" +
 	"\n" +
-	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse2A\n" +
+	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse\x12=\n" +
+	"\vGetHistoric\x12\x10.CyberDay.Filtro\x1a\x1c.CyberDay.RangeSinceResponse2\x82\x01\n" +
 	"\n" +
 	"Consumidor\x123\n" +
-	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
+	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.Bool\x12?\n" +
+	"\x0fEnviarHistorico\x12\x1c.CyberDay.RangeSinceResponse\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -596,40 +710,48 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_proto_proto_proto_goTypes = []any{
-	(*Registro)(nil),           // 0: CyberDay.Registro
-	(*Oferta)(nil),             // 1: CyberDay.Oferta
-	(*Bool)(nil),               // 2: CyberDay.Bool
-	(*Vacio)(nil),              // 3: CyberDay.Vacio
-	(*StoreRequest)(nil),       // 4: CyberDay.StoreRequest
-	(*StoreResponse)(nil),      // 5: CyberDay.StoreResponse
-	(*GetRequest)(nil),         // 6: CyberDay.GetRequest
-	(*GetResponse)(nil),        // 7: CyberDay.GetResponse
-	(*RangeSinceRequest)(nil),  // 8: CyberDay.RangeSinceRequest
-	(*RangeSinceResponse)(nil), // 9: CyberDay.RangeSinceResponse
+	(*HistoricoRequest)(nil),   // 0: CyberDay.HistoricoRequest
+	(*Registro)(nil),           // 1: CyberDay.Registro
+	(*Oferta)(nil),             // 2: CyberDay.Oferta
+	(*Bool)(nil),               // 3: CyberDay.Bool
+	(*Vacio)(nil),              // 4: CyberDay.Vacio
+	(*StoreRequest)(nil),       // 5: CyberDay.StoreRequest
+	(*StoreResponse)(nil),      // 6: CyberDay.StoreResponse
+	(*GetRequest)(nil),         // 7: CyberDay.GetRequest
+	(*GetResponse)(nil),        // 8: CyberDay.GetResponse
+	(*RangeSinceRequest)(nil),  // 9: CyberDay.RangeSinceRequest
+	(*RangeSinceResponse)(nil), // 10: CyberDay.RangeSinceResponse
+	(*Filtro)(nil),             // 11: CyberDay.Filtro
 }
 var file_proto_proto_proto_depIdxs = []int32{
-	1, // 0: CyberDay.StoreRequest.oferta:type_name -> CyberDay.Oferta
-	1, // 1: CyberDay.GetResponse.oferta:type_name -> CyberDay.Oferta
-	1, // 2: CyberDay.RangeSinceResponse.Ofertas:type_name -> CyberDay.Oferta
-	1, // 3: CyberDay.Broker.GenerarOferta:input_type -> CyberDay.Oferta
-	0, // 4: CyberDay.Broker.Registrarse:input_type -> CyberDay.Registro
-	4, // 5: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
-	6, // 6: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
-	8, // 7: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
-	1, // 8: CyberDay.Consumidor.NotificarOferta:input_type -> CyberDay.Oferta
-	2, // 9: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
-	2, // 10: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
-	5, // 11: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
-	7, // 12: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
-	9, // 13: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
-	2, // 14: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
-	9, // [9:15] is the sub-list for method output_type
-	3, // [3:9] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2,  // 0: CyberDay.StoreRequest.oferta:type_name -> CyberDay.Oferta
+	2,  // 1: CyberDay.GetResponse.oferta:type_name -> CyberDay.Oferta
+	2,  // 2: CyberDay.RangeSinceResponse.Ofertas:type_name -> CyberDay.Oferta
+	2,  // 3: CyberDay.Broker.GenerarOferta:input_type -> CyberDay.Oferta
+	1,  // 4: CyberDay.Broker.Registrarse:input_type -> CyberDay.Registro
+	1,  // 5: CyberDay.Broker.GenerarHistorico:input_type -> CyberDay.Registro
+	5,  // 6: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
+	7,  // 7: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
+	9,  // 8: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
+	11, // 9: CyberDay.DBNode.GetHistoric:input_type -> CyberDay.Filtro
+	2,  // 10: CyberDay.Consumidor.NotificarOferta:input_type -> CyberDay.Oferta
+	10, // 11: CyberDay.Consumidor.EnviarHistorico:input_type -> CyberDay.RangeSinceResponse
+	3,  // 12: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
+	3,  // 13: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
+	3,  // 14: CyberDay.Broker.GenerarHistorico:output_type -> CyberDay.Bool
+	6,  // 15: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
+	8,  // 16: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
+	10, // 17: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
+	10, // 18: CyberDay.DBNode.GetHistoric:output_type -> CyberDay.RangeSinceResponse
+	3,  // 19: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
+	3,  // 20: CyberDay.Consumidor.EnviarHistorico:output_type -> CyberDay.Bool
+	12, // [12:21] is the sub-list for method output_type
+	3,  // [3:12] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_proto_init() }
@@ -643,7 +765,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   3,
 		},
