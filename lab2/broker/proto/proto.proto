@@ -53,6 +53,7 @@ service DBNode {
   rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse);
   // agregada por mappo:
   rpc GetHistoric(Filtro) returns (RangeSinceResponse);
+  rpc siguesvivo(Vacio) returns (Bool); // Para chequear si el nodo está vivo
 }
 
 message StoreRequest {
@@ -97,4 +98,11 @@ message Filtro {
 
 service Consumidor {
     rpc NotificarOferta(Oferta) returns (Bool);
+    rpc pedirDatos(Vacio) returns (DatosFinalesConsumidor);
+}
+
+message DatosFinalesConsumidor {
+    string id = 1;
+    int32 ofertasRecibidas = 2;
+    int32 nombreCSV = 3;
 }

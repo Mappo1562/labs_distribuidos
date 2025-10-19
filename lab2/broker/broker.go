@@ -53,7 +53,19 @@ var (
 		1: "Consumidor",
 		2: "nodo BD",
 	}
-	consumidores = make(map[string][]string)
+	mapeoProductores = map[string]int{
+		"Riploy":     0,
+		"Falabellox": 1,
+		"Parisio":    2,
+	}
+	categoriasValidas = []string{"Electrónica", "Moda", "Hogar", "Deportes", "Belleza", "Infantil", "Computación", "Electrodomésticos", "Herramientas", "Juguetes", "Automotriz", "Mascotas"}
+	consumidores      = make(map[string][]string)
+	ResumenProdA      = make([]int, 3)
+	ResumenProdE      = make([]int, 3)
+	muProd            sync.Mutex
+	muEscritura       sync.Mutex
+	nExitos           int32
+	nFallos           int32
 )
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,6 +204,15 @@ func notificar(in *pb.Oferta) bool {
 	return todobien
 }
 
+func revisarCategoria(cat string) bool {
+	for _, c := range categoriasValidas {
+		if c == cat {
+			return true
+		}
+	}
+	return false
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 // GenerarOferta es la función que maneja la solicitud de un productor para guardar una
 // oferta en la base de datos distribuida
@@ -201,15 +222,21 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	flag := true
 	var mugenof sync.Mutex
 	rol, ok := registrados[in.Tienda]
+	muProd.Lock()
+	ResumenProdE[mapeoProductores[in.Tienda]] += 1
+	muProd.Unlock()
 	if !ok || rol != 0 {
 		log.Printf("La tienda %v no está registrada en el broker. Oferta rechazada.", in.Tienda)
+		return &pb.Bool{Flag: false}, nil
+	}
+	if !revisarCategoria(in.Categoria) {
+		log.Printf("La categoria %v no es valida. Oferta rechazada.", in.Categoria)
 		return &pb.Bool{Flag: false}, nil
 	}
 	log.Printf("Guardare una oferta para la tienda %v", in.Tienda)
 	publicado := [3]int{0, 0, 0}
 	for flag {
 		var wg sync.WaitGroup
-
 		for i := 0; i < 3; i++ {
 			mugenof.Lock()
 			pendiente := (publicado[i] == 0)
@@ -234,6 +261,10 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 		if sum > 1 {
 			log.Printf("**** Oferta de %v, proveniente de la tienda %v guardada correctamente por dos o mas nodos ****", in.Producto, in.Tienda)
 			flag = false
+			muEscritura.Lock()
+			nExitos += 1
+			muEscritura.Unlock()
+
 		} else {
 			log.Printf("No se pudo guardar correctamente la oferta proveniente de %v. Intentando nuevamente", in.Tienda)
 		}
@@ -244,17 +275,13 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	} else {
 		log.Printf("Hubo errores notificando a algunos consumidores de la nueva oferta de %v", in.Tienda)
 	}
+	muProd.Lock()
+	ResumenProdA[mapeoProductores[in.Tienda]] += 1
+	muProd.Unlock()
 	return &pb.Bool{Flag: true}, nil
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-Hay q buscar alguna forma de ver todas las categorias de los productos
-se me ocurre un arreglo;
-var categorias = []string{categoria, tienda, precio maximo}
-*/
-// devolverle todas las ofertas al consumidor basta segun el video
 
 /*
 reviso si 2 son iguales, si no es asi, llamo a las bd para hacer la consistencia eventual,
@@ -369,7 +396,48 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 			return nil, nil
 		}
 	}
-	// faltan los casos donde uno se acabe antes
+
+	for i < len(H1.Ofertas) && j < len(H2.Ofertas) {
+		of1 := H1.Ofertas[i].OfertaId
+		of2 := H2.Ofertas[j].OfertaId
+
+		if of1[0] == of2[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			j++
+		} else {
+			log.Printf("No se pudo guardar correctamente los historicos.")
+			return nil, nil
+		}
+	}
+
+	for i < len(H1.Ofertas) && k < len(H3.Ofertas) {
+		of1 := H1.Ofertas[i].OfertaId
+		of3 := H3.Ofertas[k].OfertaId
+
+		if of1[0] == of3[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			k++
+		} else {
+			log.Printf("No se pudo guardar correctamente los historicos.")
+			return nil, nil
+		}
+	}
+
+	for j < len(H2.Ofertas) && k < len(H3.Ofertas) {
+		of2 := H2.Ofertas[j].OfertaId
+		of3 := H3.Ofertas[k].OfertaId
+
+		if of2[0] == of3[0] {
+			H = append(H, H2.Ofertas[j])
+			j++
+			k++
+		} else {
+			log.Printf("No se pudo guardar correctamente los historicos.")
+			return nil, nil
+		}
+	}
 
 	return &pb.RangeSinceResponse{Ofertas: H}, nil
 }
@@ -428,8 +496,126 @@ func initConsumidores() {
 	}
 }
 
+func initRecData() {
+	ResumenProdA[0] = 0
+	ResumenProdA[1] = 0
+	ResumenProdA[2] = 0
+	ResumenProdE[0] = 0
+	ResumenProdE[1] = 0
+	ResumenProdE[2] = 0
+	nExitos = 0
+	nFallos = 0
+}
+
+func GetVivo(dir string) string {
+	conn, err := grpc.Dial(dir, grpc.WithInsecure())
+	if err != nil {
+		return "caido"
+	}
+	defer conn.Close()
+	client := pb.NewDBNodeClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	response, err := client.Siguesvivo(ctx, &pb.Vacio{})
+	if err != nil {
+		return "caido"
+	}
+	if response != nil && response.Flag {
+		return "activo"
+	}
+
+	return "caido"
+}
+
+func getDataFinalesConsumidor() map[string]*pb.DatosFinalesConsumidor {
+	notiData := make(map[string]*pb.DatosFinalesConsumidor)
+	var muNoti sync.Mutex
+	var wg sync.WaitGroup
+	for id := range consumidores {
+		wg.Add(1)
+		ident := id
+		go func(ident string) {
+			defer wg.Done()
+			dir := consumidores[ident][0]
+			conn, err := grpc.Dial(dir, grpc.WithInsecure())
+			if err != nil {
+				log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+				return
+			}
+			defer conn.Close()
+			client := pb.NewConsumidorClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+			defer cancel()
+			response, err := client.PedirDatos(ctx, &pb.Vacio{})
+			if err != nil {
+				log.Printf("No se pudo obtener los datos finales del consumidor %v\nerror: %v", dir, err)
+				return
+			}
+			if response != nil {
+				muNoti.Lock()
+				notiData[ident] = response
+				muNoti.Unlock()
+				log.Printf("Datos finales obtenidos correctamente del consumidor %v", dir)
+			}
+		}(ident)
+	}
+	wg.Wait()
+	return notiData
+}
+
+func generarReporte() {
+	// PREGUNTAR SI LOS NODOS DE LAS BASES DE DATOS ESTAN VIVOS AL MOMENTO DE TERMINAR
+	// PREGUNTAR A LOS CONSUMIDORES SI GENERARON SU CSV y pedirle su cantidad de ofertas recibidas
+	vivos := []string{"activo", "activo", "activo"}
+	for i := 0; i < 3; i++ {
+		dir := AddBD[i]
+		vivos[i] = GetVivo(dir)
+	}
+
+	notiData := getDataFinalesConsumidor()
+
+	file, err := os.Create("/app/Reporte.txt")
+	if err != nil {
+		fmt.Println("Error al crear el reporte:", err)
+		return
+	}
+	defer file.Close()
+
+	fmt.Fprintln(file, "==========================================================")
+	fmt.Fprintln(file, "==              REPORTE FINAL DEL CYBERDAY              ==")
+	fmt.Fprintln(file, "==========================================================")
+	fmt.Fprintln(file, "                      Broker Central                      ")
+	fecha := time.Now().Format("02/01/2006")
+	fmt.Fprintf(file, "                        %s\n\n", fecha)
+	fmt.Fprintf(file, "==========================================================\n")
+	fmt.Fprintf(file, " 1 Resumen de ofertas recibidas por productor:\n")
+	for prod, i := range mapeoProductores {
+		fmt.Fprintf(file, " - %v: \n  - ofertas recibidas: %d\n  - ofertas aceptadas: %d\n", prod, ResumenProdE[i], ResumenProdA[i])
+	}
+	fmt.Fprintf(file, "\n==========================================================\n")
+	fmt.Fprintf(file, " 2 Estado de Nodos de Base de Datos:")
+	for i, vivo := range vivos {
+		fmt.Fprintf(file, " - Nodo DB%v: %v\n", i+1, vivo)
+	}
+	fmt.Fprintf(file, "\n==========================================================\n")
+	fmt.Fprintf(file, " 2.1 Métricas de Escritura: \n  - Escrituras exitosas: %d\n  - Escrituras fallidas: %d (por como esta programado, nunca tendremos escrituras fallidas)", nExitos, nFallos)
+	fmt.Fprintf(file, "\n==========================================================\n")
+	fmt.Fprintf(file, " 3 Notificaciones a Consumidores\n")
+	for id, data := range notiData {
+		if consumidores[id][1] != "null" {
+			fmt.Fprintf(file, " - %v (%v): %v ofertas recibidas. Archivo %v generado\n", id, strings.ReplaceAll(consumidores[id][1], ";", ", "), data.OfertasRecibidas, data.NombreCSV)
+		} else {
+			fmt.Fprintf(file, " - %v (Sin restricciones): %v ofertas recibidas. Archivo %v generado\n", id, data.OfertasRecibidas, data.NombreCSV)
+		}
+	}
+
+}
+
 func main() {
 	registrados = make(map[string]int32)
+	initRecData()
 	initConsumidores()
 	mostrarConsumidores()
 	lis, err := net.Listen("tcp", port)
@@ -440,7 +626,16 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterBrokerServer(grpcServer, &server{})
 	fmt.Println("Broker activo en el puerto ", port)
+
+	go func() {
+		time.Sleep(60 * time.Second)
+		fmt.Println("Tiempo cumplido. Deteniendo servidor...")
+		grpcServer.GracefulStop()
+	}()
+
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("conexión fallida:\n %v", err)
 	}
+
+	generarReporte()
 }

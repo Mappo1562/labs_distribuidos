@@ -641,6 +641,66 @@ func (x *Filtro) GetPrecioMax() string {
 	return ""
 }
 
+type DatosFinalesConsumidor struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OfertasRecibidas int32                  `protobuf:"varint,2,opt,name=ofertasRecibidas,proto3" json:"ofertasRecibidas,omitempty"`
+	NombreCSV        int32                  `protobuf:"varint,3,opt,name=nombreCSV,proto3" json:"nombreCSV,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *DatosFinalesConsumidor) Reset() {
+	*x = DatosFinalesConsumidor{}
+	mi := &file_proto_proto_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DatosFinalesConsumidor) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DatosFinalesConsumidor) ProtoMessage() {}
+
+func (x *DatosFinalesConsumidor) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DatosFinalesConsumidor.ProtoReflect.Descriptor instead.
+func (*DatosFinalesConsumidor) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DatosFinalesConsumidor) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DatosFinalesConsumidor) GetOfertasRecibidas() int32 {
+	if x != nil {
+		return x.OfertasRecibidas
+	}
+	return 0
+}
+
+func (x *DatosFinalesConsumidor) GetNombreCSV() int32 {
+	if x != nil {
+		return x.NombreCSV
+	}
+	return 0
+}
+
 var File_proto_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_proto_rawDesc = "" +
@@ -682,20 +742,28 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x06Filtro\x12\x16\n" +
 	"\x06Tienda\x18\x01 \x01(\tR\x06Tienda\x12\x1c\n" +
 	"\tCategoria\x18\x02 \x01(\tR\tCategoria\x12\x1c\n" +
-	"\tPrecioMax\x18\x03 \x01(\tR\tPrecioMax2\xba\x01\n" +
+	"\tPrecioMax\x18\x03 \x01(\tR\tPrecioMax\"r\n" +
+	"\x16DatosFinalesConsumidor\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12*\n" +
+	"\x10ofertasRecibidas\x18\x02 \x01(\x05R\x10ofertasRecibidas\x12\x1c\n" +
+	"\tnombreCSV\x18\x03 \x01(\x05R\tnombreCSV2\xba\x01\n" +
 	"\x06Broker\x123\n" +
 	"\rGenerarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.Bool\"\x00\x123\n" +
 	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x12F\n" +
-	"\x10GenerarHistorico\x12\x12.CyberDay.Registro\x1a\x1c.CyberDay.RangeSinceResponse\"\x002\xfe\x01\n" +
+	"\x10GenerarHistorico\x12\x12.CyberDay.Registro\x1a\x1c.CyberDay.RangeSinceResponse\"\x002\xad\x02\n" +
 	"\x06DBNode\x128\n" +
 	"\x05Store\x12\x16.CyberDay.StoreRequest\x1a\x17.CyberDay.StoreResponse\x122\n" +
 	"\x03Get\x12\x14.CyberDay.GetRequest\x1a\x15.CyberDay.GetResponse\x12G\n" +
 	"\n" +
 	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse\x12=\n" +
-	"\vGetHistoric\x12\x10.CyberDay.Filtro\x1a\x1c.CyberDay.RangeSinceResponse2A\n" +
+	"\vGetHistoric\x12\x10.CyberDay.Filtro\x1a\x1c.CyberDay.RangeSinceResponse\x12-\n" +
+	"\n" +
+	"siguesvivo\x12\x0f.CyberDay.Vacio\x1a\x0e.CyberDay.Bool2\x82\x01\n" +
 	"\n" +
 	"Consumidor\x123\n" +
-	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
+	"\x0fNotificarOferta\x12\x10.CyberDay.Oferta\x1a\x0e.CyberDay.Bool\x12?\n" +
+	"\n" +
+	"pedirDatos\x12\x0f.CyberDay.Vacio\x1a .CyberDay.DatosFinalesConsumidorB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -709,20 +777,21 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_proto_proto_proto_goTypes = []any{
-	(*HistoricoRequest)(nil),   // 0: CyberDay.HistoricoRequest
-	(*Registro)(nil),           // 1: CyberDay.Registro
-	(*Oferta)(nil),             // 2: CyberDay.Oferta
-	(*Bool)(nil),               // 3: CyberDay.Bool
-	(*Vacio)(nil),              // 4: CyberDay.Vacio
-	(*StoreRequest)(nil),       // 5: CyberDay.StoreRequest
-	(*StoreResponse)(nil),      // 6: CyberDay.StoreResponse
-	(*GetRequest)(nil),         // 7: CyberDay.GetRequest
-	(*GetResponse)(nil),        // 8: CyberDay.GetResponse
-	(*RangeSinceRequest)(nil),  // 9: CyberDay.RangeSinceRequest
-	(*RangeSinceResponse)(nil), // 10: CyberDay.RangeSinceResponse
-	(*Filtro)(nil),             // 11: CyberDay.Filtro
+	(*HistoricoRequest)(nil),       // 0: CyberDay.HistoricoRequest
+	(*Registro)(nil),               // 1: CyberDay.Registro
+	(*Oferta)(nil),                 // 2: CyberDay.Oferta
+	(*Bool)(nil),                   // 3: CyberDay.Bool
+	(*Vacio)(nil),                  // 4: CyberDay.Vacio
+	(*StoreRequest)(nil),           // 5: CyberDay.StoreRequest
+	(*StoreResponse)(nil),          // 6: CyberDay.StoreResponse
+	(*GetRequest)(nil),             // 7: CyberDay.GetRequest
+	(*GetResponse)(nil),            // 8: CyberDay.GetResponse
+	(*RangeSinceRequest)(nil),      // 9: CyberDay.RangeSinceRequest
+	(*RangeSinceResponse)(nil),     // 10: CyberDay.RangeSinceResponse
+	(*Filtro)(nil),                 // 11: CyberDay.Filtro
+	(*DatosFinalesConsumidor)(nil), // 12: CyberDay.DatosFinalesConsumidor
 }
 var file_proto_proto_proto_depIdxs = []int32{
 	2,  // 0: CyberDay.StoreRequest.oferta:type_name -> CyberDay.Oferta
@@ -735,17 +804,21 @@ var file_proto_proto_proto_depIdxs = []int32{
 	7,  // 7: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
 	9,  // 8: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
 	11, // 9: CyberDay.DBNode.GetHistoric:input_type -> CyberDay.Filtro
-	2,  // 10: CyberDay.Consumidor.NotificarOferta:input_type -> CyberDay.Oferta
-	3,  // 11: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
-	3,  // 12: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
-	10, // 13: CyberDay.Broker.GenerarHistorico:output_type -> CyberDay.RangeSinceResponse
-	6,  // 14: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
-	8,  // 15: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
-	10, // 16: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
-	10, // 17: CyberDay.DBNode.GetHistoric:output_type -> CyberDay.RangeSinceResponse
-	3,  // 18: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
-	11, // [11:19] is the sub-list for method output_type
-	3,  // [3:11] is the sub-list for method input_type
+	4,  // 10: CyberDay.DBNode.siguesvivo:input_type -> CyberDay.Vacio
+	2,  // 11: CyberDay.Consumidor.NotificarOferta:input_type -> CyberDay.Oferta
+	4,  // 12: CyberDay.Consumidor.pedirDatos:input_type -> CyberDay.Vacio
+	3,  // 13: CyberDay.Broker.GenerarOferta:output_type -> CyberDay.Bool
+	3,  // 14: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
+	10, // 15: CyberDay.Broker.GenerarHistorico:output_type -> CyberDay.RangeSinceResponse
+	6,  // 16: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
+	8,  // 17: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
+	10, // 18: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
+	10, // 19: CyberDay.DBNode.GetHistoric:output_type -> CyberDay.RangeSinceResponse
+	3,  // 20: CyberDay.DBNode.siguesvivo:output_type -> CyberDay.Bool
+	3,  // 21: CyberDay.Consumidor.NotificarOferta:output_type -> CyberDay.Bool
+	12, // 22: CyberDay.Consumidor.pedirDatos:output_type -> CyberDay.DatosFinalesConsumidor
+	13, // [13:23] is the sub-list for method output_type
+	3,  // [3:13] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name
@@ -762,7 +835,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   3,
 		},
