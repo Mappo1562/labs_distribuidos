@@ -41,6 +41,14 @@ services:
     networks:
       - grpc-net
 
+  consumidor:
+    build: ./consumidores
+    container_name: consumidor
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
   db1:
     build: ./db/Nodo1
     container_name: db1

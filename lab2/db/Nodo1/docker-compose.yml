@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: db1
+    container_name: db1-test
     ports:
       - "50051:50051"
     environment:

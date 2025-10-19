@@ -47,6 +47,15 @@ message RangeSinceResponse {
   repeated Oferta Ofertas = 1;
 }
 
+message FilterRequest{
+  Oferta oferta = 1;
+}
+
+message FilterResponse{
+  Oferta oferta = 1;
+  repeated Oferta Ofertas = 2;
+}
+
 // ------------------- //
 // * Registro Broker * //
 // ------------------- //
@@ -59,9 +68,22 @@ message Bool{
     bool flag = 1;
 }
 
+// ------------------- //
+// *   Sincronizar   * //
+// ------------------- //
+message SincronizarRequest{
+    Oferta oferta = 1;
+}
+
+message SincronizarResponse{
+    repeated Oferta ofertas = 1;
+}
+
 service DBNode {
   rpc Store(StoreRequest) returns (StoreResponse);
   rpc Get(GetRequest) returns (GetResponse);
-  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse); // para resincronizar
+  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse);
   rpc Registrarse(Registro) returns (Bool) {}
+  rpc Sincronizar(SincronizarRequest) returns (SincronizarResponse) {}
+  rpc Filter(FilterRequest) returns (FilterResponse);
 }
