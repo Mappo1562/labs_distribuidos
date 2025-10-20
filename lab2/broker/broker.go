@@ -328,7 +328,7 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 
-	response, err := client.GetHistoric(ctx, &pb.Filtro{
+	response, err := client.GetHistoric(ctx, &pb.Filtro{ // devolver todo <-----------------------------------------------
 		Tienda:    filtros[2],
 		Categoria: filtros[1],
 		PrecioMax: filtros[3],
@@ -472,6 +472,66 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	return &pb.RangeSinceResponse{Ofertas: H}, nil
 }
 
+func (s *server) GenerarHistoricoOptimo(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
+	rol, ok := registrados[in.Nombre]
+	if !ok || rol != 1 {
+		log.Printf("El consumidor %v no está registrada en el broker. Peticion rechazada.", in.Nombre)
+		return nil, nil // explicar errores <--------------------------------------------------AQUI
+	}
+	log.Printf("Solicitare el historial para %v", in.Nombre)
+
+	var (
+		f3 bool
+		H  []*pb.Oferta
+	)
+
+	H1, f1 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[0])
+	H2, f2 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[1])
+
+	if f1 && f2 {
+		H = compararHistoricos(H1, H2)
+
+	} else if f1 && !f2 {
+		H2, f3 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
+		if !f3 {
+			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas, intentalo mas tarde")
+			return nil, nil
+		}
+		H = compararHistoricos(H1, H2)
+
+	} else if !f1 && f2 {
+		H1, f3 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
+		if !f3 {
+			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas, intentalo mas tarde")
+			return nil, nil
+		}
+		H = compararHistoricos(H1, H2)
+
+	} else {
+		log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas, intentalo mas tarde")
+		return nil, nil
+	}
+
+	Ret := &pb.RangeSinceResponse{
+		Ofertas: H,
+	}
+	return Ret, nil
+}
+
+func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []*pb.Oferta {
+	log.Printf("Existen dos nodos DB activos, comparandolos")
+	H := make([]*pb.Oferta, 0)
+	for i, _ := range H1.Ofertas {
+		if H1.Ofertas[i].OfertaId == H2.Ofertas[i].OfertaId {
+			H = append(H, H1.Ofertas[i])
+		} else {
+			log.Printf("Error hay dos ofertas distintas")
+			return nil
+		}
+	}
+	return H
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func mostrarConsumidores() {
@@ -598,8 +658,7 @@ func getDataFinalesConsumidor() map[string]*pb.DatosFinalesConsumidor {
 func generarReporte() {
 	vivos := []string{"activo", "activo", "activo"}
 	for i := 0; i < 3; i++ {
-		dir := AddBD[i]
-		vivos[i] = GetVivo(dir)
+		vivos[i] = GetVivo(AddBD[i])
 	}
 
 	notiData := getDataFinalesConsumidor()
