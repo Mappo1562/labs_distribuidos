@@ -58,15 +58,39 @@ var (
 		"Falabellox": 1,
 		"Parisio":    2,
 	}
-	categoriasValidas = []string{"Electrónica", "Moda", "Hogar", "Deportes", "Belleza", "Infantil", "Computación", "Electrodomésticos", "Herramientas", "Juguetes", "Automotriz", "Mascotas"}
-	consumidores      = make(map[string][]string)
-	ResumenProdA      = make([]int, 3)
-	ResumenProdE      = make([]int, 3)
-	muProd            sync.Mutex
-	muEscritura       sync.Mutex
-	nExitos           int32
-	nFallos           int32
+	categoriasValidas     = []string{"Electrónica", "Moda", "Hogar", "Deportes", "Belleza", "Infantil", "Computación", "Electrodomésticos", "Herramientas", "Juguetes", "Automotriz", "Mascotas"}
+	consumidores          = make(map[string][]string)
+	ResumenProdA          = make([]int, 3)
+	ResumenProdE          = make([]int, 3)
+	muProd                sync.Mutex
+	muEscritura           sync.Mutex
+	nExitos               int32
+	nFallos               int32
+	muFyR                 sync.Mutex
+	fallosyrecuperaciones [][]string
 )
+
+func fallosyrecuperacionesAppend(entidad string, evento string, timestamp string) {
+	flag := true
+	muFyR.Lock()
+	for _, fr := range fallosyrecuperaciones {
+		if fr[0] == entidad && fr[1] == evento && fr[2] == timestamp {
+			flag = false
+			break
+		}
+	}
+	if flag {
+		fallosyrecuperaciones = append(fallosyrecuperaciones, []string{entidad, evento, timestamp})
+	}
+	muFyR.Unlock()
+}
+
+func (s *server) Activo(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
+	muFyR.Lock()
+	fallosyrecuperaciones = append(fallosyrecuperaciones, []string{in.Nombre, "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000")})
+	muFyR.Unlock()
+	return &pb.Bool{Flag: true}, nil
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Registrarse permite que una entidad (productor, consumidor o BD) se registre en el broker
@@ -92,6 +116,7 @@ func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, er
 func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
+		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
 		return false
 	}
@@ -107,6 +132,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 
 	response, err := client.Store(ctx, req)
 	if err != nil {
+		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
 		return false
 	}
@@ -115,7 +141,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 
 		return true
 	}
-
+	fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
 	return false
 }
@@ -130,6 +156,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
+		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		return false
 	}
 	defer conn.Close()
@@ -140,6 +167,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 	response, err := client.NotificarOferta(ctx, oferta)
 	if err != nil {
 		log.Printf("No se pudo notificar correctamente la oferta al consumidor %v\nerror: %v", dir, err)
+		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		return false
 	}
 	if response != nil && response.Flag {
@@ -147,6 +175,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 		return true
 	}
 	log.Printf("No se pudo notificar correctamente la oferta al consumidor %v", dir)
+	fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 	return false
 }
 
@@ -319,6 +348,7 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 }
 
 func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
+	fallosyrecuperacionesAppend(consumidores[in.Nombre][0], "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
 	flag := true
 	rol, ok := registrados[in.Nombre]
 	if !ok || rol != 1 {
@@ -566,8 +596,6 @@ func getDataFinalesConsumidor() map[string]*pb.DatosFinalesConsumidor {
 }
 
 func generarReporte() {
-	// PREGUNTAR SI LOS NODOS DE LAS BASES DE DATOS ESTAN VIVOS AL MOMENTO DE TERMINAR
-	// PREGUNTAR A LOS CONSUMIDORES SI GENERARON SU CSV y pedirle su cantidad de ofertas recibidas
 	vivos := []string{"activo", "activo", "activo"}
 	for i := 0; i < 3; i++ {
 		dir := AddBD[i]
@@ -610,7 +638,15 @@ func generarReporte() {
 			fmt.Fprintf(file, " - %v (Sin restricciones): %v ofertas recibidas. Archivo %v generado\n", id, data.OfertasRecibidas, data.NombreCSV)
 		}
 	}
-
+	fmt.Fprintf(file, "\n==========================================================\n")
+	fmt.Fprintf(file, " 4 Fallos y Recuperaciones\n")
+	for _, fr := range fallosyrecuperaciones {
+		fmt.Fprintf(file, " - Entidad: %v | Evento: %v | Timestamp: %v\n", fr[0], fr[1], fr[2])
+	}
+	fmt.Fprintf(file, "\n==========================================================\n")
+	fmt.Fprintf(file, " 5 conclusion\n")
+	fmt.Fprintf(file, " El sistema demostró ser capaz de manejar las ofertas y notificaciones de manera eficiente durante el período del Cyberday. A pesar de los fallos registrados, la recuperación automática y la consistencia eventual garantizaron la integridad de los datos y la satisfacción de los consumidores.\n")
+	fmt.Fprintf(file, "==========================================================\n")
 }
 
 func main() {

@@ -11,6 +11,8 @@ service  Broker{
     rpc GenerarOferta(Oferta) returns (Bool) {}
     rpc Registrarse(Registro) returns (Bool) {}
     rpc GenerarHistorico(Registro) returns (RangeSinceResponse) {}
+
+    rpc Activo(Registro) returns (Bool) {}
 }
 
 // por ahora no se usa
