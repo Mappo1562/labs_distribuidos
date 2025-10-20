@@ -347,7 +347,7 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 	return nil, false
 }
 
-func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
+func (s *server) GenerarHistoricoAntiguo(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
 	fallosyrecuperacionesAppend(consumidores[in.Nombre][0], "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
 	flag := true
 	rol, ok := registrados[in.Nombre]
@@ -472,46 +472,52 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	return &pb.RangeSinceResponse{Ofertas: H}, nil
 }
 
-func (s *server) GenerarHistoricoOptimo(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
+func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
 	rol, ok := registrados[in.Nombre]
 	if !ok || rol != 1 {
 		log.Printf("El consumidor %v no está registrada en el broker. Peticion rechazada.", in.Nombre)
-		return nil, nil // explicar errores <--------------------------------------------------AQUI
+		return nil, nil
 	}
 	log.Printf("Solicitare el historial para %v", in.Nombre)
-
+	muFyR.Lock()
+	fallosyrecuperaciones = append(fallosyrecuperaciones, []string{in.Nombre, "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000")})
+	muFyR.Unlock()
 	var (
-		f3 bool
-		H  []*pb.Oferta
+		H []*pb.Oferta
 	)
 
 	H1, f1 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[0])
 	H2, f2 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[1])
+	H3, f3 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
 
-	if f1 && f2 {
+	if f1 && f2 && f3 {
+		H = comparar3Historicos(H1, H2, H3)
+
+	} else if f1 && f2 {
 		H = compararHistoricos(H1, H2)
 
 	} else if f1 && !f2 {
-		H2, f3 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
 		if !f3 {
-			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas, intentalo mas tarde")
+			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 			return nil, nil
 		}
-		H = compararHistoricos(H1, H2)
+		H = compararHistoricos(H1, H3)
 
 	} else if !f1 && f2 {
-		H1, f3 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
 		if !f3 {
-			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas, intentalo mas tarde")
+			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 			return nil, nil
 		}
-		H = compararHistoricos(H1, H2)
+		H = compararHistoricos(H3, H2)
 
 	} else {
-		log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas, intentalo mas tarde")
+		log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 		return nil, nil
 	}
 
+	if H == nil {
+		log.Printf("Error al conseguir el Historico con las bases de datos.")
+	}
 	Ret := &pb.RangeSinceResponse{
 		Ofertas: H,
 	}
@@ -526,6 +532,83 @@ func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []
 			H = append(H, H1.Ofertas[i])
 		} else {
 			log.Printf("Error hay dos ofertas distintas")
+			return nil
+		}
+	}
+	return H
+}
+
+func comparar3Historicos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse) []*pb.Oferta {
+	H := make([]*pb.Oferta, 0)
+	i := 0
+	j := 0
+	k := 0
+	for i < len(H1.Ofertas) && j < len(H2.Ofertas) && k < len(H3.Ofertas) {
+		of1 := H1.Ofertas[i].OfertaId
+		of2 := H2.Ofertas[j].OfertaId
+		of3 := H3.Ofertas[k].OfertaId
+		if of1[0] == of2[0] && of2[0] == of3[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			j++
+			k++
+		} else if of1[0] == of2[0] && of1[0] != of3[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			j++
+		} else if of1[0] == of3[0] && of1[0] != of2[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			k++
+		} else if of2[0] == of3[0] && of2[0] != of1[0] {
+			H = append(H, H2.Ofertas[i])
+			j++
+			k++
+		} else {
+			// los 3 son diferentes
+			log.Printf("No se pudo entregar correctamente los historicos.")
+			return nil
+		}
+	}
+
+	for i < len(H1.Ofertas) && j < len(H2.Ofertas) {
+		of1 := H1.Ofertas[i].OfertaId
+		of2 := H2.Ofertas[j].OfertaId
+
+		if of1[0] == of2[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			j++
+		} else {
+			log.Printf("No se pudo entregar correctamente los historicos.")
+			return nil
+		}
+	}
+
+	for i < len(H1.Ofertas) && k < len(H3.Ofertas) {
+		of1 := H1.Ofertas[i].OfertaId
+		of3 := H3.Ofertas[k].OfertaId
+
+		if of1[0] == of3[0] {
+			H = append(H, H1.Ofertas[i])
+			i++
+			k++
+		} else {
+			log.Printf("No se pudo guardar correctamente los historicos.")
+			return nil
+		}
+	}
+
+	for j < len(H2.Ofertas) && k < len(H3.Ofertas) {
+		of2 := H2.Ofertas[j].OfertaId
+		of3 := H3.Ofertas[k].OfertaId
+
+		if of2[0] == of3[0] {
+			H = append(H, H2.Ofertas[j])
+			j++
+			k++
+		} else {
+			log.Printf("No se pudo guardar correctamente los historicos.")
 			return nil
 		}
 	}
@@ -663,7 +746,7 @@ func generarReporte() {
 
 	notiData := getDataFinalesConsumidor()
 
-	file, err := os.Create("/app/Reporte.txt")
+	file, err := os.Create("/app/reportes/Reporte.txt")
 	if err != nil {
 		fmt.Println("Error al crear el reporte:", err)
 		return
@@ -723,7 +806,7 @@ func main() {
 	fmt.Println("Broker activo en el puerto ", port)
 
 	go func() {
-		time.Sleep(60 * time.Second)
+		time.Sleep(20 * time.Second)
 		fmt.Println("Tiempo cumplido. Deteniendo servidor...")
 		grpcServer.GracefulStop()
 	}()

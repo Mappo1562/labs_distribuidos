@@ -1,0 +1,63 @@
+==========================================================
+==              REPORTE FINAL DEL CYBERDAY              ==
+==========================================================
+                      Broker Central                      
+                        20/10/2025
+
+==========================================================
+ 1 Resumen de ofertas recibidas por productor:
+ - Riploy: 
+  - ofertas recibidas: 5
+  - ofertas aceptadas: 5
+ - Falabellox: 
+  - ofertas recibidas: 3
+  - ofertas aceptadas: 3
+ - Parisio: 
+  - ofertas recibidas: 4
+  - ofertas aceptadas: 4
+
+==========================================================
+ 2 Estado de Nodos de Base de Datos: - Nodo DB1: caido
+ - Nodo DB2: caido
+ - Nodo DB3: caido
+
+==========================================================
+ 2.1 Métricas de Escritura: 
+  - Escrituras exitosas: 12
+  - Escrituras fallidas: 0 (por como esta programado, nunca tendremos escrituras fallidas)
+==========================================================
+ 3 Notificaciones a Consumidores
+ - C2-2 (Sin restricciones): 0 ofertas recibidas. Archivo 0 generado
+ - C2-3 (Moda, Automotriz): 0 ofertas recibidas. Archivo 0 generado
+ - C3-3 (Infantil): 0 ofertas recibidas. Archivo 0 generado
+ - C2-1 (Sin restricciones): 0 ofertas recibidas. Archivo 0 generado
+ - C3-4 (Electrónica): 0 ofertas recibidas. Archivo 0 generado
+ - C1-3 (Sin restricciones): 0 ofertas recibidas. Archivo 0 generado
+ - C3-1 (Automotriz, Mascotas, Juguetes): 0 ofertas recibidas. Archivo 0 generado
+ - C3-2 (Sin restricciones): 0 ofertas recibidas. Archivo 0 generado
+ - C1-2 (Electrónica): 0 ofertas recibidas. Archivo 0 generado
+ - C1-4 (Electrodomésticos, Infantil, Hogar): 0 ofertas recibidas. Archivo 0 generado
+ - C1-1 (Electrodomésticos): 0 ofertas recibidas. Archivo 0 generado
+ - C2-4 (Belleza): 0 ofertas recibidas. Archivo 0 generado
+
+==========================================================
+ 4 Fallos y Recuperaciones
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 20/10/2025 23:49:19.872
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:23.086
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 20/10/2025 23:49:23.317
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:24.079
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:26.218
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 20/10/2025 23:49:26.254
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:26.320
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 20/10/2025 23:49:27.058
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:30.102
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:30.267
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:30.633
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 20/10/2025 23:49:31.161
+ - Entidad: grupo1:60063 | Evento: Fallo | Timestamp: 20/10/2025 23:49:31.164
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 20/10/2025 23:49:32.556
+
+==========================================================
+ 5 conclusion
+ El sistema demostró ser capaz de manejar las ofertas y notificaciones de manera eficiente durante el período del Cyberday. A pesar de los fallos registrados, la recuperación automática y la consistencia eventual garantizaron la integridad de los datos y la satisfacción de los consumidores.
+==========================================================

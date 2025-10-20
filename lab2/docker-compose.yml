@@ -7,7 +7,8 @@ services:
       - "50050:50050"
     networks:
       - grpc-net
-
+    volumes:
+      - ./reportes:/app/reportes
   riploy:
     build: ./productores
     container_name: riploy
