@@ -331,6 +331,43 @@ func categoriasValida(cat string) bool {
 	return ok
 }
 
+func (s *servidorConsumidor) PedirDatos(ctx context.Context, vacio *pb.Vacio) (*pb.DatosFinalesConsumidor, error) {
+
+	cantOfertas, err := contarOfertas(s.Consumidor.archivo_ofertas)
+
+	if err != nil {
+		log.Printf("Hubo un error al contar cuantas ofertas le llegaron a %s\n", s.Consumidor.id_consumidor)
+	}
+	return &pb.DatosFinalesConsumidor{
+		Id:               s.Consumidor.id_consumidor,
+		OfertasRecibidas: int64(cantOfertas),
+		NombreCSV:        s.Consumidor.archivo_ofertas,
+	}, nil
+}
+
+func contarOfertas(path string) (int, error) {
+	archivo, err := os.Open(path)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer archivo.Close()
+
+	lector := csv.NewReader(archivo)
+	records, err := lector.ReadAll()
+
+	if err != nil {
+		return 0, err
+	}
+
+	if len(records) <= 1 {
+		return 0, nil
+	}
+
+	return len(records) - 1, nil
+}
+
 func main() {
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))

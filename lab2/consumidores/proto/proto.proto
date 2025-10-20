@@ -11,6 +11,8 @@ service  Broker{
     rpc GenerarOferta(Oferta) returns (Bool) {}
     rpc Registrarse(Registro) returns (Bool) {}
     rpc GenerarHistorico(Registro) returns (RangeSinceResponse) {}
+
+    rpc Activo(Registro) returns (Bool) {}
 }
 
 service  NodeService{
@@ -44,4 +46,11 @@ message RangeSinceResponse {
 
 service Consumidor {
     rpc NotificarOferta(Oferta) returns (Bool);
+    rpc pedirDatos(Vacio) returns (DatosFinalesConsumidor);
+}
+
+message DatosFinalesConsumidor {
+    string id = 1;
+    int64 ofertasRecibidas = 2;
+    string nombreCSV = 3;
 }
