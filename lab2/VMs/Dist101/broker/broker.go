@@ -523,6 +523,11 @@ func initConsumidores() {
 	consumidores = make(map[string][]string)
 	nGrupo := 0
 	var puertoInt int
+	var direcciones = []string{
+		"dist101.inf.santiago.usm.cl",
+		"dist042.inf.santiago.usm.cl",
+		"dist043.inf.santiago.usm.cl",
+	}
 	for i, row := range rows {
 		if i == 0 {
 			continue
@@ -537,7 +542,7 @@ func initConsumidores() {
 			puertoInt = 60050 + 10*nGrupo
 		}
 		puertoInt = puertoInt + 1
-		direccion := "grupo" + strconv.Itoa(nGrupo) + ":" + strconv.Itoa(puertoInt)
+		direccion := direcciones[nGrupo-1] + strconv.Itoa(nGrupo) + ":" + strconv.Itoa(puertoInt)
 		// Guardamos en el map
 		consumidores[id] = []string{direccion, categorias, tiendas, precio}
 		log.Printf("agregado uno con direccion %v", direccion)
