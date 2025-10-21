@@ -6,7 +6,7 @@ COMPOSE_VM4=Dist101/docker-compose.yml
 
 create-network:
 	@docker network inspect grpc-net >/dev/null 2>&1 || \
-	echo "🌐 Creando red grpc-net..." && docker network create grpc-net
+	echo "Creando red grpc-net..." && docker network create grpc-net
 
 # ========== VM1 ==========
 build-VM1:
@@ -15,7 +15,7 @@ build-VM1:
 
 docker-VM1: create-network
 	@echo "Levantando contenedores en VM1 (Riploy / BD1 / Grupo2)..."
-	docker-compose -f $(COMPOSE_VM1) up -d
+	docker-compose -f $(COMPOSE_VM1) up 
 
 down-VM1:
 	@echo "Deteniendo contenedores en VM1..."
@@ -28,7 +28,7 @@ build-VM2:
 
 docker-VM2: create-network
 	@echo "Levantando contenedores en VM2 (Riploy / BD1 / Grupo2)..."
-	docker-compose -f $(COMPOSE_VM2) up -d
+	docker-compose -f $(COMPOSE_VM2) up 
 
 down-VM2:
 	@echo "Deteniendo contenedores en VM2..."
@@ -41,7 +41,7 @@ build-VM3:
 
 docker-VM3: create-network
 	@echo "Levantando contenedores en VM3 (Riploy / BD1 / Grupo2)..."
-	docker-compose -f $(COMPOSE_VM3) up -d
+	docker-compose -f $(COMPOSE_VM3) up 
 
 down-VM3:
 	@echo "Deteniendo contenedores en VM3..."
@@ -54,7 +54,7 @@ build-VM4:
 
 docker-VM4: create-network
 	@echo "Levantando contenedores en VM4 (Riploy / BD1 / Grupo2)..."
-	docker-compose -f $(COMPOSE_VM4) up -d
+	docker-compose -f $(COMPOSE_VM4) up 
 
 down-VM4:
 	@echo "Deteniendo contenedores en VM4..."
@@ -62,18 +62,4 @@ down-VM4:
 
 # ===================================================================
 
-
-# ============================
-# Atajos de Prueba Rápida
-# ============================
-
-build-all:
-	@echo "🧱 Construyendo todas las imágenes Docker..."
-	docker-compose -f $(COMPOSE_VM1) build
-	docker-compose -f $(COMPOSE_VM2) build
-	docker-compose -f $(COMPOSE_VM3) build
-	docker-compose -f $(COMPOSE_VM4) build
-
-up-all: docker-VM4 docker-VM1 docker-VM2 docker-VM3 
-	@echo "🌐 Todos los contenedores distribuidos están arriba ✅"
 	
