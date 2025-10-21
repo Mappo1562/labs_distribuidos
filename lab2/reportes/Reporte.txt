@@ -1,0 +1,57 @@
+==========================================================
+==              REPORTE FINAL DEL CYBERDAY              ==
+==========================================================
+                      Broker Central                      
+                        21/10/2025
+
+==========================================================
+ 1 Resumen de ofertas recibidas por productor:
+ - Riploy: 
+  - ofertas recibidas: 17
+  - ofertas aceptadas: 17
+ - Falabellox: 
+  - ofertas recibidas: 14
+  - ofertas aceptadas: 14
+ - Parisio: 
+  - ofertas recibidas: 16
+  - ofertas aceptadas: 16
+
+==========================================================
+ 2 Estado de Nodos de Base de Datos: - Nodo DB1: caido
+ - Nodo DB2: caido
+ - Nodo DB3: caido
+
+==========================================================
+ 2.1 Métricas de Escritura: 
+  - Escrituras exitosas: 47
+  - Escrituras fallidas: 0 (por como esta programado, nunca tendremos escrituras fallidas)
+==========================================================
+ 3 Notificaciones a Consumidores
+ - C2-3 (Moda, Automotriz): 0 ofertas recibidas. Archivo consumidor_C2-3_ofertas.csv generado
+ - C1-1 (Electrodomésticos): 0 ofertas recibidas. Archivo consumidor_C1-1_ofertas.csv generado
+ - C1-2 (Electrónica): 0 ofertas recibidas. Archivo consumidor_C1-2_ofertas.csv generado
+ - C1-3 (Sin restricciones): 0 ofertas recibidas. Archivo consumidor_C1-3_ofertas.csv generado
+ - C1-4 (Electrodomésticos, Infantil, Hogar): 0 ofertas recibidas. Archivo consumidor_C1-4_ofertas.csv generado
+ - C3-2 (Sin restricciones): 0 ofertas recibidas. Archivo consumidor_C3-2_ofertas.csv generado
+ - C3-3 (Infantil): 0 ofertas recibidas. Archivo consumidor_C3-3_ofertas.csv generado
+ - C2-1 (Sin restricciones): 0 ofertas recibidas. Archivo consumidor_C2-1_ofertas.csv generado
+ - C2-4 (Belleza): 0 ofertas recibidas. Archivo consumidor_C2-4_ofertas.csv generado
+ - C3-1 (Automotriz, Mascotas, Juguetes): 0 ofertas recibidas. Archivo consumidor_C3-1_ofertas.csv generado
+ - C3-4 (Electrónica): 0 ofertas recibidas. Archivo consumidor_C3-4_ofertas.csv generado
+ - C2-2 (Sin restricciones): 0 ofertas recibidas. Archivo consumidor_C2-2_ofertas.csv generado
+
+==========================================================
+ 4 Fallos y Recuperaciones
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 21/10/2025 00:13:12.863
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 21/10/2025 00:13:16.913
+ - Entidad: grupo1:60063 | Evento: Fallo | Timestamp: 21/10/2025 00:13:16.917
+ - Entidad: grupo3:60084 | Evento: Fallo | Timestamp: 21/10/2025 00:13:22.963
+ - Entidad: grupo1:60062 | Evento: Fallo | Timestamp: 21/10/2025 00:13:22.965
+ - Entidad: grupo2:60072 | Evento: Fallo | Timestamp: 21/10/2025 00:13:22.968
+ - Entidad: grupo2:60071 | Evento: Fallo | Timestamp: 21/10/2025 00:13:57.034
+ - Entidad: grupo1:60064 | Evento: Fallo | Timestamp: 21/10/2025 00:13:59.439
+
+==========================================================
+ 5 conclusion
+ El sistema demostró ser capaz de manejar las ofertas y notificaciones de manera eficiente durante el período del Cyberday. A pesar de los fallos registrados, la recuperación automática y la consistencia eventual garantizaron la integridad de los datos y la satisfacción de los consumidores.
+==========================================================
