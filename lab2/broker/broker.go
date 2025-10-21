@@ -354,133 +354,6 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 	return nil, false
 }
 
-func (s *server) GenerarHistoricoAntiguo(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
-	flag := true
-	mureg.Lock()
-	rol, ok := registrados[in.Nombre]
-	mureg.Unlock()
-	if !ok || rol != 1 {
-		log.Printf("El consumidor %v no está registrada en el broker. Peticion rechazada.", in.Nombre)
-		return nil, nil // explicar errores <--------------------------------------------------AQUI
-	}
-	fallosyrecuperacionesAppend(consumidores[in.Nombre][0], "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
-	log.Printf("Solicitare el historial para %v", in.Nombre)
-	recibido := [3]int{0, 0, 0}
-	var (
-		H1 *pb.RangeSinceResponse
-		H2 *pb.RangeSinceResponse
-		H3 *pb.RangeSinceResponse
-		f1 bool
-		f2 bool
-		f3 bool
-	)
-	for flag {
-		if recibido[0] == 0 {
-			H1, f1 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[0])
-			if f1 {
-				recibido[0] = 1
-			}
-		}
-		if recibido[1] == 0 {
-			H2, f2 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[1])
-			if f2 {
-				recibido[1] = 1
-			}
-		}
-		if recibido[2] == 0 {
-			H3, f3 = GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
-			if f3 {
-				recibido[2] = 1
-			}
-		}
-
-		sum := recibido[0] + recibido[1] + recibido[2]
-		if sum > 2 {
-			log.Printf("**** Historicos recibidos de los 3 nodos ****")
-			flag = false
-		} else {
-			log.Printf("No se pudo guardar correctamente los historicos. Intentando nuevamente")
-		}
-	}
-
-	// analizar los historicos recibidos y enviarselos al consumidor
-	H := make([]*pb.Oferta, 0)
-	i := 0
-	j := 0
-	k := 0
-	for i < len(H1.Ofertas) && j < len(H2.Ofertas) && k < len(H3.Ofertas) {
-		of1 := H1.Ofertas[i].OfertaId
-		of2 := H2.Ofertas[j].OfertaId
-		of3 := H3.Ofertas[k].OfertaId
-		if of1[0] == of2[0] && of2[0] == of3[0] {
-			H = append(H, H1.Ofertas[i])
-			i++
-			j++
-			k++
-		} else if of1[0] == of2[0] && of1[0] != of3[0] {
-			H = append(H, H1.Ofertas[i])
-			i++
-			j++
-		} else if of1[0] == of3[0] && of1[0] != of2[0] {
-			H = append(H, H1.Ofertas[i])
-			i++
-			k++
-		} else if of2[0] == of3[0] && of2[0] != of1[0] {
-			H = append(H, H2.Ofertas[i])
-			j++
-			k++
-		} else {
-			// los 3 son diferentes
-			log.Printf("No se pudo guardar correctamente los historicos.")
-			return nil, nil
-		}
-	}
-
-	for i < len(H1.Ofertas) && j < len(H2.Ofertas) {
-		of1 := H1.Ofertas[i].OfertaId
-		of2 := H2.Ofertas[j].OfertaId
-
-		if of1[0] == of2[0] {
-			H = append(H, H1.Ofertas[i])
-			i++
-			j++
-		} else {
-			log.Printf("No se pudo guardar correctamente los historicos.")
-			return nil, nil
-		}
-	}
-
-	for i < len(H1.Ofertas) && k < len(H3.Ofertas) {
-		of1 := H1.Ofertas[i].OfertaId
-		of3 := H3.Ofertas[k].OfertaId
-
-		if of1[0] == of3[0] {
-			H = append(H, H1.Ofertas[i])
-			i++
-			k++
-		} else {
-			log.Printf("No se pudo guardar correctamente los historicos.")
-			return nil, nil
-		}
-	}
-
-	for j < len(H2.Ofertas) && k < len(H3.Ofertas) {
-		of2 := H2.Ofertas[j].OfertaId
-		of3 := H3.Ofertas[k].OfertaId
-
-		if of2[0] == of3[0] {
-			H = append(H, H2.Ofertas[j])
-			j++
-			k++
-		} else {
-			log.Printf("No se pudo guardar correctamente los historicos.")
-			return nil, nil
-		}
-	}
-
-	return &pb.RangeSinceResponse{Ofertas: H}, nil
-}
-
 func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
 	rol, ok := registrados[in.Nombre]
 	if !ok || rol != 1 {
@@ -498,24 +371,24 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	H3, f3 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
 
 	if f1 && f2 && f3 {
-		H = comparar3Historicos(H1, H2, H3)
+		H = comparar3Historicos(H1, H2, H3, in.Nombre)
 
 	} else if f1 && f2 {
-		H = compararHistoricos(H1, H2)
+		H = compararHistoricos(H1, H2, in.Nombre)
 
 	} else if f1 && !f2 {
 		if !f3 {
 			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 			return nil, nil
 		}
-		H = compararHistoricos(H1, H3)
+		H = compararHistoricos(H1, H3, in.Nombre)
 
 	} else if !f1 && f2 {
 		if !f3 {
 			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 			return nil, nil
 		}
-		H = compararHistoricos(H3, H2)
+		H = compararHistoricos(H3, H2, in.Nombre) /////////////////////// luego sacar el nombre
 
 	} else {
 		log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
@@ -531,8 +404,10 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	return Ret, nil
 }
 
-func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse) {
-	file, err := os.Create("/app/reportes/Reporte.txt")
+func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse, n string) {
+	name := "/app/reportes/historial-" + n + ".txt"
+	file, err := os.Create(name)
+	log.Printf("Escribiendo TXT de %v, donde el numero de ofertas son %v", n, len(H1.Ofertas))
 	if err != nil {
 		fmt.Println("Error al crear el reporte:", err)
 		return
@@ -556,6 +431,9 @@ func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.Ra
 			of2 := H2.Ofertas[j].OfertaId
 			of3 := H3.Ofertas[k].OfertaId
 			str = of1 + "   |   " + of2 + "   |   " + of3 + "\n"
+			i++
+			j++
+			k++
 			fmt.Fprintln(file, str)
 		}
 		fmt.Fprintln(file, "----------------------------------------------------------------")
@@ -564,6 +442,8 @@ func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.Ra
 			of2 := H2.Ofertas[j].OfertaId
 
 			str = of1 + "   |   " + of2 + "   |   ---"
+			i++
+			j++
 			fmt.Fprintln(file, str)
 		}
 
@@ -573,6 +453,8 @@ func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.Ra
 
 			str = of1 + "   |   ---   |   " + of3
 			fmt.Fprintln(file, str)
+			i++
+			k++
 		}
 
 		for j < len(H2.Ofertas) && k < len(H3.Ofertas) {
@@ -581,12 +463,14 @@ func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.Ra
 
 			str = "---   |   " + of2 + "   |   " + of3
 			fmt.Fprintln(file, str)
+			j++
+			k++
 		}
 	}
 }
 
-func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []*pb.Oferta {
-	escribirtxt(H1, H2, nil) ////////////////////////////////////////////////////////////////////////////////////////////////////////
+func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, n string) []*pb.Oferta {
+	escribirtxt(H1, H2, nil, n) ////////////////////////////////////////////////////////////////////////////////////////////////////////
 	log.Printf("Existen dos nodos DB activos, comparandolos")
 	H := make([]*pb.Oferta, 0)
 	for i, _ := range H1.Ofertas {
@@ -600,8 +484,8 @@ func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []
 	return H
 }
 
-func comparar3Historicos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse) []*pb.Oferta {
-	escribirtxt(H1, H2, H3) ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func comparar3Historicos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse, n string) []*pb.Oferta {
+	escribirtxt(H1, H2, H3, n) ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	H := make([]*pb.Oferta, 0)
 	i := 0
 	j := 0

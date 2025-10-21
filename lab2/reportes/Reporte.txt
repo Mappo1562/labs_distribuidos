@@ -7,8 +7,8 @@
 ==========================================================
  1 Resumen de ofertas recibidas por productor:
  - Riploy: 
-  - ofertas recibidas: 21
-  - ofertas aceptadas: 21
+  - ofertas recibidas: 20
+  - ofertas aceptadas: 20
  - Falabellox: 
   - ofertas recibidas: 17
   - ofertas aceptadas: 17
@@ -17,35 +17,37 @@
   - ofertas aceptadas: 19
 
 ==========================================================
- 2 Estado de Nodos de Base de Datos: - Nodo DB1: caido
- - Nodo DB2: caido
- - Nodo DB3: caido
+ 2 Estado de Nodos de Base de Datos: - Nodo DB1: activo
+ - Nodo DB2: activo
+ - Nodo DB3: activo
 
 ==========================================================
  2.1 Métricas de Escritura: 
-  - Escrituras exitosas: 57
+  - Escrituras exitosas: 56
   - Escrituras fallidas: 0 (por como esta programado, nunca tendremos escrituras fallidas)
 ==========================================================
  3 Notificaciones a Consumidores
- - C1-1 (Electrodomésticos): 0 ofertas recibidas. Archivo consumidor_C1-1_ofertas.csv generado
- - C1-2 (Electrónica): 1 ofertas recibidas. Archivo consumidor_C1-2_ofertas.csv generado
- - C2-2 (Sin restricciones): 30 ofertas recibidas. Archivo consumidor_C2-2_ofertas.csv generado
- - C3-3 (Infantil): 3 ofertas recibidas. Archivo consumidor_C3-3_ofertas.csv generado
- - C2-1 (Sin restricciones): 16 ofertas recibidas. Archivo consumidor_C2-1_ofertas.csv generado
- - C2-3 (Moda, Automotriz): 0 ofertas recibidas. Archivo consumidor_C2-3_ofertas.csv generado
- - C3-1 (Automotriz, Mascotas, Juguetes): 2 ofertas recibidas. Archivo consumidor_C3-1_ofertas.csv generado
- - C3-4 (Electrónica): 1 ofertas recibidas. Archivo consumidor_C3-4_ofertas.csv generado
  - C1-4 (Electrodomésticos, Infantil, Hogar): 3 ofertas recibidas. Archivo consumidor_C1-4_ofertas.csv generado
+ - C3-4 (Electrónica): 1 ofertas recibidas. Archivo consumidor_C3-4_ofertas.csv generado
+ - C2-1 (Sin restricciones): 10 ofertas recibidas. Archivo consumidor_C2-1_ofertas.csv generado
+ - C1-1 (Electrodomésticos): 0 ofertas recibidas. Archivo consumidor_C1-1_ofertas.csv generado
+ - C2-2 (Sin restricciones): 31 ofertas recibidas. Archivo consumidor_C2-2_ofertas.csv generado
+ - C1-2 (Electrónica): 1 ofertas recibidas. Archivo consumidor_C1-2_ofertas.csv generado
+ - C3-2 (Sin restricciones): 30 ofertas recibidas. Archivo consumidor_C3-2_ofertas.csv generado
  - C1-3 (Sin restricciones): 17 ofertas recibidas. Archivo consumidor_C1-3_ofertas.csv generado
- - C3-2 (Sin restricciones): 40 ofertas recibidas. Archivo consumidor_C3-2_ofertas.csv generado
+ - C3-3 (Infantil): 3 ofertas recibidas. Archivo consumidor_C3-3_ofertas.csv generado
+ - C3-1 (Automotriz, Mascotas, Juguetes): 2 ofertas recibidas. Archivo consumidor_C3-1_ofertas.csv generado
  - C2-4 (Belleza): 0 ofertas recibidas. Archivo consumidor_C2-4_ofertas.csv generado
+ - C2-3 (Moda, Automotriz): 0 ofertas recibidas. Archivo consumidor_C2-3_ofertas.csv generado
 
 ==========================================================
  4 Fallos y Recuperaciones
- - Entidad: db1:50051 | Evento: Fallo | Timestamp: 21/10/2025 02:06:21.478
- - Entidad: db3:50053 | Evento: Fallo | Timestamp: 21/10/2025 02:06:31.744
- - Entidad: db2:50052 | Evento: Fallo | Timestamp: 21/10/2025 02:06:46.798
- - Entidad: grupo2:60072 | Evento: Fallo | Timestamp: 21/10/2025 02:07:14.036
+ - Entidad: grupo2:60071 | Evento: Fallo | Timestamp: 21/10/2025 19:52:37.811
+ - Entidad: db1:50051 | Evento: Fallo | Timestamp: 21/10/2025 19:52:40.820
+ - Entidad: grupo3:60082 | Evento: Fallo | Timestamp: 21/10/2025 19:52:42.858
+ - Entidad: db1 | Evento: Recuperacion | Timestamp: 21/10/2025 19:52:44.142
+ - Entidad: C2-1 | Evento: Recuperacion | Timestamp: 21/10/2025 19:52:46.895
+ - Entidad: C3-2 | Evento: Recuperacion | Timestamp: 21/10/2025 19:52:47.865
 
 ==========================================================
  5 conclusion

@@ -350,6 +350,7 @@ func (s *DBServer) GetHistoric(ctx context.Context, req *pb.Filtro) (*pb.RangeSi
 
 		// ---- AGREGAR RESULTADO ----
 		if match {
+			log.Printf("-------------- oferta agregada: %v", o.OfertaId)
 			resp.Ofertas = append(resp.Ofertas, o)
 		}
 	}
