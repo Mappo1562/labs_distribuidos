@@ -74,7 +74,7 @@ func fallosyrecuperacionesAppend(entidad string, evento string, timestamp string
 	flag := true
 	muFyR.Lock()
 	for _, fr := range fallosyrecuperaciones {
-		if fr[0] == entidad && fr[1] == evento && fr[2] == timestamp {
+		if fr[0] == entidad && fr[1] == evento {
 			flag = false
 			break
 		}
@@ -479,9 +479,7 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 		return nil, nil
 	}
 	log.Printf("Solicitare el historial para %v", in.Nombre)
-	muFyR.Lock()
-	fallosyrecuperaciones = append(fallosyrecuperaciones, []string{in.Nombre, "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000")})
-	muFyR.Unlock()
+	fallosyrecuperacionesAppend(in.Nombre, "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
 	var (
 		H []*pb.Oferta
 	)
@@ -806,7 +804,7 @@ func main() {
 	fmt.Println("Broker activo en el puerto ", port)
 
 	go func() {
-		time.Sleep(20 * time.Second)
+		time.Sleep(60 * time.Second)
 		fmt.Println("Tiempo cumplido. Deteniendo servidor...")
 		grpcServer.GracefulStop()
 	}()
