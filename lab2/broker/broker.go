@@ -691,9 +691,11 @@ func GetVivo(dir string) string {
 
 	response, err := client.Siguesvivo(ctx, &pb.Vacio{})
 	if err != nil {
+		log.Printf("No se pudo verificar si el nodo %v está activo\nerror: %v", dir, err)
 		return "caido"
 	}
 	if response != nil && response.Flag {
+		log.Printf("Nodo %v activo", dir)
 		return "activo"
 	}
 

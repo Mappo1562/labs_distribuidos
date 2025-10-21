@@ -101,5 +101,5 @@ service DBNode {
   rpc Filter(FilterRequest) returns (FilterResponse);
   // agregada por mappo:
   rpc GetHistoric(Filtro) returns (RangeSinceResponse);
-  rpc siguesvivo(Vacio) returns (Bool); // Para chequear si el nodo está vivo
+  rpc Siguesvivo(Vacio) returns (Bool); // Para chequear si el nodo está vivo
 }

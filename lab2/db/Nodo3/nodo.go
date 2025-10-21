@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	PortNodo1  = "localhost:50051"
-	PortNodo2  = "localhost:50052"
+	PortNodo1  = "db1:50051"
+	PortNodo2  = "db2:50052"
 	PortNodo3  = "50053"
 	PortBroker = "broker:50050"
 )
@@ -122,48 +122,41 @@ func (s *DBServer) RangeSince(ctx context.Context, req *pb.RangeSinceRequest) (*
 	return res, nil
 }
 
-func Registrarse(ctx context.Context, req *pb.Registro) (*pb.Bool, error) {
-	return &pb.Bool{Flag: true}, nil
-}
-
-func (s *DBServer) Filter(ctx context.Context, req *pb.FilterRequest) (*pb.FilterResponse, error) {
-	var filterOffer = req.Oferta
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	res := &pb.FilterResponse{}
-	for _, o := range s.store {
-		if strings.EqualFold(o.Categoria, filterOffer.Categoria) &&
-			strings.EqualFold(o.Tienda, filterOffer.Tienda) &&
-			strings.EqualFold(o.Producto, filterOffer.Producto) {
-			res.Ofertas = append(res.Ofertas, o)
-		}
-	}
-	return res, nil
-}
-
 // Sincronizar devuelve las ofertas añadidas o modificadas
 // después de la oferta pasada en el request.
 func (s *DBServer) Sincronizar(ctx context.Context, req *pb.SincronizarRequest) (*pb.SincronizarResponse, error) {
+	log.Println("Iniciando sincronización...")
 	var lastOffer = req.Oferta
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	res := &pb.SincronizarResponse{}
-	var flagFound bool = false
+
+	layout := "02/01/2006 15:04:05.000"
+
+	tLast, err := time.Parse(layout, lastOffer.Fecha)
+	if err != nil {
+		log.Printf("Error parseando fecha de lastOffer: %v", err)
+		return res, err
+	}
+
 	for _, o := range s.store {
-		if flagFound {
-			res.Ofertas = append(res.Ofertas, o)
+		tOferta, err := time.Parse(layout, o.Fecha)
+		if err != nil {
+			log.Printf("Error parseando fecha de oferta %s: %v", o.OfertaId, err)
 			continue
 		}
 
-		if strings.EqualFold(o.OfertaId, lastOffer.OfertaId) && strings.EqualFold(o.FechaModificacion, lastOffer.FechaModificacion) {
-			flagFound = true
+		// Solo agregar si la fecha de o es posterior a la de lastOffer
+		if tOferta.After(tLast) {
+			res.Ofertas = append(res.Ofertas, o)
 		}
 	}
 	return res, nil
 }
 
-// syncTrigger inicia la sincronización con Nodo2 y Nodo3
+// syncTrigger inicia la sincronización con Nodo1 y Nodo2
 func (s *DBServer) SyncTrigger() (bool, error) {
+	log.Println("Iniciando sincronización con Nodo1 y Nodo2...")
 	// Conectar con Nodo2
 	connNodo2, err := grpc.Dial(PortNodo2, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -179,21 +172,21 @@ func (s *DBServer) SyncTrigger() (bool, error) {
 	}
 
 	// Conectar con Nodo1
-	connNodo3, err := grpc.Dial(PortNodo1, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connNodo1, err := grpc.Dial(PortNodo1, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect to Nodo3: %v", err)
+		log.Fatalf("did not connect to Nodo1: %v", err)
 	}
-	defer connNodo3.Close()
-	clientNodo3 := pb.NewDBNodeClient(connNodo3)
-	resNodo3, err := clientNodo3.Sincronizar(context.Background(), &pb.SincronizarRequest{Oferta: &LastOffer})
+	defer connNodo1.Close()
+	clientNodo1 := pb.NewDBNodeClient(connNodo1)
+	resNodo1, err := clientNodo1.Sincronizar(context.Background(), &pb.SincronizarRequest{Oferta: &LastOffer})
 	if err != nil {
-		log.Printf("Error sincronizando con Nodo3: %v", err)
+		log.Printf("Error sincronizando con Nodo1: %v", err)
 	} else {
-		log.Printf("Sincronización con Nodo3: recibidas %d ofertas", len(resNodo3.Ofertas))
+		log.Printf("Sincronización con Nodo1: recibidas %d ofertas", len(resNodo1.Ofertas))
 	}
 
-	if len(resNodo2.Ofertas) != len(resNodo3.Ofertas) {
-		log.Printf("Inconsistencia detectada entre Nodo2 y Nodo3")
+	if len(resNodo2.Ofertas) != len(resNodo1.Ofertas) {
+		log.Printf("Inconsistencia detectada entre Nodo2 y Nodo1")
 		return false, errors.New("Inconsistencia entre nodos")
 	}
 	for _, oferta := range resNodo2.Ofertas {
@@ -222,7 +215,7 @@ func activoNodo() (*pb.Bool, error) {
 
 	// Creamos el mensaje de registro
 	reg := &pb.Registro{
-		Nombre: os.Getenv("nodo1"),
+		Nombre: "db3",
 		Rol:    2, // 2 = Nodo
 	}
 
@@ -238,6 +231,7 @@ func activoNodo() (*pb.Bool, error) {
 
 func RegistrarBroker() {
 	for {
+		log.Println("Intentando registrar nodo en el broker...")
 		conn, err := grpc.Dial(PortBroker, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(3*time.Second))
 		if err != nil {
 			log.Printf("No se pudo conectar al broker (%s): %v", PortBroker, err)
@@ -248,7 +242,7 @@ func RegistrarBroker() {
 
 		// Creamos el mensaje de registro
 		reg := &pb.Registro{
-			Nombre: os.Getenv("nodo1"),
+			Nombre: "db3",
 			Rol:    2, // 2 = Nodo
 		}
 
@@ -275,56 +269,106 @@ func RegistrarBroker() {
 	}
 }
 
-func (s *DBServer) siguesvivo(ctx context.Context, req *pb.Vacio) (*pb.Bool, error) {
+func (s *DBServer) Siguesvivo(ctx context.Context, req *pb.Vacio) (*pb.Bool, error) {
+	log.Println("Cerrando nodo en 5 segundos...")
 	go func() {
-		log.Println("Cerrando nodo en 10 segundos...")
-		time.Sleep(10 * time.Second)
+		time.Sleep(5 * time.Second)
+		eliminarArchivo()
 		log.Println("Nodo cerrado.")
 		os.Exit(0)
 	}()
 	return &pb.Bool{Flag: true}, nil
 }
 
+func splitFilter(s string) []string {
+	s = strings.TrimSpace(s)
+	if s == "" || strings.EqualFold(s, "null") {
+		return nil
+	}
+	parts := strings.Split(s, ";")
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	return parts
+}
+
 func (s *DBServer) GetHistoric(ctx context.Context, req *pb.Filtro) (*pb.RangeSinceResponse, error) {
+	log.Println("Generando reporte histórico con filtros...")
+	log.Printf("Filtros recibidos - Categoría: '%s', Tienda: '%s', PrecioMax: '%s'", req.Categoria, req.Tienda, req.PrecioMax)
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	resp := &pb.RangeSinceResponse{}
 
-	// Parsear el precio máximo (si está presente)
+	// Parsear filtros múltiples
+	categorias := splitFilter(req.Categoria)
+	tiendas := splitFilter(req.Tienda)
+
+	// Parsear precio máximo
 	var precioMax int64
-	if req.PrecioMax != "" {
-		p, err := strconv.ParseInt(req.PrecioMax, 10, 64)
-		if err == nil {
+	if !strings.EqualFold(req.PrecioMax, "") && !strings.EqualFold(req.PrecioMax, "null") {
+		if p, err := strconv.ParseInt(req.PrecioMax, 10, 64); err == nil {
 			precioMax = p
 		}
 	}
 
 	for _, o := range s.store {
-		// Filtrado flexible: cada campo es opcional
 		match := true
 
-		if req.Tienda != "" && !strings.EqualFold(o.Tienda, req.Tienda) {
-			match = false
+		// ---- FILTRO DE CATEGORÍAS ----
+		if len(categorias) > 0 {
+			ok := false
+			for _, c := range categorias {
+				if strings.EqualFold(o.Categoria, c) {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				match = false
+			}
 		}
 
-		if req.Categoria != "" && !strings.EqualFold(o.Categoria, req.Categoria) {
-			match = false
+		// ---- FILTRO DE TIENDAS ----
+		if len(tiendas) > 0 {
+			ok := false
+			for _, t := range tiendas {
+				if strings.EqualFold(o.Tienda, t) {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				match = false
+			}
 		}
 
+		// ---- FILTRO DE PRECIO ----
 		if precioMax > 0 && o.Precio > precioMax {
 			match = false
 		}
 
+		// ---- AGREGAR RESULTADO ----
 		if match {
 			resp.Ofertas = append(resp.Ofertas, o)
 		}
 	}
-
-	log.Printf("GetHistoric: %d resultados para filtros (Tienda=%s, Categoria=%s, PrecioMax=%s)",
-		len(resp.Ofertas), req.Tienda, req.Categoria, req.PrecioMax)
+	log.Printf("Reporte histórico generado con %d ofertas", len(resp.Ofertas))
 
 	return resp, nil
+}
+
+func eliminarArchivo() {
+	err := os.Remove("/data/data.jsonl")
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Println("⚠️ El archivo data.jsonl no existe, no hay nada que borrar.")
+		} else {
+			log.Printf("❌ Error al eliminar data.jsonl: %v", err)
+		}
+		return
+	}
+	log.Println("🗑️ Archivo data.jsonl eliminado correctamente.")
 }
 
 func main() {
@@ -354,37 +398,7 @@ func main() {
 
 	// Registro del nodo en el broker en segundo plano
 	go func() {
-		log.Println("Iniciando registro del nodo en el broker...")
 		RegistrarBroker()
-	}()
-
-	// Iniciar la simulación de error en segundo plano
-	go func() {
-		time.Sleep(15 * time.Second)
-		log.Println("Simulando caída del nodo...")
-		// Detener operaciones del nodo
-		if globalListener != nil {
-			globalListener.Close()
-		}
-		log.Println("Nodo caído. No responde a solicitudes.")
-
-		// Esperar un tiempo antes de "recuperarse"
-		time.Sleep(5 * time.Second)
-		log.Println("Nodo recuperado, reanudando operaciones...")
-
-		lis, err := net.Listen("tcp", ":"+PortNodo3)
-		if err != nil {
-			log.Fatal(err)
-		}
-		globalListener = lis
-		if err := grpcSrv.Serve(lis); err != nil {
-			log.Fatal(err)
-		}
-		log.Println("Nodo reanudó operaciones.")
-
-		log.Println("Avisando estado del nodo en el broker...")
-		activoNodo()
-		srv.SyncTrigger()
 	}()
 
 	log.Printf("DB node listening on %s (data=%s)", *port, *data)
