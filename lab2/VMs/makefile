@@ -4,10 +4,6 @@ COMPOSE_VM2=Dist043/docker-compose.yml
 COMPOSE_VM3=Dist044/docker-compose.yml
 COMPOSE_VM4=Dist101/docker-compose.yml
 
-create-network:
-	@docker network inspect grpc-net >/dev/null 2>&1 || \
-	echo "Creando red grpc-net..." && docker network create grpc-net
-
 # ========== VM1 ==========
 build-VM1:
 	@echo "Construyendo Docker images para VM1..."
