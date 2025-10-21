@@ -1,0 +1,21 @@
+services:
+  parisio:
+    build: ./productores
+    container_name: parisio
+    environment:
+      - NOMBRE_TIENDA=Parisio
+      - CATALOGO=catalogos/parisio_catalogo.csv
+      - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
+
+  db3:
+    build: ./Nodo3
+    container_name: db3
+    ports:
+      - "50053:50053"
+    environment:
+      - NODE_ID=DB3
+      - PORT=50051
+      - DATA_PATH=/data/data.jsonl
+      - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
+    volumes:
+      - ./db/Nodo3/data:/data

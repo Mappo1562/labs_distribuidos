@@ -1,0 +1,29 @@
+services:
+  falabellox:
+    build: ./productores
+    container_name: falabellox
+    environment:
+      - NOMBRE_TIENDA=Falabellox
+      - CATALOGO=catalogos/falabellox_catalogo.csv
+      - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
+
+  db2:
+    build: ./Nodo2
+    container_name: db2
+    ports:
+      - "50052:50052"
+    environment:
+      - NODE_ID=DB2
+      - PORT=50051
+      - DATA_PATH=/data/data.jsonl
+    volumes:
+      - ./db/Nodo2/data:/data
+
+  grupo3:
+    build: ./consumidores
+    container_name: grupo3
+    environment:
+      - GRUPO=3
+      - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
+    volumes:
+      - ./consumidores/ofertas/grupo3:/app/ofertas

@@ -1,0 +1,110 @@
+// se compila con desde /lab2:
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+
+syntax = "proto3";
+
+package CyberDay;
+
+option go_package = "/proto";
+
+service  Broker{
+    rpc GenerarOferta(Oferta) returns (Bool) {}
+    rpc Registrarse(Registro) returns (Bool) {}
+    rpc GenerarHistorico(Registro) returns (RangeSinceResponse) {}
+
+    rpc Activo(Registro) returns (Bool) {}
+}
+
+// por ahora no se usa
+message HistoricoRequest {
+  string nombre = 1;
+  // Oferta UltimaOferta = 2; este sirve si queremos pasar solo las ofertas que no recibió
+  // en la ayudantía dice q se puede entregar todo el historico
+  // y el consumidor se encarga de filtrar lo que ya tiene.
+}
+
+message Registro{
+    string nombre = 1;
+    int32 rol = 2; //Tienda = 0, Consumidor = 1, Nodo = 2
+}
+
+message Oferta{
+    string oferta_id = 1;
+    string tienda = 2;
+    string categoria = 3;
+    string producto = 4;
+    int64 precio = 5;
+    int64 stock = 6;
+    string fecha = 7;
+    string fechaModificacion = 8; // Solo para DB
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+message Vacio{}
+
+// ------------------ //
+// * Operaciones DB * //
+// ------------------ //
+
+service DBNode {
+  rpc Store(StoreRequest) returns (StoreResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse);
+  // agregada por mappo:
+  rpc GetHistoric(Filtro) returns (RangeSinceResponse);
+  rpc Siguesvivo(Vacio) returns (Bool); // Para chequear si el nodo está vivo
+}
+
+message StoreRequest {
+  Oferta oferta = 1;
+}
+
+message StoreResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message GetRequest {
+  string oferta_id = 1;
+}
+
+message GetResponse {
+  Oferta oferta = 1;
+  bool found = 2;
+}
+
+message RangeSinceRequest {
+  int64 since_unix = 1;
+}
+
+message RangeSinceResponse {
+  repeated Oferta Ofertas = 1;
+}
+
+
+// Agregadas mias:
+
+message Filtro {
+  string Tienda = 1;
+  string Categoria = 2;
+  string PrecioMax = 3;
+}
+
+
+// ------------------ //
+// * Operaciones Consumidor * //
+// ------------------ //
+
+service Consumidor {
+    rpc NotificarOferta(Oferta) returns (Bool);
+    rpc pedirDatos(Vacio) returns (DatosFinalesConsumidor);
+}
+
+message DatosFinalesConsumidor {
+    string id = 1;
+    int64 ofertasRecibidas = 2;
+    string nombreCSV = 3;
+}

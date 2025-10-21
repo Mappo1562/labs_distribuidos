@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package CyberDay;
+
+option go_package = "/proto";
+
+// ------------------ //
+// *   Oferta  DB   * //
+// ------------------ //
+message Oferta{
+  string oferta_id = 1;
+  string tienda = 2;
+	string categoria = 3;
+	string producto = 4;
+	int64 precio = 5;
+	int64 stock = 6;
+  string fecha = 7;
+  string fechaModificacion = 8;
+}
+
+// ------------------ //
+// * Operaciones DB * //
+// ------------------ //
+message StoreRequest {
+  Oferta oferta = 1;
+}
+
+message StoreResponse {
+  bool ok = 1;
+  string message = 2;
+}
+
+message GetRequest {
+  string oferta_id = 1;
+}
+
+message GetResponse {
+  Oferta oferta = 1;
+  bool found = 2;
+}
+
+message RangeSinceRequest {
+  int64 since_unix = 1;
+}
+
+message RangeSinceResponse {
+  repeated Oferta Ofertas = 1;
+}
+
+message FilterRequest{
+  Oferta oferta = 1;
+}
+
+message Filtro {
+  string Tienda = 1;
+  string Categoria = 2;
+  string PrecioMax = 3;
+}
+
+message FilterResponse{
+  Oferta oferta = 1;
+  repeated Oferta Ofertas = 2;
+}
+
+// ------------------- //
+// * Registro Broker * //
+// ------------------- //
+message Registro{
+    string nombre = 1;
+    int32 rol = 2; //Tienda = 0, Consumidor = 1, Nodo = 2
+}
+
+service  Broker{
+    rpc Registrarse(Registro) returns (Bool) {}
+
+    rpc Activo(Registro) returns (Bool) {}
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+// ------------------- //
+// *   Sincronizar   * //
+// ------------------- //
+message SincronizarRequest{
+    Oferta oferta = 1;
+}
+
+message SincronizarResponse{
+    repeated Oferta ofertas = 1;
+}
+
+message Vacio{}
+
+service DBNode {
+  rpc Store(StoreRequest) returns (StoreResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse);
+  rpc Sincronizar(SincronizarRequest) returns (SincronizarResponse) {}
+  rpc Filter(FilterRequest) returns (FilterResponse);
+  // agregada por mappo:
+  rpc GetHistoric(Filtro) returns (RangeSinceResponse);
+  rpc Siguesvivo(Vacio) returns (Bool); // Para chequear si el nodo está vivo
+}

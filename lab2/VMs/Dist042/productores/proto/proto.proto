@@ -1,0 +1,38 @@
+// se compila con desde /lab2:
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+
+syntax = "proto3";
+
+package CyberDay;
+
+option go_package = "/proto";
+
+service  Broker{
+    rpc GenerarOferta(Oferta) returns (Bool) {}
+    rpc Registrarse(Registro) returns (Bool) {}
+}
+
+service  NodeService{
+    rpc GuardarOferta(Oferta) returns (Bool) {}
+}
+
+message Registro{
+    string nombre = 1;
+    int32 rol = 2; //Tienda = 0, Consumidor = 1
+}
+
+message Oferta{
+    string oferta_id = 1;
+    string tienda = 2;
+	string categoria = 3;
+	string producto = 4;
+	int64 precio = 5;
+	int64 stock = 6;
+    string fecha = 7;
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+message Vacio{}
