@@ -32,6 +32,7 @@ type servidorConsumidor struct {
 	mu         sync.Mutex
 	activo     bool
 	grpcServer *grpc.Server
+	done       chan struct{}
 }
 
 var consumidores []Consumidor
@@ -138,14 +139,13 @@ func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Ofe
 		return &pb.Bool{Flag: false}, nil
 	}
 
-	/*
-		//Simulación caida
-		if rand.Float64() < 0.01 {
-			s.mu.Unlock()
-			go simularCaida(s)
-			return nil, fmt.Errorf("el consumidor %s se cayó", s.Consumidor.id_consumidor)
-		}
-	*/
+	//Simulación caida
+	if rand.Float64() < 0.01 {
+		s.mu.Unlock()
+		go simularCaida(s)
+		return nil, fmt.Errorf("el consumidor %s se cayó", s.Consumidor.id_consumidor)
+	}
+
 	log.Printf("Se leyo la oferta para %s\n", s.Consumidor.id_consumidor)
 	ok := guardarOferta(s.Consumidor, oferta)
 	s.mu.Unlock()
@@ -162,6 +162,7 @@ func levantarServidor(c Consumidor, puerto int) *servidorConsumidor {
 	srv := &servidorConsumidor{
 		Consumidor: c,
 		activo:     true,
+		done:       make(chan struct{}),
 	}
 
 	srv.grpcServer = grpc.NewServer()
@@ -275,7 +276,10 @@ func (s *servidorConsumidor) recuperarOfertas() {
 	if err != nil {
 		log.Printf("[%s] Error al recuperar historial: %v\n", s.Consumidor.id_consumidor, err)
 	}
+
+	log.Printf("[%s] Respuesta completa de GenerarHistorico: %+v\n", s.Consumidor.id_consumidor, resp)
 	ofertas := resp.Ofertas
+	log.Printf("[%s] Cantidad de ofertas recuperadas: %d\n", s.Consumidor.id_consumidor, len(ofertas))
 
 	if len(ofertas) == 0 {
 		log.Printf("[%s] No hay ofertas que recuperar\n", s.Consumidor.id_consumidor)
@@ -353,6 +357,7 @@ func (s *servidorConsumidor) PedirDatos(ctx context.Context, vacio *pb.Vacio) (*
 		time.Sleep(500 * time.Millisecond)
 		log.Printf("[%s] Apagando consumidor después de enviar datos finales", s.Consumidor.id_consumidor)
 		s.grpcServer.GracefulStop()
+		close(s.done)
 	}()
 
 	return resp, nil
@@ -462,5 +467,9 @@ func main() {
 		servidores = append(servidores, srv)
 	}
 
-	select {}
+	for _, srv := range servidores {
+		<-srv.done
+	}
+
+	log.Println("Todos los consumidores teriminaron correctamente.")
 }

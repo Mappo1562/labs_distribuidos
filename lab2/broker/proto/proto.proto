@@ -31,10 +31,10 @@ message Registro{
 message Oferta{
     string oferta_id = 1;
     string tienda = 2;
-	string categoria = 3;
-	string producto = 4;
-	int64 precio = 5;
-	int64 stock = 6;
+    string categoria = 3;
+    string producto = 4;
+    int64 precio = 5;
+    int64 stock = 6;
     string fecha = 7;
     string fechaModificacion = 8; // Solo para DB
 }
