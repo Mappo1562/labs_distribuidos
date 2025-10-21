@@ -258,11 +258,11 @@ func RegistrarBroker() {
 		}
 
 		if resp.Flag {
-			log.Printf("✅ Nodo %s registrado correctamente en el broker", reg.Nombre)
+			log.Printf("Nodo %s registrado correctamente en el broker", reg.Nombre)
 			conn.Close()
 			break
 		} else {
-			log.Printf("⚠️ Broker rechazó el registro de %s, reintentando...", reg.Nombre)
+			log.Printf("Broker rechazó el registro de %s, reintentando...", reg.Nombre)
 			conn.Close()
 			time.Sleep(5 * time.Second)
 		}
@@ -350,7 +350,6 @@ func (s *DBServer) GetHistoric(ctx context.Context, req *pb.Filtro) (*pb.RangeSi
 
 		// ---- AGREGAR RESULTADO ----
 		if match {
-			log.Printf("-------------- oferta agregada: %v", o.OfertaId)
 			resp.Ofertas = append(resp.Ofertas, o)
 		}
 	}
@@ -363,13 +362,13 @@ func eliminarArchivo() {
 	err := os.Remove("/data/data.jsonl")
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Println("⚠️ El archivo data.jsonl no existe, no hay nada que borrar.")
+			log.Println("El archivo data.jsonl no existe, no hay nada que borrar.")
 		} else {
-			log.Printf("❌ Error al eliminar data.jsonl: %v", err)
+			log.Printf("Error al eliminar data.jsonl: %v", err)
 		}
 		return
 	}
-	log.Println("🗑️ Archivo data.jsonl eliminado correctamente.")
+	log.Println("Archivo data.jsonl eliminado correctamente.")
 }
 
 func main() {

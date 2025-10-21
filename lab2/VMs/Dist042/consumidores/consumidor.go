@@ -286,7 +286,7 @@ func (s *servidorConsumidor) recuperarOfertas() {
 		return
 	}
 
-	path := fmt.Sprintf("/app/ofertas/%s", s.Consumidor.id_consumidor)
+	path := fmt.Sprintf("/app/ofertas/consumidor_%s_ofertas.csv", s.Consumidor.id_consumidor)
 	archivo, err := os.Create(path)
 
 	if err != nil {

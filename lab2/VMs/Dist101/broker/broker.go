@@ -119,9 +119,10 @@ func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, er
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
+	n := strings.Split(dir, ":")[0]
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
-		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+		fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
 		return false
 	}
@@ -137,7 +138,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 
 	response, err := client.Store(ctx, req)
 	if err != nil {
-		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+		fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
 		return false
 	}
@@ -146,7 +147,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 
 		return true
 	}
-	fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+	fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
 	return false
 }
@@ -317,12 +318,6 @@ func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, er
 	return &pb.Bool{Flag: true}, nil
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-reviso si 2 son iguales, si no es asi, llamo a las bd para hacer la consistencia eventual,
-*/
-
 func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse, bool) {
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
@@ -335,7 +330,7 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20)
 	defer cancel()
 
-	response, err := client.GetHistoric(ctx, &pb.Filtro{ // devolver todo <-----------------------------------------------
+	response, err := client.GetHistoric(ctx, &pb.Filtro{
 		Tienda:    filtros[2],
 		Categoria: filtros[1],
 		PrecioMax: filtros[3],
@@ -361,7 +356,7 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 		return nil, nil
 	}
 	log.Printf("Solicitare el historial para %v", in.Nombre)
-	fallosyrecuperacionesAppend(in.Nombre, "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
+	fallosyrecuperacionesAppend(consumidores[in.Nombre][0], "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
 	var (
 		H []*pb.Oferta
 	)
@@ -371,24 +366,24 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	H3, f3 := GenerarHistoricoHelp(consumidores[in.Nombre], AddBD[2])
 
 	if f1 && f2 && f3 {
-		H = comparar3Historicos(H1, H2, H3, in.Nombre)
+		H = comparar3Historicos(H1, H2, H3)
 
 	} else if f1 && f2 {
-		H = compararHistoricos(H1, H2, in.Nombre)
+		H = compararHistoricos(H1, H2)
 
 	} else if f1 && !f2 {
 		if !f3 {
 			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 			return nil, nil
 		}
-		H = compararHistoricos(H1, H3, in.Nombre)
+		H = compararHistoricos(H1, H3)
 
 	} else if !f1 && f2 {
 		if !f3 {
 			log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
 			return nil, nil
 		}
-		H = compararHistoricos(H3, H2, in.Nombre) /////////////////////// luego sacar el nombre
+		H = compararHistoricos(H3, H2)
 
 	} else {
 		log.Printf("Error al conseguir el Historico con las bases de datos. hay menos de 2 activas")
@@ -404,73 +399,7 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	return Ret, nil
 }
 
-func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse, n string) {
-	name := "/app/reportes/historial-" + n + ".txt"
-	file, err := os.Create(name)
-	log.Printf("Escribiendo TXT de %v, donde el numero de ofertas son %v", n, len(H1.Ofertas))
-	if err != nil {
-		fmt.Println("Error al crear el reporte:", err)
-		return
-	}
-	defer file.Close()
-	var str string
-
-	if H3 == nil {
-		fmt.Fprintf(file, "H1   |   H2\n")
-		for i, _ := range H1.Ofertas {
-			str = H1.Ofertas[i].OfertaId + "   |   " + H2.Ofertas[i].OfertaId + "\n"
-			fmt.Fprintln(file, str)
-		}
-	} else {
-		fmt.Fprintln(file, "H1   |   H2   |   H3")
-		i := 0
-		j := 0
-		k := 0
-		for i < len(H1.Ofertas) && j < len(H2.Ofertas) && k < len(H3.Ofertas) {
-			of1 := H1.Ofertas[i].OfertaId
-			of2 := H2.Ofertas[j].OfertaId
-			of3 := H3.Ofertas[k].OfertaId
-			str = of1 + "   |   " + of2 + "   |   " + of3 + "\n"
-			i++
-			j++
-			k++
-			fmt.Fprintln(file, str)
-		}
-		fmt.Fprintln(file, "----------------------------------------------------------------")
-		for i < len(H1.Ofertas) && j < len(H2.Ofertas) {
-			of1 := H1.Ofertas[i].OfertaId
-			of2 := H2.Ofertas[j].OfertaId
-
-			str = of1 + "   |   " + of2 + "   |   ---"
-			i++
-			j++
-			fmt.Fprintln(file, str)
-		}
-
-		for i < len(H1.Ofertas) && k < len(H3.Ofertas) {
-			of1 := H1.Ofertas[i].OfertaId
-			of3 := H3.Ofertas[k].OfertaId
-
-			str = of1 + "   |   ---   |   " + of3
-			fmt.Fprintln(file, str)
-			i++
-			k++
-		}
-
-		for j < len(H2.Ofertas) && k < len(H3.Ofertas) {
-			of2 := H2.Ofertas[j].OfertaId
-			of3 := H3.Ofertas[k].OfertaId
-
-			str = "---   |   " + of2 + "   |   " + of3
-			fmt.Fprintln(file, str)
-			j++
-			k++
-		}
-	}
-}
-
-func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, n string) []*pb.Oferta {
-	escribirtxt(H1, H2, nil, n) ////////////////////////////////////////////////////////////////////////////////////////////////////////
+func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []*pb.Oferta {
 	log.Printf("Existen dos nodos DB activos, comparandolos")
 	H := make([]*pb.Oferta, 0)
 	for i, _ := range H1.Ofertas {
@@ -484,8 +413,7 @@ func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, n 
 	return H
 }
 
-func comparar3Historicos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse, n string) []*pb.Oferta {
-	escribirtxt(H1, H2, H3, n) ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func comparar3Historicos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse) []*pb.Oferta {
 	H := make([]*pb.Oferta, 0)
 	i := 0
 	j := 0
@@ -714,7 +642,7 @@ func generarReporte() {
 		fmt.Fprintf(file, " - %v: \n  - ofertas recibidas: %d\n  - ofertas aceptadas: %d\n", prod, ResumenProdE[i], ResumenProdA[i])
 	}
 	fmt.Fprintf(file, "\n==========================================================\n")
-	fmt.Fprintf(file, " 2 Estado de Nodos de Base de Datos:")
+	fmt.Fprintf(file, " 2 Estado de Nodos de Base de Datos:\n")
 	for i, vivo := range vivos {
 		fmt.Fprintf(file, " - Nodo DB%v: %v\n", i+1, vivo)
 	}
@@ -724,7 +652,12 @@ func generarReporte() {
 	fmt.Fprintf(file, " 3 Notificaciones a Consumidores\n")
 	for id, data := range notiData {
 		if consumidores[id][1] != "null" {
-			fmt.Fprintf(file, " - %v (%v): %v ofertas recibidas. Archivo %v generado\n", id, strings.ReplaceAll(consumidores[id][1], ";", ", "), data.OfertasRecibidas, data.NombreCSV)
+			fmt.Fprintf(file, " - %v (%v): %v ofertas recibidas.", id, strings.ReplaceAll(consumidores[id][1], ";", ", "), data.OfertasRecibidas)
+			if data.OfertasRecibidas > 0 {
+				fmt.Fprintf(file, "Archivo %v generado\n", data.NombreCSV)
+			} else {
+				fmt.Fprintf(file, " No se generó archivo ya que no se recibieron ofertas.\n")
+			}
 		} else {
 			fmt.Fprintf(file, " - %v (Sin restricciones): %v ofertas recibidas. Archivo %v generado\n", id, data.OfertasRecibidas, data.NombreCSV)
 		}
@@ -734,9 +667,10 @@ func generarReporte() {
 	for _, fr := range fallosyrecuperaciones {
 		fmt.Fprintf(file, " - Entidad: %v | Evento: %v | Timestamp: %v\n", fr[0], fr[1], fr[2])
 	}
+	fmt.Fprintf(file, " Notar que probablemente existan consumidores recuperados pero no se notifica su falla, esto es porque el broker solo se\n entera de la falla cuando intenta notificar y no recibe respuesta.\n Por otro lado, el broker se entera de la recuperacion porque el consumidor le avisa al broker que está necesita su historial.\n")
 	fmt.Fprintf(file, "\n==========================================================\n")
 	fmt.Fprintf(file, " 5 conclusion\n")
-	fmt.Fprintf(file, " El sistema demostró ser capaz de manejar las ofertas y notificaciones de manera eficiente durante el período del Cyberday. A pesar de los fallos registrados, la recuperación automática y la consistencia eventual garantizaron la integridad de los datos y la satisfacción de los consumidores.\n")
+	fmt.Fprintf(file, " El sistema demostró ser capaz de manejar las ofertas y notificaciones de manera eficiente durante el período del Cyberday.\n A pesar de los fallos registrados, la recuperación automática y la consistencia eventual garantizaron la integridad de los datos y la satisfacción de los consumidores.\n")
 	fmt.Fprintf(file, "==========================================================\n")
 }
 
