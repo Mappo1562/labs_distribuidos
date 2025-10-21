@@ -68,6 +68,7 @@ var (
 	nFallos               int32
 	muFyR                 sync.Mutex
 	fallosyrecuperaciones [][]string
+	mureg                 sync.Mutex
 )
 
 func fallosyrecuperacionesAppend(entidad string, evento string, timestamp string) {
@@ -97,14 +98,18 @@ func (s *server) Activo(ctx context.Context, in *pb.Registro) (*pb.Bool, error) 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, error) {
+	mureg.Lock()
 	_, ok := registrados[in.Nombre]
+	mureg.Unlock()
 	if ok {
 		log.Printf("Entidad %s ya registrada, error.", in.Nombre)
 		err := fmt.Errorf("No se pudo registrar la entidad en el broker, ya estaba registrada.\n")
 		return &pb.Bool{Flag: false}, err
 	}
+	mureg.Lock()
 	registrados[in.Nombre] = in.Rol
 	log.Printf("Entidad %s registrada correctamente como %s.", in.Nombre, mapeoRoles[int(in.Rol)])
+	mureg.Unlock()
 	return &pb.Bool{Flag: true}, nil
 }
 
@@ -250,7 +255,9 @@ func revisarCategoria(cat string) bool {
 func (s *server) GenerarOferta(ctx context.Context, in *pb.Oferta) (*pb.Bool, error) {
 	flag := true
 	var mugenof sync.Mutex
+	mureg.Lock()
 	rol, ok := registrados[in.Tienda]
+	mureg.Unlock()
 	muProd.Lock()
 	ResumenProdE[mapeoProductores[in.Tienda]] += 1
 	muProd.Unlock()
@@ -348,13 +355,15 @@ func GenerarHistoricoHelp(filtros []string, dir string) (*pb.RangeSinceResponse,
 }
 
 func (s *server) GenerarHistoricoAntiguo(ctx context.Context, in *pb.Registro) (*pb.RangeSinceResponse, error) {
-	fallosyrecuperacionesAppend(consumidores[in.Nombre][0], "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
 	flag := true
+	mureg.Lock()
 	rol, ok := registrados[in.Nombre]
+	mureg.Unlock()
 	if !ok || rol != 1 {
 		log.Printf("El consumidor %v no está registrada en el broker. Peticion rechazada.", in.Nombre)
 		return nil, nil // explicar errores <--------------------------------------------------AQUI
 	}
+	fallosyrecuperacionesAppend(consumidores[in.Nombre][0], "Recuperacion", time.Now().Format("02/01/2006 15:04:05.000"))
 	log.Printf("Solicitare el historial para %v", in.Nombre)
 	recibido := [3]int{0, 0, 0}
 	var (
@@ -522,7 +531,62 @@ func (s *server) GenerarHistorico(ctx context.Context, in *pb.Registro) (*pb.Ran
 	return Ret, nil
 }
 
+func escribirtxt(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse) {
+	file, err := os.Create("/app/reportes/Reporte.txt")
+	if err != nil {
+		fmt.Println("Error al crear el reporte:", err)
+		return
+	}
+	defer file.Close()
+	var str string
+
+	if H3 == nil {
+		fmt.Fprintf(file, "H1   |   H2\n")
+		for i, _ := range H1.Ofertas {
+			str = H1.Ofertas[i].OfertaId + "   |   " + H2.Ofertas[i].OfertaId + "\n"
+			fmt.Fprintln(file, str)
+		}
+	} else {
+		fmt.Fprintln(file, "H1   |   H2   |   H3")
+		i := 0
+		j := 0
+		k := 0
+		for i < len(H1.Ofertas) && j < len(H2.Ofertas) && k < len(H3.Ofertas) {
+			of1 := H1.Ofertas[i].OfertaId
+			of2 := H2.Ofertas[j].OfertaId
+			of3 := H3.Ofertas[k].OfertaId
+			str = of1 + "   |   " + of2 + "   |   " + of3 + "\n"
+			fmt.Fprintln(file, str)
+		}
+		fmt.Fprintln(file, "----------------------------------------------------------------")
+		for i < len(H1.Ofertas) && j < len(H2.Ofertas) {
+			of1 := H1.Ofertas[i].OfertaId
+			of2 := H2.Ofertas[j].OfertaId
+
+			str = of1 + "   |   " + of2 + "   |   ---"
+			fmt.Fprintln(file, str)
+		}
+
+		for i < len(H1.Ofertas) && k < len(H3.Ofertas) {
+			of1 := H1.Ofertas[i].OfertaId
+			of3 := H3.Ofertas[k].OfertaId
+
+			str = of1 + "   |   ---   |   " + of3
+			fmt.Fprintln(file, str)
+		}
+
+		for j < len(H2.Ofertas) && k < len(H3.Ofertas) {
+			of2 := H2.Ofertas[j].OfertaId
+			of3 := H3.Ofertas[k].OfertaId
+
+			str = "---   |   " + of2 + "   |   " + of3
+			fmt.Fprintln(file, str)
+		}
+	}
+}
+
 func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []*pb.Oferta {
+	escribirtxt(H1, H2, nil) ////////////////////////////////////////////////////////////////////////////////////////////////////////
 	log.Printf("Existen dos nodos DB activos, comparandolos")
 	H := make([]*pb.Oferta, 0)
 	for i, _ := range H1.Ofertas {
@@ -537,6 +601,7 @@ func compararHistoricos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse) []
 }
 
 func comparar3Historicos(H1 *pb.RangeSinceResponse, H2 *pb.RangeSinceResponse, H3 *pb.RangeSinceResponse) []*pb.Oferta {
+	escribirtxt(H1, H2, H3) ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	H := make([]*pb.Oferta, 0)
 	i := 0
 	j := 0
