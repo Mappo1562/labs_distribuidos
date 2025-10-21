@@ -273,7 +273,6 @@ func (s *DBServer) Siguesvivo(ctx context.Context, req *pb.Vacio) (*pb.Bool, err
 	log.Println("Cerrando nodo en 5 segundos...")
 	go func() {
 		time.Sleep(5 * time.Second)
-		eliminarArchivo()
 		log.Println("Nodo cerrado.")
 		os.Exit(0)
 	}()
@@ -372,6 +371,9 @@ func eliminarArchivo() {
 }
 
 func main() {
+	log.Println("Iniciando Nodo 3 de la base de datos...")
+	log.Println("Eliminando archivo data.jsonl existente...")
+	eliminarArchivo()
 	//Cambiar puerto segun nodo
 	port := flag.String("port", PortNodo3, "port")
 	data := flag.String("data", os.Getenv("DATA_PATH"), "data file")

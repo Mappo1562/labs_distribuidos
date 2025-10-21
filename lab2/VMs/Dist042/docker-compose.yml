@@ -1,0 +1,29 @@
+services:
+  riploy:
+    build: ./productores
+    container_name: riploy
+    environment:
+      - NOMBRE_TIENDA=Riploy
+      - CATALOGO=catalogos/riploy_catalogo.csv
+      - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
+
+  db1:
+    build: ./Nodo1
+    container_name: db1
+    ports:
+      - "50051:50051"
+    environment:
+      - NODE_ID=DB1
+      - PORT=50051
+      - DATA_PATH=/data/data.jsonl
+    volumes:
+      - ./db/Nodo1/data:/data
+
+  grupo2:
+    build: ./consumidores
+    container_name: grupo2
+    environment:
+      - GRUPO=2
+      - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
+    volumes:
+      - ./consumidores/ofertas/grupo2:/app/ofertas

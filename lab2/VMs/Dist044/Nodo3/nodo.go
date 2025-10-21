@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	pb "Nodo2/proto"
+	pb "Nodo3/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,8 +22,8 @@ import (
 
 const (
 	PortNodo1  = "db1:50051"
-	PortNodo2  = "50052"
-	PortNodo3  = "db3:50053"
+	PortNodo2  = "db2:50052"
+	PortNodo3  = "50053"
 	PortBroker = "broker:50050"
 )
 
@@ -154,9 +154,23 @@ func (s *DBServer) Sincronizar(ctx context.Context, req *pb.SincronizarRequest) 
 	return res, nil
 }
 
-// syncTrigger inicia la sincronización con Nodo1 y Nodo3
+// syncTrigger inicia la sincronización con Nodo1 y Nodo2
 func (s *DBServer) SyncTrigger() (bool, error) {
-	log.Println("Iniciando sincronización con Nodo1 y Nodo3...")
+	log.Println("Iniciando sincronización con Nodo1 y Nodo2...")
+	// Conectar con Nodo2
+	connNodo2, err := grpc.Dial(PortNodo2, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect to Nodo2: %v", err)
+	}
+	defer connNodo2.Close()
+	clientNodo2 := pb.NewDBNodeClient(connNodo2)
+	resNodo2, err := clientNodo2.Sincronizar(context.Background(), &pb.SincronizarRequest{Oferta: &LastOffer})
+	if err != nil {
+		log.Printf("Error sincronizando con Nodo2: %v", err)
+	} else {
+		log.Printf("Sincronización con Nodo2: recibidas %d ofertas", len(resNodo2.Ofertas))
+	}
+
 	// Conectar con Nodo1
 	connNodo1, err := grpc.Dial(PortNodo1, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -164,7 +178,6 @@ func (s *DBServer) SyncTrigger() (bool, error) {
 	}
 	defer connNodo1.Close()
 	clientNodo1 := pb.NewDBNodeClient(connNodo1)
-
 	resNodo1, err := clientNodo1.Sincronizar(context.Background(), &pb.SincronizarRequest{Oferta: &LastOffer})
 	if err != nil {
 		log.Printf("Error sincronizando con Nodo1: %v", err)
@@ -172,25 +185,11 @@ func (s *DBServer) SyncTrigger() (bool, error) {
 		log.Printf("Sincronización con Nodo1: recibidas %d ofertas", len(resNodo1.Ofertas))
 	}
 
-	// Conectar con Nodo3
-	connNodo3, err := grpc.Dial(PortNodo3, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("did not connect to Nodo3: %v", err)
-	}
-	defer connNodo3.Close()
-	clientNodo3 := pb.NewDBNodeClient(connNodo3)
-	resNodo3, err := clientNodo3.Sincronizar(context.Background(), &pb.SincronizarRequest{Oferta: &LastOffer})
-	if err != nil {
-		log.Printf("Error sincronizando con Nodo3: %v", err)
-	} else {
-		log.Printf("Sincronización con Nodo3: recibidas %d ofertas", len(resNodo3.Ofertas))
-	}
-
-	if len(resNodo1.Ofertas) != len(resNodo3.Ofertas) {
-		log.Printf("Inconsistencia detectada entre Nodo1 y Nodo3")
+	if len(resNodo2.Ofertas) != len(resNodo1.Ofertas) {
+		log.Printf("Inconsistencia detectada entre Nodo2 y Nodo1")
 		return false, errors.New("Inconsistencia entre nodos")
 	}
-	for _, oferta := range resNodo1.Ofertas {
+	for _, oferta := range resNodo2.Ofertas {
 		s.mu.Lock()
 		s.store[oferta.OfertaId] = oferta
 		s.mu.Unlock()
@@ -216,7 +215,7 @@ func activoNodo() (*pb.Bool, error) {
 
 	// Creamos el mensaje de registro
 	reg := &pb.Registro{
-		Nombre: "db2",
+		Nombre: "db3",
 		Rol:    2, // 2 = Nodo
 	}
 
@@ -232,6 +231,7 @@ func activoNodo() (*pb.Bool, error) {
 
 func RegistrarBroker() {
 	for {
+		log.Println("Intentando registrar nodo en el broker...")
 		conn, err := grpc.Dial(PortBroker, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(3*time.Second))
 		if err != nil {
 			log.Printf("No se pudo conectar al broker (%s): %v", PortBroker, err)
@@ -242,7 +242,7 @@ func RegistrarBroker() {
 
 		// Creamos el mensaje de registro
 		reg := &pb.Registro{
-			Nombre: "db2",
+			Nombre: "db3",
 			Rol:    2, // 2 = Nodo
 		}
 
@@ -258,11 +258,11 @@ func RegistrarBroker() {
 		}
 
 		if resp.Flag {
-			log.Printf("Nodo %s registrado correctamente en el broker", reg.Nombre)
+			log.Printf("✅ Nodo %s registrado correctamente en el broker", reg.Nombre)
 			conn.Close()
 			break
 		} else {
-			log.Printf("Broker rechazó el registro de %s, reintentando...", reg.Nombre)
+			log.Printf("⚠️ Broker rechazó el registro de %s, reintentando...", reg.Nombre)
 			conn.Close()
 			time.Sleep(5 * time.Second)
 		}
@@ -361,21 +361,21 @@ func eliminarArchivo() {
 	err := os.Remove("/data/data.jsonl")
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Println("El archivo data.jsonl no existe, no hay nada que borrar.")
+			log.Println("⚠️ El archivo data.jsonl no existe, no hay nada que borrar.")
 		} else {
-			log.Printf("Error al eliminar data.jsonl: %v", err)
+			log.Printf("❌ Error al eliminar data.jsonl: %v", err)
 		}
 		return
 	}
-	log.Println("Archivo data.jsonl eliminado correctamente.")
+	log.Println("🗑️ Archivo data.jsonl eliminado correctamente.")
 }
 
 func main() {
-	log.Println("Iniciando Nodo 2 de la base de datos...")
+	log.Println("Iniciando Nodo 3 de la base de datos...")
 	log.Println("Eliminando archivo data.jsonl existente...")
 	eliminarArchivo()
 	//Cambiar puerto segun nodo
-	port := flag.String("port", PortNodo2, "port")
+	port := flag.String("port", PortNodo3, "port")
 	data := flag.String("data", os.Getenv("DATA_PATH"), "data file")
 	flag.Parse()
 
