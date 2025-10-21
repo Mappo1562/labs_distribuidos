@@ -152,6 +152,7 @@ func nuevoGenerador(nombre string) *rand.Rand {
 }
 
 func main() {
+	log.SetOutput(os.Stdout)
 
 	nombreTienda = os.Getenv("NOMBRE_TIENDA")
 	path := os.Getenv("CATALOGO")
@@ -190,13 +191,13 @@ func main() {
 		log.Fatalf("Error al registrarse: %v", err)
 	}
 	if resp.Flag {
-		fmt.Printf("%s registrado en el broker\n", nombreTienda)
+		log.Printf("%s registrado en el broker\n", nombreTienda)
 	} else {
-		fmt.Println("Falló el registro")
+		log.Println("Falló el registro")
 		return
 	}
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 2) //permite que todos alcancen a registrarse
 	for {
 		oferta := generarOfertaAleatoria()
 		if oferta == nil {
@@ -210,9 +211,9 @@ func main() {
 		}
 
 		if respOferta.Flag {
-			fmt.Println("Oferta enviada correctamente")
+			log.Println("Oferta enviada correctamente")
 		} else {
-			fmt.Println("Broker rechazó la oferta")
+			log.Println("Broker rechazó la oferta")
 		}
 
 		time.Sleep(time.Duration(r.Intn(3)+2) * time.Second)

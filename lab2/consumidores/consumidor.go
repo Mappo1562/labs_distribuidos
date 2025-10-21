@@ -31,19 +31,20 @@ type servidorConsumidor struct {
 	Consumidor Consumidor
 	mu         sync.Mutex
 	activo     bool
+	grpcServer *grpc.Server
 }
 
 var consumidores []Consumidor
 
 var categoriasValidas = map[string]struct{}{
-	"Electronica":       {},
+	"Electrónica":       {},
 	"Moda":              {},
 	"Hogar":             {},
 	"Deportes":          {},
 	"Belleza":           {},
 	"Infantil":          {},
-	"Computacion":       {},
-	"Electrodomesticos": {},
+	"Computación":       {},
+	"Electrodomésticos": {},
 	"Herramientas":      {},
 	"Juguetes":          {},
 	"Automotriz":        {},
@@ -137,20 +138,21 @@ func (s *servidorConsumidor) NotificarOferta(ctx context.Context, oferta *pb.Ofe
 		return &pb.Bool{Flag: false}, nil
 	}
 
-	//Simulación caida
-	if rand.Float64() < 0.01 {
-		s.mu.Unlock()
-		go simularCaida(s)
-		return nil, fmt.Errorf("el consumidor %s se cayó", s.Consumidor.id_consumidor)
-	}
-
+	/*
+		//Simulación caida
+		if rand.Float64() < 0.01 {
+			s.mu.Unlock()
+			go simularCaida(s)
+			return nil, fmt.Errorf("el consumidor %s se cayó", s.Consumidor.id_consumidor)
+		}
+	*/
 	log.Printf("Se leyo la oferta para %s\n", s.Consumidor.id_consumidor)
 	ok := guardarOferta(s.Consumidor, oferta)
 	s.mu.Unlock()
 	return &pb.Bool{Flag: ok}, nil
 }
 
-func levantarServidor(c Consumidor, puerto int) {
+func levantarServidor(c Consumidor, puerto int) *servidorConsumidor {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", puerto))
 
 	if err != nil {
@@ -162,15 +164,17 @@ func levantarServidor(c Consumidor, puerto int) {
 		activo:     true,
 	}
 
-	s := grpc.NewServer()
-	pb.RegisterConsumidorServer(s, srv)
+	srv.grpcServer = grpc.NewServer()
+	pb.RegisterConsumidorServer(srv.grpcServer, srv)
 
 	go func() {
-		fmt.Printf("[%s] Escuchando en puerto %d\n", c.id_consumidor, puerto)
-		if err := s.Serve(lis); err != nil {
+		log.Printf("[%s] Escuchando en puerto %d\n", c.id_consumidor, puerto)
+		if err := srv.grpcServer.Serve(lis); err != nil {
 			log.Fatalf("[%s] Error sirviendo: %v\n", c.id_consumidor, err)
 		}
 	}()
+
+	return srv
 }
 
 func guardarOferta(c Consumidor, oferta *pb.Oferta) bool {
@@ -333,16 +337,25 @@ func categoriasValida(cat string) bool {
 
 func (s *servidorConsumidor) PedirDatos(ctx context.Context, vacio *pb.Vacio) (*pb.DatosFinalesConsumidor, error) {
 
-	cantOfertas, err := contarOfertas(s.Consumidor.archivo_ofertas)
-
+	path := fmt.Sprintf("/app/ofertas/%s", s.Consumidor.archivo_ofertas)
+	cantOfertas, err := contarOfertas(path)
 	if err != nil {
 		log.Printf("Hubo un error al contar cuantas ofertas le llegaron a %s\n", s.Consumidor.id_consumidor)
 	}
-	return &pb.DatosFinalesConsumidor{
+
+	resp := &pb.DatosFinalesConsumidor{
 		Id:               s.Consumidor.id_consumidor,
 		OfertasRecibidas: int64(cantOfertas),
 		NombreCSV:        s.Consumidor.archivo_ofertas,
-	}, nil
+	}
+
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		log.Printf("[%s] Apagando consumidor después de enviar datos finales", s.Consumidor.id_consumidor)
+		s.grpcServer.GracefulStop()
+	}()
+
+	return resp, nil
 }
 
 func contarOfertas(path string) (int, error) {
@@ -368,7 +381,32 @@ func contarOfertas(path string) (int, error) {
 	return len(records) - 1, nil
 }
 
+func limpiarOfertas(path string) error {
+	archivos, err := os.ReadDir(path)
+
+	if err != nil {
+		return err
+	}
+
+	for _, archivo := range archivos {
+		if !archivo.IsDir() {
+			log.Printf("Borrando el archivo %s\n", archivo.Name())
+			err := os.Remove(fmt.Sprintf("%s/%s", path, archivo.Name()))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func main() {
+	log.SetOutput(os.Stdout)
+	err := limpiarOfertas("/app/ofertas")
+	if err != nil {
+		log.Printf("No se pudieron limpiar los archivos antiguos: %v", err)
+	}
 
 	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -408,17 +446,20 @@ func main() {
 			log.Fatalf("Error al registrarse: %v\n", err)
 		}
 		if resp.Flag {
-			fmt.Printf("%s registrado en el broker\n", c.id_consumidor)
+			log.Printf("%s registrado en el broker\n", c.id_consumidor)
 		} else {
-			fmt.Println("Falló el registro")
+			log.Println("Falló el registro")
 			return
 		}
 	}
 
+	servidores := make([]*servidorConsumidor, 0, len(consumidoresGrupo))
+
 	for i := range len(consumidoresGrupo) {
 		c := consumidoresGrupo[i]
 		puerto := basePort + i
-		levantarServidor(c, puerto)
+		srv := levantarServidor(c, puerto)
+		servidores = append(servidores, srv)
 	}
 
 	select {}
