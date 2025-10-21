@@ -1,0 +1,52 @@
+Laboratorio 2: Sistemas Distribuidos
+=============================================
+--------------------------------------------------------------------
+AMBIENTE DE EJECUCION Y DESARROLLO 
+--------------------------------------------------------------------
+- Ejecucion: Docker desktop 28.3.2
+- Desarollo: Visual Studio Code
+
+--------------------------------------------------------------------
+EJECUCIÓN
+--------------------------------------------------------------------
+
+- si se quiere ejecutar en las VM, hay que seguir el siguiente orden
+ubicacion (grupo-11/lab2/<dist___>)
+dist042:
+    navegar hasta la carpeta Dist042 y ejecutar:
+        
+dist044:
+    navegar hasta la carpeta Dist044 y ejecutar:
+        
+dist101:
+    navegar hasta la carpeta Dist101 y ejecutar:
+        
+dist043:
+    navegar hasta la carpeta Dist043 y ejecutar:
+        
+si alguno tira error, ejecutar:
+    make docker-restart
+
+--------------------------------------------------------------------
+CONSIDERACIONES AL MOMENTO DE EJECUTAR
+--------------------------------------------------------------------
+- Se necesita que los archivos de catalogo se encuentren en la carpeta /productores/catalogos, cada uno con el nombre correspondiente:
+    -falabellox: falabellox_catalogo.csv
+    -parisio: parisio_catalogo.csv
+    -riploy: riploy_catalogo.csv
+- Los csv de cada consumidor se dividen por grupo. Exisitiendo 3 grupos y 4 consumidores por cada uno.
+- Los archivos creados para cada consumidor se borran al volver a ejecutar los programas. Por ende, si se necesita revisar los archivos hay que hacerlo antes de correr nuevamente el programa.
+- La simulación de caida de los consumidores se hace con un rand, por lo tanto entre ejecuciones no se va a caer el mismo consumidor.
+- Las ofertas generadas por los productores estan fijas con una seed.
+
+--------------------------------------------------------------------
+NOMBRE Y ROL INTEGRANTES
+--------------------------------------------------------------------
+- Emiliano Garcia 
+- 202273622-4
+
+- Alejandro Sánchez
+- 202273605-4
+
+- Alejandro Vergara
+- 202273568-6
