@@ -15,6 +15,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const (
+	PortBroker = "dist101.inf.santiago.usm.cl:50050"
+)
+
 type Producto struct {
 	producto_id     string
 	tienda          string
@@ -170,7 +174,7 @@ func main() {
 	r = nuevoGenerador(nombreTienda)
 	// Conectarse al broker
 
-	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(PortBroker, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("No se pudo conectar: %v", err)
 	}

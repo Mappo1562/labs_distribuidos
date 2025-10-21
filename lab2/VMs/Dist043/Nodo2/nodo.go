@@ -21,10 +21,10 @@ import (
 )
 
 const (
-	PortNodo1  = "db1:50051"
+	PortNodo1  = "dist042.inf.santiago.usm.cl:50051"
 	PortNodo2  = "50052"
-	PortNodo3  = "db3:50053"
-	PortBroker = "broker:50050"
+	PortNodo3  = "dist044.inf.santiago.usm.cl:50053"
+	PortBroker = "dist101.inf.santiago.usm.cl:50050"
 )
 
 var globalListener net.Listener
