@@ -654,6 +654,8 @@ func generarReporte() {
 			fmt.Fprintf(file, " - %v (%v): %v ofertas recibidas.", id, strings.ReplaceAll(consumidores[id][1], ";", ", "), data.OfertasRecibidas)
 			if data.OfertasRecibidas > 0 {
 				fmt.Fprintf(file, "Archivo %v generado\n", data.NombreCSV)
+			} else {
+				fmt.Fprintf(file, " No se generó archivo ya que no se recibieron ofertas.\n")
 			}
 		} else {
 			fmt.Fprintf(file, " - %v (Sin restricciones): %v ofertas recibidas. Archivo %v generado\n", id, data.OfertasRecibidas, data.NombreCSV)
