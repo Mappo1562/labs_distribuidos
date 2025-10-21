@@ -36,9 +36,9 @@ import (
 
 const (
 	port  = ":50050"
-	addn1 = "db1:50051"
-	addn2 = "db2:50052"
-	addn3 = "db3:50053"
+	addn1 = "dist042.inf.santiago.usm.cl:50051"
+	addn2 = "dist043.inf.santiago.usm.cl:50052"
+	addn3 = "dist044.inf.santiago.usm.cl:50053"
 )
 
 type server struct {

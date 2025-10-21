@@ -18,4 +18,4 @@ services:
       - DATA_PATH=/data/data.jsonl
       - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
     volumes:
-      - ./db/Nodo3/data:/data
+      - ./Nodo3/data:/data

@@ -17,7 +17,7 @@ services:
       - PORT=50051
       - DATA_PATH=/data/data.jsonl
     volumes:
-      - ./db/Nodo1/data:/data
+      - ./Nodo1/data:/data
 
   grupo2:
     build: ./consumidores

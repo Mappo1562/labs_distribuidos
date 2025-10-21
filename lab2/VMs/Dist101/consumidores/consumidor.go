@@ -18,6 +18,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const (
+	PortBroker = "dist101.inf.santiago.usm.cl:50050"
+)
+
 type Consumidor struct {
 	id_consumidor   string
 	categoria       []string
@@ -255,7 +259,7 @@ func (s *servidorConsumidor) recuperarOfertas() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(PortBroker, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("[%s] No se pudo conectar: %v\n", s.Consumidor.id_consumidor, err)
 		return
@@ -413,7 +417,7 @@ func main() {
 		log.Printf("No se pudieron limpiar los archivos antiguos: %v", err)
 	}
 
-	conn, err := grpc.NewClient("broker:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(PortBroker, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("No se pudo conectar: %v", err)
 	}
