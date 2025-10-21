@@ -4,7 +4,9 @@ package CyberDay;
 
 option go_package = "/proto";
 
-
+// ------------------ //
+// *   Oferta  DB   * //
+// ------------------ //
 message Oferta{
   string oferta_id = 1;
   string tienda = 2;
@@ -16,6 +18,9 @@ message Oferta{
   string fechaModificacion = 8;
 }
 
+// ------------------ //
+// * Operaciones DB * //
+// ------------------ //
 message StoreRequest {
   Oferta oferta = 1;
 }
@@ -42,8 +47,59 @@ message RangeSinceResponse {
   repeated Oferta Ofertas = 1;
 }
 
+message FilterRequest{
+  Oferta oferta = 1;
+}
+
+message Filtro {
+  string Tienda = 1;
+  string Categoria = 2;
+  string PrecioMax = 3;
+}
+
+message FilterResponse{
+  Oferta oferta = 1;
+  repeated Oferta Ofertas = 2;
+}
+
+// ------------------- //
+// * Registro Broker * //
+// ------------------- //
+message Registro{
+    string nombre = 1;
+    int32 rol = 2; //Tienda = 0, Consumidor = 1, Nodo = 2
+}
+
+service  Broker{
+    rpc Registrarse(Registro) returns (Bool) {}
+
+    rpc Activo(Registro) returns (Bool) {}
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+// ------------------- //
+// *   Sincronizar   * //
+// ------------------- //
+message SincronizarRequest{
+    Oferta oferta = 1;
+}
+
+message SincronizarResponse{
+    repeated Oferta ofertas = 1;
+}
+
+message Vacio{}
+
 service DBNode {
   rpc Store(StoreRequest) returns (StoreResponse);
   rpc Get(GetRequest) returns (GetResponse);
-  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse); // para resincronizar
+  rpc RangeSince(RangeSinceRequest) returns (RangeSinceResponse);
+  rpc Sincronizar(SincronizarRequest) returns (SincronizarResponse) {}
+  rpc Filter(FilterRequest) returns (FilterResponse);
+  // agregada por mappo:
+  rpc GetHistoric(Filtro) returns (RangeSinceResponse);
+  rpc siguesvivo(Vacio) returns (Bool); // Para chequear si el nodo está vivo
 }

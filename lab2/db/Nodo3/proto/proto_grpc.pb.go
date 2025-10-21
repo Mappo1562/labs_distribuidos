@@ -19,9 +19,153 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DBNode_Store_FullMethodName      = "/CyberDay.DBNode/Store"
-	DBNode_Get_FullMethodName        = "/CyberDay.DBNode/Get"
-	DBNode_RangeSince_FullMethodName = "/CyberDay.DBNode/RangeSince"
+	Broker_Registrarse_FullMethodName = "/CyberDay.Broker/Registrarse"
+	Broker_Activo_FullMethodName      = "/CyberDay.Broker/Activo"
+)
+
+// BrokerClient is the client API for Broker service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type BrokerClient interface {
+	Registrarse(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error)
+	Activo(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error)
+}
+
+type brokerClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewBrokerClient(cc grpc.ClientConnInterface) BrokerClient {
+	return &brokerClient{cc}
+}
+
+func (c *brokerClient) Registrarse(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, Broker_Registrarse_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *brokerClient) Activo(ctx context.Context, in *Registro, opts ...grpc.CallOption) (*Bool, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, Broker_Activo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// BrokerServer is the server API for Broker service.
+// All implementations must embed UnimplementedBrokerServer
+// for forward compatibility.
+type BrokerServer interface {
+	Registrarse(context.Context, *Registro) (*Bool, error)
+	Activo(context.Context, *Registro) (*Bool, error)
+	mustEmbedUnimplementedBrokerServer()
+}
+
+// UnimplementedBrokerServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedBrokerServer struct{}
+
+func (UnimplementedBrokerServer) Registrarse(context.Context, *Registro) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Registrarse not implemented")
+}
+func (UnimplementedBrokerServer) Activo(context.Context, *Registro) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Activo not implemented")
+}
+func (UnimplementedBrokerServer) mustEmbedUnimplementedBrokerServer() {}
+func (UnimplementedBrokerServer) testEmbeddedByValue()                {}
+
+// UnsafeBrokerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BrokerServer will
+// result in compilation errors.
+type UnsafeBrokerServer interface {
+	mustEmbedUnimplementedBrokerServer()
+}
+
+func RegisterBrokerServer(s grpc.ServiceRegistrar, srv BrokerServer) {
+	// If the following call pancis, it indicates UnimplementedBrokerServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&Broker_ServiceDesc, srv)
+}
+
+func _Broker_Registrarse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Registro)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrokerServer).Registrarse(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Broker_Registrarse_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrokerServer).Registrarse(ctx, req.(*Registro))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Broker_Activo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Registro)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrokerServer).Activo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Broker_Activo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrokerServer).Activo(ctx, req.(*Registro))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Broker_ServiceDesc is the grpc.ServiceDesc for Broker service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Broker_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "CyberDay.Broker",
+	HandlerType: (*BrokerServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Registrarse",
+			Handler:    _Broker_Registrarse_Handler,
+		},
+		{
+			MethodName: "Activo",
+			Handler:    _Broker_Activo_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/proto.proto",
+}
+
+const (
+	DBNode_Store_FullMethodName       = "/CyberDay.DBNode/Store"
+	DBNode_Get_FullMethodName         = "/CyberDay.DBNode/Get"
+	DBNode_RangeSince_FullMethodName  = "/CyberDay.DBNode/RangeSince"
+	DBNode_Sincronizar_FullMethodName = "/CyberDay.DBNode/Sincronizar"
+	DBNode_Filter_FullMethodName      = "/CyberDay.DBNode/Filter"
+	DBNode_GetHistoric_FullMethodName = "/CyberDay.DBNode/GetHistoric"
+	DBNode_Siguesvivo_FullMethodName  = "/CyberDay.DBNode/siguesvivo"
 )
 
 // DBNodeClient is the client API for DBNode service.
@@ -31,6 +175,11 @@ type DBNodeClient interface {
 	Store(ctx context.Context, in *StoreRequest, opts ...grpc.CallOption) (*StoreResponse, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	RangeSince(ctx context.Context, in *RangeSinceRequest, opts ...grpc.CallOption) (*RangeSinceResponse, error)
+	Sincronizar(ctx context.Context, in *SincronizarRequest, opts ...grpc.CallOption) (*SincronizarResponse, error)
+	Filter(ctx context.Context, in *FilterRequest, opts ...grpc.CallOption) (*FilterResponse, error)
+	// agregada por mappo:
+	GetHistoric(ctx context.Context, in *Filtro, opts ...grpc.CallOption) (*RangeSinceResponse, error)
+	Siguesvivo(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Bool, error)
 }
 
 type dBNodeClient struct {
@@ -71,6 +220,46 @@ func (c *dBNodeClient) RangeSince(ctx context.Context, in *RangeSinceRequest, op
 	return out, nil
 }
 
+func (c *dBNodeClient) Sincronizar(ctx context.Context, in *SincronizarRequest, opts ...grpc.CallOption) (*SincronizarResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SincronizarResponse)
+	err := c.cc.Invoke(ctx, DBNode_Sincronizar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBNodeClient) Filter(ctx context.Context, in *FilterRequest, opts ...grpc.CallOption) (*FilterResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FilterResponse)
+	err := c.cc.Invoke(ctx, DBNode_Filter_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBNodeClient) GetHistoric(ctx context.Context, in *Filtro, opts ...grpc.CallOption) (*RangeSinceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RangeSinceResponse)
+	err := c.cc.Invoke(ctx, DBNode_GetHistoric_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dBNodeClient) Siguesvivo(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Bool, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Bool)
+	err := c.cc.Invoke(ctx, DBNode_Siguesvivo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DBNodeServer is the server API for DBNode service.
 // All implementations must embed UnimplementedDBNodeServer
 // for forward compatibility.
@@ -78,6 +267,11 @@ type DBNodeServer interface {
 	Store(context.Context, *StoreRequest) (*StoreResponse, error)
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	RangeSince(context.Context, *RangeSinceRequest) (*RangeSinceResponse, error)
+	Sincronizar(context.Context, *SincronizarRequest) (*SincronizarResponse, error)
+	Filter(context.Context, *FilterRequest) (*FilterResponse, error)
+	// agregada por mappo:
+	GetHistoric(context.Context, *Filtro) (*RangeSinceResponse, error)
+	Siguesvivo(context.Context, *Vacio) (*Bool, error)
 	mustEmbedUnimplementedDBNodeServer()
 }
 
@@ -96,6 +290,18 @@ func (UnimplementedDBNodeServer) Get(context.Context, *GetRequest) (*GetResponse
 }
 func (UnimplementedDBNodeServer) RangeSince(context.Context, *RangeSinceRequest) (*RangeSinceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RangeSince not implemented")
+}
+func (UnimplementedDBNodeServer) Sincronizar(context.Context, *SincronizarRequest) (*SincronizarResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sincronizar not implemented")
+}
+func (UnimplementedDBNodeServer) Filter(context.Context, *FilterRequest) (*FilterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Filter not implemented")
+}
+func (UnimplementedDBNodeServer) GetHistoric(context.Context, *Filtro) (*RangeSinceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHistoric not implemented")
+}
+func (UnimplementedDBNodeServer) Siguesvivo(context.Context, *Vacio) (*Bool, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Siguesvivo not implemented")
 }
 func (UnimplementedDBNodeServer) mustEmbedUnimplementedDBNodeServer() {}
 func (UnimplementedDBNodeServer) testEmbeddedByValue()                {}
@@ -172,6 +378,78 @@ func _DBNode_RangeSince_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DBNode_Sincronizar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SincronizarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBNodeServer).Sincronizar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DBNode_Sincronizar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBNodeServer).Sincronizar(ctx, req.(*SincronizarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBNode_Filter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FilterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBNodeServer).Filter(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DBNode_Filter_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBNodeServer).Filter(ctx, req.(*FilterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBNode_GetHistoric_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Filtro)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBNodeServer).GetHistoric(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DBNode_GetHistoric_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBNodeServer).GetHistoric(ctx, req.(*Filtro))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DBNode_Siguesvivo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Vacio)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DBNodeServer).Siguesvivo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DBNode_Siguesvivo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DBNodeServer).Siguesvivo(ctx, req.(*Vacio))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DBNode_ServiceDesc is the grpc.ServiceDesc for DBNode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +468,22 @@ var DBNode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RangeSince",
 			Handler:    _DBNode_RangeSince_Handler,
+		},
+		{
+			MethodName: "Sincronizar",
+			Handler:    _DBNode_Sincronizar_Handler,
+		},
+		{
+			MethodName: "Filter",
+			Handler:    _DBNode_Filter_Handler,
+		},
+		{
+			MethodName: "GetHistoric",
+			Handler:    _DBNode_GetHistoric_Handler,
+		},
+		{
+			MethodName: "siguesvivo",
+			Handler:    _DBNode_Siguesvivo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

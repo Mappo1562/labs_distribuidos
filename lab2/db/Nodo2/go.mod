@@ -1,3 +1,3 @@
-module Nodo1
+module Nodo2
 
 go 1.25.0

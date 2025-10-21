@@ -451,6 +451,66 @@ func (x *FilterRequest) GetOferta() *Oferta {
 	return nil
 }
 
+type Filtro struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tienda        string                 `protobuf:"bytes,1,opt,name=Tienda,proto3" json:"Tienda,omitempty"`
+	Categoria     string                 `protobuf:"bytes,2,opt,name=Categoria,proto3" json:"Categoria,omitempty"`
+	PrecioMax     string                 `protobuf:"bytes,3,opt,name=PrecioMax,proto3" json:"PrecioMax,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Filtro) Reset() {
+	*x = Filtro{}
+	mi := &file_proto_proto_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Filtro) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Filtro) ProtoMessage() {}
+
+func (x *Filtro) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Filtro.ProtoReflect.Descriptor instead.
+func (*Filtro) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *Filtro) GetTienda() string {
+	if x != nil {
+		return x.Tienda
+	}
+	return ""
+}
+
+func (x *Filtro) GetCategoria() string {
+	if x != nil {
+		return x.Categoria
+	}
+	return ""
+}
+
+func (x *Filtro) GetPrecioMax() string {
+	if x != nil {
+		return x.PrecioMax
+	}
+	return ""
+}
+
 type FilterResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Oferta        *Oferta                `protobuf:"bytes,1,opt,name=oferta,proto3" json:"oferta,omitempty"`
@@ -461,7 +521,7 @@ type FilterResponse struct {
 
 func (x *FilterResponse) Reset() {
 	*x = FilterResponse{}
-	mi := &file_proto_proto_proto_msgTypes[8]
+	mi := &file_proto_proto_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -473,7 +533,7 @@ func (x *FilterResponse) String() string {
 func (*FilterResponse) ProtoMessage() {}
 
 func (x *FilterResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[8]
+	mi := &file_proto_proto_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -486,7 +546,7 @@ func (x *FilterResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilterResponse.ProtoReflect.Descriptor instead.
 func (*FilterResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{8}
+	return file_proto_proto_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *FilterResponse) GetOferta() *Oferta {
@@ -516,7 +576,7 @@ type Registro struct {
 
 func (x *Registro) Reset() {
 	*x = Registro{}
-	mi := &file_proto_proto_proto_msgTypes[9]
+	mi := &file_proto_proto_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -528,7 +588,7 @@ func (x *Registro) String() string {
 func (*Registro) ProtoMessage() {}
 
 func (x *Registro) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[9]
+	mi := &file_proto_proto_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -541,7 +601,7 @@ func (x *Registro) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Registro.ProtoReflect.Descriptor instead.
 func (*Registro) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{9}
+	return file_proto_proto_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Registro) GetNombre() string {
@@ -567,7 +627,7 @@ type Bool struct {
 
 func (x *Bool) Reset() {
 	*x = Bool{}
-	mi := &file_proto_proto_proto_msgTypes[10]
+	mi := &file_proto_proto_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -579,7 +639,7 @@ func (x *Bool) String() string {
 func (*Bool) ProtoMessage() {}
 
 func (x *Bool) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[10]
+	mi := &file_proto_proto_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -592,7 +652,7 @@ func (x *Bool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bool.ProtoReflect.Descriptor instead.
 func (*Bool) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{10}
+	return file_proto_proto_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Bool) GetFlag() bool {
@@ -614,7 +674,7 @@ type SincronizarRequest struct {
 
 func (x *SincronizarRequest) Reset() {
 	*x = SincronizarRequest{}
-	mi := &file_proto_proto_proto_msgTypes[11]
+	mi := &file_proto_proto_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -626,7 +686,7 @@ func (x *SincronizarRequest) String() string {
 func (*SincronizarRequest) ProtoMessage() {}
 
 func (x *SincronizarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[11]
+	mi := &file_proto_proto_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -639,7 +699,7 @@ func (x *SincronizarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SincronizarRequest.ProtoReflect.Descriptor instead.
 func (*SincronizarRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{11}
+	return file_proto_proto_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *SincronizarRequest) GetOferta() *Oferta {
@@ -658,7 +718,7 @@ type SincronizarResponse struct {
 
 func (x *SincronizarResponse) Reset() {
 	*x = SincronizarResponse{}
-	mi := &file_proto_proto_proto_msgTypes[12]
+	mi := &file_proto_proto_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -670,7 +730,7 @@ func (x *SincronizarResponse) String() string {
 func (*SincronizarResponse) ProtoMessage() {}
 
 func (x *SincronizarResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[12]
+	mi := &file_proto_proto_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -683,7 +743,7 @@ func (x *SincronizarResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SincronizarResponse.ProtoReflect.Descriptor instead.
 func (*SincronizarResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{12}
+	return file_proto_proto_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SincronizarResponse) GetOfertas() []*Oferta {
@@ -691,6 +751,42 @@ func (x *SincronizarResponse) GetOfertas() []*Oferta {
 		return x.Ofertas
 	}
 	return nil
+}
+
+type Vacio struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Vacio) Reset() {
+	*x = Vacio{}
+	mi := &file_proto_proto_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Vacio) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Vacio) ProtoMessage() {}
+
+func (x *Vacio) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Vacio.ProtoReflect.Descriptor instead.
+func (*Vacio) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{14}
 }
 
 var File_proto_proto_proto protoreflect.FileDescriptor
@@ -724,7 +820,11 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x12RangeSinceResponse\x12*\n" +
 	"\aOfertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aOfertas\"9\n" +
 	"\rFilterRequest\x12(\n" +
-	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\"f\n" +
+	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\"\\\n" +
+	"\x06Filtro\x12\x16\n" +
+	"\x06Tienda\x18\x01 \x01(\tR\x06Tienda\x12\x1c\n" +
+	"\tCategoria\x18\x02 \x01(\tR\tCategoria\x12\x1c\n" +
+	"\tPrecioMax\x18\x03 \x01(\tR\tPrecioMax\"f\n" +
 	"\x0eFilterResponse\x12(\n" +
 	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\x12*\n" +
 	"\aOfertas\x18\x02 \x03(\v2\x10.CyberDay.OfertaR\aOfertas\"4\n" +
@@ -736,15 +836,21 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x12SincronizarRequest\x12(\n" +
 	"\x06oferta\x18\x01 \x01(\v2\x10.CyberDay.OfertaR\x06oferta\"A\n" +
 	"\x13SincronizarResponse\x12*\n" +
-	"\aofertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aofertas2\xff\x02\n" +
+	"\aofertas\x18\x01 \x03(\v2\x10.CyberDay.OfertaR\aofertas\"\a\n" +
+	"\x05Vacio2m\n" +
+	"\x06Broker\x123\n" +
+	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x12.\n" +
+	"\x06Activo\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x002\xb8\x03\n" +
 	"\x06DBNode\x128\n" +
 	"\x05Store\x12\x16.CyberDay.StoreRequest\x1a\x17.CyberDay.StoreResponse\x122\n" +
 	"\x03Get\x12\x14.CyberDay.GetRequest\x1a\x15.CyberDay.GetResponse\x12G\n" +
 	"\n" +
-	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse\x123\n" +
-	"\vRegistrarse\x12\x12.CyberDay.Registro\x1a\x0e.CyberDay.Bool\"\x00\x12L\n" +
+	"RangeSince\x12\x1b.CyberDay.RangeSinceRequest\x1a\x1c.CyberDay.RangeSinceResponse\x12L\n" +
 	"\vSincronizar\x12\x1c.CyberDay.SincronizarRequest\x1a\x1d.CyberDay.SincronizarResponse\"\x00\x12;\n" +
-	"\x06Filter\x12\x17.CyberDay.FilterRequest\x1a\x18.CyberDay.FilterResponseB\bZ\x06/protob\x06proto3"
+	"\x06Filter\x12\x17.CyberDay.FilterRequest\x1a\x18.CyberDay.FilterResponse\x12=\n" +
+	"\vGetHistoric\x12\x10.CyberDay.Filtro\x1a\x1c.CyberDay.RangeSinceResponse\x12-\n" +
+	"\n" +
+	"siguesvivo\x12\x0f.CyberDay.Vacio\x1a\x0e.CyberDay.BoolB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -758,7 +864,7 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_proto_proto_proto_goTypes = []any{
 	(*Oferta)(nil),              // 0: CyberDay.Oferta
 	(*StoreRequest)(nil),        // 1: CyberDay.StoreRequest
@@ -768,11 +874,13 @@ var file_proto_proto_proto_goTypes = []any{
 	(*RangeSinceRequest)(nil),   // 5: CyberDay.RangeSinceRequest
 	(*RangeSinceResponse)(nil),  // 6: CyberDay.RangeSinceResponse
 	(*FilterRequest)(nil),       // 7: CyberDay.FilterRequest
-	(*FilterResponse)(nil),      // 8: CyberDay.FilterResponse
-	(*Registro)(nil),            // 9: CyberDay.Registro
-	(*Bool)(nil),                // 10: CyberDay.Bool
-	(*SincronizarRequest)(nil),  // 11: CyberDay.SincronizarRequest
-	(*SincronizarResponse)(nil), // 12: CyberDay.SincronizarResponse
+	(*Filtro)(nil),              // 8: CyberDay.Filtro
+	(*FilterResponse)(nil),      // 9: CyberDay.FilterResponse
+	(*Registro)(nil),            // 10: CyberDay.Registro
+	(*Bool)(nil),                // 11: CyberDay.Bool
+	(*SincronizarRequest)(nil),  // 12: CyberDay.SincronizarRequest
+	(*SincronizarResponse)(nil), // 13: CyberDay.SincronizarResponse
+	(*Vacio)(nil),               // 14: CyberDay.Vacio
 }
 var file_proto_proto_proto_depIdxs = []int32{
 	0,  // 0: CyberDay.StoreRequest.oferta:type_name -> CyberDay.Oferta
@@ -783,20 +891,26 @@ var file_proto_proto_proto_depIdxs = []int32{
 	0,  // 5: CyberDay.FilterResponse.Ofertas:type_name -> CyberDay.Oferta
 	0,  // 6: CyberDay.SincronizarRequest.oferta:type_name -> CyberDay.Oferta
 	0,  // 7: CyberDay.SincronizarResponse.ofertas:type_name -> CyberDay.Oferta
-	1,  // 8: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
-	3,  // 9: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
-	5,  // 10: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
-	9,  // 11: CyberDay.DBNode.Registrarse:input_type -> CyberDay.Registro
-	11, // 12: CyberDay.DBNode.Sincronizar:input_type -> CyberDay.SincronizarRequest
-	7,  // 13: CyberDay.DBNode.Filter:input_type -> CyberDay.FilterRequest
-	2,  // 14: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
-	4,  // 15: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
-	6,  // 16: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
-	10, // 17: CyberDay.DBNode.Registrarse:output_type -> CyberDay.Bool
-	12, // 18: CyberDay.DBNode.Sincronizar:output_type -> CyberDay.SincronizarResponse
-	8,  // 19: CyberDay.DBNode.Filter:output_type -> CyberDay.FilterResponse
-	14, // [14:20] is the sub-list for method output_type
-	8,  // [8:14] is the sub-list for method input_type
+	10, // 8: CyberDay.Broker.Registrarse:input_type -> CyberDay.Registro
+	10, // 9: CyberDay.Broker.Activo:input_type -> CyberDay.Registro
+	1,  // 10: CyberDay.DBNode.Store:input_type -> CyberDay.StoreRequest
+	3,  // 11: CyberDay.DBNode.Get:input_type -> CyberDay.GetRequest
+	5,  // 12: CyberDay.DBNode.RangeSince:input_type -> CyberDay.RangeSinceRequest
+	12, // 13: CyberDay.DBNode.Sincronizar:input_type -> CyberDay.SincronizarRequest
+	7,  // 14: CyberDay.DBNode.Filter:input_type -> CyberDay.FilterRequest
+	8,  // 15: CyberDay.DBNode.GetHistoric:input_type -> CyberDay.Filtro
+	14, // 16: CyberDay.DBNode.siguesvivo:input_type -> CyberDay.Vacio
+	11, // 17: CyberDay.Broker.Registrarse:output_type -> CyberDay.Bool
+	11, // 18: CyberDay.Broker.Activo:output_type -> CyberDay.Bool
+	2,  // 19: CyberDay.DBNode.Store:output_type -> CyberDay.StoreResponse
+	4,  // 20: CyberDay.DBNode.Get:output_type -> CyberDay.GetResponse
+	6,  // 21: CyberDay.DBNode.RangeSince:output_type -> CyberDay.RangeSinceResponse
+	13, // 22: CyberDay.DBNode.Sincronizar:output_type -> CyberDay.SincronizarResponse
+	9,  // 23: CyberDay.DBNode.Filter:output_type -> CyberDay.FilterResponse
+	6,  // 24: CyberDay.DBNode.GetHistoric:output_type -> CyberDay.RangeSinceResponse
+	11, // 25: CyberDay.DBNode.siguesvivo:output_type -> CyberDay.Bool
+	17, // [17:26] is the sub-list for method output_type
+	8,  // [8:17] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name
@@ -813,9 +927,9 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_proto_proto_proto_goTypes,
 		DependencyIndexes: file_proto_proto_proto_depIdxs,
