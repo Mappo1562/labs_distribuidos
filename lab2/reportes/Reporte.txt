@@ -7,8 +7,8 @@
 ==========================================================
  1 Resumen de ofertas recibidas por productor:
  - Falabellox: 
-  - ofertas recibidas: 16
-  - ofertas aceptadas: 16
+  - ofertas recibidas: 17
+  - ofertas aceptadas: 17
  - Parisio: 
   - ofertas recibidas: 19
   - ofertas aceptadas: 19
@@ -24,24 +24,29 @@
 
 ==========================================================
  2.1 Métricas de Escritura: 
-  - Escrituras exitosas: 54
+  - Escrituras exitosas: 55
   - Escrituras fallidas: 0 (por como esta programado, nunca tendremos escrituras fallidas)
 ==========================================================
  3 Notificaciones a Consumidores
- - C3-3 (Infantil): 3 ofertas recibidas.Archivo consumidor_C3-3_ofertas.csv generado
- - C1-2 (Electrónica): 1 ofertas recibidas.Archivo consumidor_C1-2_ofertas.csv generado
- - C3-1 (Automotriz, Mascotas, Juguetes): 2 ofertas recibidas.Archivo consumidor_C3-1_ofertas.csv generado
- - C3-4 (Electrónica): 1 ofertas recibidas.Archivo consumidor_C3-4_ofertas.csv generado
  - C2-1 (Sin restricciones): 14 ofertas recibidas. Archivo consumidor_C2-1_ofertas.csv generado
- - C3-2 (Sin restricciones): 37 ofertas recibidas. Archivo consumidor_C3-2_ofertas.csv generado
- - C2-2 (Sin restricciones): 29 ofertas recibidas. Archivo consumidor_C2-2_ofertas.csv generado
- - C2-4 (Belleza): 0 ofertas recibidas. - C1-1 (Electrodomésticos): 0 ofertas recibidas. - C2-3 (Moda, Automotriz): 0 ofertas recibidas. - C1-3 (Sin restricciones): 16 ofertas recibidas. Archivo consumidor_C1-3_ofertas.csv generado
+ - C2-2 (Sin restricciones): 30 ofertas recibidas. Archivo consumidor_C2-2_ofertas.csv generado
+ - C1-3 (Sin restricciones): 17 ofertas recibidas. Archivo consumidor_C1-3_ofertas.csv generado
+ - C2-4 (Belleza): 0 ofertas recibidas. No se generó archivo ya que no se recibieron ofertas.
+ - C1-1 (Electrodomésticos): 0 ofertas recibidas. No se generó archivo ya que no se recibieron ofertas.
+ - C3-4 (Electrónica): 1 ofertas recibidas.Archivo consumidor_C3-4_ofertas.csv generado
+ - C3-1 (Automotriz, Mascotas, Juguetes): 2 ofertas recibidas.Archivo consumidor_C3-1_ofertas.csv generado
+ - C3-3 (Infantil): 3 ofertas recibidas.Archivo consumidor_C3-3_ofertas.csv generado
  - C1-4 (Electrodomésticos, Infantil, Hogar): 3 ofertas recibidas.Archivo consumidor_C1-4_ofertas.csv generado
+ - C3-2 (Sin restricciones): 38 ofertas recibidas. Archivo consumidor_C3-2_ofertas.csv generado
+ - C2-3 (Moda, Automotriz): 0 ofertas recibidas. No se generó archivo ya que no se recibieron ofertas.
+ - C1-2 (Electrónica): 1 ofertas recibidas.Archivo consumidor_C1-2_ofertas.csv generado
 
 ==========================================================
  4 Fallos y Recuperaciones
- - Entidad: db1:50051 | Evento: Fallo | Timestamp: 21/10/2025 22:05:08.291
- - Entidad: db1 | Evento: Recuperacion | Timestamp: 21/10/2025 22:05:12.144
+ - Entidad: db1 | Evento: Fallo | Timestamp: 21/10/2025 22:38:12.555
+ - Entidad: db1 | Evento: Recuperacion | Timestamp: 21/10/2025 22:38:16.849
+ - Entidad: grupo2:60071 | Evento: Fallo | Timestamp: 21/10/2025 22:38:25.242
+ - Entidad: grupo2:60071 | Evento: Recuperacion | Timestamp: 21/10/2025 22:38:30.283
  Notar que probablemente existan consumidores recuperados pero no se notifica su falla, esto es porque el broker solo se
  entera de la falla cuando intenta notificar y no recibe respuesta.
  Por otro lado, el broker se entera de la recuperacion porque el consumidor le avisa al broker que está necesita su historial.

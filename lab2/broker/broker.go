@@ -119,9 +119,10 @@ func (s *server) Registrarse(ctx context.Context, in *pb.Registro) (*pb.Bool, er
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
+	n := strings.Split(dir, ":")[0]
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
-		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+		fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
 		return false
 	}
@@ -137,7 +138,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 
 	response, err := client.Store(ctx, req)
 	if err != nil {
-		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+		fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		log.Printf("No se pudo guardar correctamente la oferta por el nodo %v\nerror: %v", dir, err)
 		return false
 	}
@@ -146,7 +147,7 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 
 		return true
 	}
-	fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+	fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 	log.Printf("No se pudo guardar correctamente la oferta por el nodo %v", dir)
 	return false
 }

@@ -30,14 +30,30 @@ si alguno tira error, ejecutar:
 --------------------------------------------------------------------
 CONSIDERACIONES AL MOMENTO DE EJECUTAR
 --------------------------------------------------------------------
-- Se necesita que los archivos de catalogo se encuentren en la carpeta /productores/catalogos, cada uno con el nombre correspondiente:
+- Se necesita que los archivos de catalogo se encuentren en la 
+  carpeta /productores/catalogos, cada uno con el nombre 
+  correspondiente:
     -falabellox: falabellox_catalogo.csv
     -parisio: parisio_catalogo.csv
     -riploy: riploy_catalogo.csv
-- Los csv de cada consumidor se dividen por grupo. Exisitiendo 3 grupos y 4 consumidores por cada uno.
-- Los archivos creados para cada consumidor se borran al volver a ejecutar los programas. Por ende, si se necesita revisar los archivos hay que hacerlo antes de correr nuevamente el programa.
-- La simulación de caida de los consumidores se hace con un rand, por lo tanto entre ejecuciones no se va a caer el mismo consumidor.
+
+- Los csv de cada consumidor se dividen por grupo. 
+  Exisitiendo 3 grupos y 4 consumidores por cada uno.
+
+- Los archivos creados para cada consumidor se borran al volver a 
+  ejecutar los programas. Por ende, si se necesita revisar los 
+  archivos hay que hacerlo antes de correr nuevamente el programa.
+
+- La simulación de caida de los consumidores se hace con un rand, 
+  por lo tanto entre ejecuciones no se va a caer el mismo consumidor.
+
 - Las ofertas generadas por los productores estan fijas con una seed.
+
+- En el reporte se ingreso la ubicación de los consumidores en vez
+  de su nombre para facilitar la revisión se explica el formato
+  utilizado para las direcciones, por ejemplo grupo2:60071
+  que sea grupo 2 indica que es C2 y el ultimo digito del puerto
+  indica el numero de consumidor, en este caso es C2-1. 
 
 --------------------------------------------------------------------
 NOMBRE Y ROL INTEGRANTES
