@@ -10,22 +10,29 @@ AMBIENTE DE EJECUCION Y DESARROLLO
 EJECUCIÓN
 --------------------------------------------------------------------
 
-- si se quiere ejecutar en las VM, hay que seguir el siguiente orden
-ubicacion (grupo-11/lab2/<dist___>)
+- si se quiere ejecutar en las VM, hay que ejecutar todo en la 
+  carpeta VMs, es importante comenzar siempre por la VM dist101 ya 
+  que ahi esta el broker.
+  Los comandos deben ser ejecutados en orden.
 dist042:
-    navegar hasta la carpeta Dist042 y ejecutar:
-        
-dist044:
-    navegar hasta la carpeta Dist044 y ejecutar:
-        
-dist101:
-    navegar hasta la carpeta Dist101 y ejecutar:
-        
+    sudo make build-VM1
+    sudo make down-VM1
+    sudo make docker-VM1
+
 dist043:
-    navegar hasta la carpeta Dist043 y ejecutar:
-        
-si alguno tira error, ejecutar:
-    make docker-restart
+    sudo make build-VM2
+    sudo make down-VM2
+    sudo make docker-VM2
+
+dist044:
+    sudo make build-VM3
+    sudo make down-VM3
+    sudo make docker-VM3
+
+dist101:
+    sudo make build-VM4
+    sudo make down-VM4
+    sudo make docker-VM4
 
 --------------------------------------------------------------------
 CONSIDERACIONES AL MOMENTO DE EJECUTAR
@@ -50,11 +57,12 @@ CONSIDERACIONES AL MOMENTO DE EJECUTAR
 - Las ofertas generadas por los productores estan fijas con una seed.
 
 - En el reporte se ingreso la ubicación de los consumidores en vez
-  de su nombre para facilitar la revisión se explica el formato
-  utilizado para las direcciones, por ejemplo grupo2:60071
-  que sea grupo 2 indica que es C2 y el ultimo digito del puerto
-  indica el numero de consumidor, en este caso es C2-1. 
+  de su nombre por simplicidad. 
 
+- El segundo caracter del ID del consumidor debe ser el numero de
+  grupo y este no puede ser de mas de un digito. Solo puede ser 1, 2
+  o 3.
+  
 --------------------------------------------------------------------
 NOMBRE Y ROL INTEGRANTES
 --------------------------------------------------------------------
