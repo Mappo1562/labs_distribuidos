@@ -158,11 +158,12 @@ func GenerarOfertaHelp(in *pb.Oferta, dir string) bool {
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
+	n := strings.Split(id, ":")[0]
 	dir := puerto
 	conn, err := grpc.Dial(dir, grpc.WithInsecure())
 	if err != nil {
 		log.Printf("[°] no se pudo conectar con %v \nerror: %v", dir, err)
-		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+		fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		return false
 	}
 	defer conn.Close()
@@ -173,7 +174,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 	response, err := client.NotificarOferta(ctx, oferta)
 	if err != nil {
 		log.Printf("No se pudo notificar correctamente la oferta al consumidor %v\nerror: %v", dir, err)
-		fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+		fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 		return false
 	}
 	if response != nil && response.Flag {
@@ -181,7 +182,7 @@ func notificarHelp(id string, puerto string, oferta *pb.Oferta) bool {
 		return true
 	}
 	log.Printf("No se pudo notificar correctamente la oferta al consumidor %v", dir)
-	fallosyrecuperacionesAppend(dir, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
+	fallosyrecuperacionesAppend(n, "Fallo", time.Now().Format("02/01/2006 15:04:05.000"))
 	return false
 }
 
