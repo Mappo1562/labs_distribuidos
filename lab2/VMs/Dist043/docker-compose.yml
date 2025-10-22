@@ -22,6 +22,11 @@ services:
   grupo3:
     build: ./consumidores
     container_name: grupo3
+    ports:
+      - "60081:60081"
+      - "60082:60082"
+      - "60083:60083"
+      - "60084:60084"
     environment:
       - GRUPO=3
       - BROKER_ADDR=dist101.inf.santiago.usm.cl:50050
