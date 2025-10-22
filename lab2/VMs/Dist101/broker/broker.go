@@ -513,7 +513,11 @@ func initConsumidores() {
 
 	reader := csv.NewReader(file)
 	reader.Comma = ','
-
+	var direcciones = []string{
+		"dist101.inf.santiago.usm.cl",
+		"dist042.inf.santiago.usm.cl",
+		"dist043.inf.santiago.usm.cl",
+	}
 	rows, err := reader.ReadAll()
 	if err != nil {
 		log.Fatalf("No se pudo leer el archivo de filtros para consumidores: %v", err)
@@ -537,7 +541,7 @@ func initConsumidores() {
 			puertoInt = 60050 + 10*nGrupo
 		}
 		puertoInt = puertoInt + 1
-		direccion := "grupo" + strconv.Itoa(nGrupo) + ":" + strconv.Itoa(puertoInt)
+		direccion := direcciones[nGrupo-1] + ":" + strconv.Itoa(puertoInt)
 		// Guardamos en el map
 		consumidores[id] = []string{direccion, categorias, tiendas, precio}
 		log.Printf("agregado uno con direccion %v", direccion)
