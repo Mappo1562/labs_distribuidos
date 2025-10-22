@@ -10,6 +10,11 @@ services:
   grupo1:
     build: ./consumidores
     container_name: grupo1
+    ports:
+      - "60061:60061"
+      - "60062:60062"
+      - "60063:60063"
+      - "60064:60064"
     environment:
       - GRUPO=1
       - BROKER_ADDR=broker:50050
