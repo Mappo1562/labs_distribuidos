@@ -543,6 +543,7 @@ func initConsumidores() {
 		puertoInt = puertoInt + 1
 		direccion := direcciones[nGrupo-1] + ":" + strconv.Itoa(puertoInt)
 		// Guardamos en el map
+		log.Printf("Agregando consumidor %s **************************", direccion)
 		consumidores[id] = []string{direccion, categorias, tiendas, precio}
 		log.Printf("agregado uno con direccion %v", direccion)
 	}
