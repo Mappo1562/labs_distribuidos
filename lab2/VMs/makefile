@@ -9,7 +9,7 @@ build-VM1:
 	@echo "Construyendo Docker images para VM1..."
 	sudo docker-compose -f $(COMPOSE_VM1) build
 
-docker-VM1: create-network
+docker-VM1:
 	@echo "Levantando contenedores en VM1 (Riploy / BD1 / Grupo2)..."
 	docker-compose -f $(COMPOSE_VM1) up 
 
@@ -22,7 +22,7 @@ build-VM2:
 	@echo "Construyendo Docker images para VM2..."
 	sudo docker-compose -f $(COMPOSE_VM2) build
 
-docker-VM2: create-network
+docker-VM2:
 	@echo "Levantando contenedores en VM2 (Riploy / BD1 / Grupo2)..."
 	docker-compose -f $(COMPOSE_VM2) up 
 
@@ -35,7 +35,7 @@ build-VM3:
 	@echo "Construyendo Docker images para VM3..."
 	sudo docker-compose -f $(COMPOSE_VM3) build
 
-docker-VM3: create-network
+docker-VM3:
 	@echo "Levantando contenedores en VM3 (Riploy / BD1 / Grupo2)..."
 	docker-compose -f $(COMPOSE_VM3) up 
 
@@ -48,7 +48,7 @@ build-VM4:
 	@echo "Construyendo Docker images para VM4..."
 	sudo docker-compose -f $(COMPOSE_VM4) build
 
-docker-VM4: create-network
+docker-VM4:
 	@echo "Levantando contenedores en VM4 (Riploy / BD1 / Grupo2)..."
 	docker-compose -f $(COMPOSE_VM4) up 
 
