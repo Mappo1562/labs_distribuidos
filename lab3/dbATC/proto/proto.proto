@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service  NodoBDConsenso{
+    rpc INSERT(record) returns (Bool) {}
+    /*
+    si alguien se cae y no tiene un lider definido, llamara a
+    PostularALider, si los dos le responden que el newlider 
+    tiene un id distinto al suyo asume que ese es el lider actual
+    */
+    rpc PostularALider(postulante) returns (NewLider) {}
+    rpc InformarNewLider (postulante) returns (NewLider) {}
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+message record{
+    
+}
+
+message NewLider{
+    int64 id = 1;
+}
+
+message postulante{
+    int64 id = 1;
+}
