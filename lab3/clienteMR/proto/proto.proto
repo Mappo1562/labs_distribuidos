@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service BrokerMR{//Servicio Broker con clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
+}
+
+message MRReadRequest{
+    string flight_id = 1;
+    int64 last_version_seen = 2;
+}
+
+message MRReadResponse{
+    string flight_id = 1;
+    string status = 2;
+    string gate = 3;
+    int64 version = 4;
+}

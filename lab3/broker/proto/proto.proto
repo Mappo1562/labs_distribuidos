@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service BrokerMR{//Servicio Broker con clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
+}
+
+service BrokerCoordinador{
+    rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+}
+
+message MRReadRequest{
+    string flight_id = 1;
+    int64 last_version_seen = 2;
+}
+
+message MRReadResponse{
+    string flight_id = 1;
+    string status = 2;
+    string gate = 3;
+    int64 version = 4;
+}
+
+message ApplyWriteRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
+
+message ApplyWriteResponse{
+    bool success = 1;
+    string msg = 2;
+    string datonode_id = 3;
+    int64 version = 4;
+}
+
+message BrokerReadRequest{
+    string flight_id = 1;
+    string datanode_id = 2;
+}
+
+message BrokerReadResponse{
+    string flight_id = 1;
+    string seat = 2;
+    string status = 3;
+    string gate = 4;
+    int64 version = 5;
+    bool success = 6;
+    string msg = 7;
+}
