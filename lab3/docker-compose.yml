@@ -1,0 +1,6 @@
+services:
+  broker:
+    build: ./broker
+    container_name: broker
+    ports:
+      - "50050:50050"
