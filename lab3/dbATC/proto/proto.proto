@@ -4,15 +4,20 @@ package AeroDist;
 
 option go_package = "/proto";
 
-service  NodoBDConsenso{
-    rpc INSERT(record) returns (Bool) {}
     /*
     si alguien se cae y no tiene un lider definido, llamara a
     PostularALider, si los dos le responden que el newlider 
     tiene un id distinto al suyo asume que ese es el lider actual
     */
+
+service  NodoBDConsenso{
+    // rpc para ser llamado por el broker:
+    rpc INSERT(record) returns (InsertResponse) {}
+    // rpc entre nodos (PRIV):
     rpc PostularALider(postulante) returns (NewLider) {}
     rpc InformarNewLider (postulante) returns (NewLider) {}
+    rpc Ping(Vacio) returns (Vacio) {}
+    rpc INSERTLIDER(recordID) returns (Vacio){}
 }
 
 message Bool{
@@ -23,6 +28,17 @@ message record{
     
 }
 
+message recordID{
+    record r = 1;
+    int64 id = 2;
+}
+
+message InsertResponse{
+    int64 id = 1;
+    bool lider = 2; // indica si es el lider o no, la unica respuesta importante es la del lider
+    bool exito = 3;
+}
+
 message NewLider{
     int64 id = 1;
 }
@@ -30,3 +46,5 @@ message NewLider{
 message postulante{
     int64 id = 1;
 }
+
+message Vacio{}

@@ -22,18 +22,21 @@ const (
 	NodoBDConsenso_INSERT_FullMethodName           = "/AeroDist.NodoBDConsenso/INSERT"
 	NodoBDConsenso_PostularALider_FullMethodName   = "/AeroDist.NodoBDConsenso/PostularALider"
 	NodoBDConsenso_InformarNewLider_FullMethodName = "/AeroDist.NodoBDConsenso/InformarNewLider"
+	NodoBDConsenso_Ping_FullMethodName             = "/AeroDist.NodoBDConsenso/Ping"
+	NodoBDConsenso_INSERTLIDER_FullMethodName      = "/AeroDist.NodoBDConsenso/INSERTLIDER"
 )
 
 // NodoBDConsensoClient is the client API for NodoBDConsenso service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NodoBDConsensoClient interface {
-	INSERT(ctx context.Context, in *Record, opts ...grpc.CallOption) (*Bool, error)
-	// si alguien se cae y no tiene un lider definido, llamara a
-	// PostularALider, si los dos le responden que el newlider
-	// tiene un id distinto al suyo asume que ese es el lider actual
+	// rpc para ser llamado por el broker:
+	INSERT(ctx context.Context, in *Record, opts ...grpc.CallOption) (*InsertResponse, error)
+	// rpc entre nodos (PRIV):
 	PostularALider(ctx context.Context, in *Postulante, opts ...grpc.CallOption) (*NewLider, error)
 	InformarNewLider(ctx context.Context, in *Postulante, opts ...grpc.CallOption) (*NewLider, error)
+	Ping(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error)
+	INSERTLIDER(ctx context.Context, in *RecordID, opts ...grpc.CallOption) (*Vacio, error)
 }
 
 type nodoBDConsensoClient struct {
@@ -44,9 +47,9 @@ func NewNodoBDConsensoClient(cc grpc.ClientConnInterface) NodoBDConsensoClient {
 	return &nodoBDConsensoClient{cc}
 }
 
-func (c *nodoBDConsensoClient) INSERT(ctx context.Context, in *Record, opts ...grpc.CallOption) (*Bool, error) {
+func (c *nodoBDConsensoClient) INSERT(ctx context.Context, in *Record, opts ...grpc.CallOption) (*InsertResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Bool)
+	out := new(InsertResponse)
 	err := c.cc.Invoke(ctx, NodoBDConsenso_INSERT_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -74,16 +77,37 @@ func (c *nodoBDConsensoClient) InformarNewLider(ctx context.Context, in *Postula
 	return out, nil
 }
 
+func (c *nodoBDConsensoClient) Ping(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Vacio)
+	err := c.cc.Invoke(ctx, NodoBDConsenso_Ping_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nodoBDConsensoClient) INSERTLIDER(ctx context.Context, in *RecordID, opts ...grpc.CallOption) (*Vacio, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Vacio)
+	err := c.cc.Invoke(ctx, NodoBDConsenso_INSERTLIDER_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NodoBDConsensoServer is the server API for NodoBDConsenso service.
 // All implementations must embed UnimplementedNodoBDConsensoServer
 // for forward compatibility.
 type NodoBDConsensoServer interface {
-	INSERT(context.Context, *Record) (*Bool, error)
-	// si alguien se cae y no tiene un lider definido, llamara a
-	// PostularALider, si los dos le responden que el newlider
-	// tiene un id distinto al suyo asume que ese es el lider actual
+	// rpc para ser llamado por el broker:
+	INSERT(context.Context, *Record) (*InsertResponse, error)
+	// rpc entre nodos (PRIV):
 	PostularALider(context.Context, *Postulante) (*NewLider, error)
 	InformarNewLider(context.Context, *Postulante) (*NewLider, error)
+	Ping(context.Context, *Vacio) (*Vacio, error)
+	INSERTLIDER(context.Context, *RecordID) (*Vacio, error)
 	mustEmbedUnimplementedNodoBDConsensoServer()
 }
 
@@ -94,7 +118,7 @@ type NodoBDConsensoServer interface {
 // pointer dereference when methods are called.
 type UnimplementedNodoBDConsensoServer struct{}
 
-func (UnimplementedNodoBDConsensoServer) INSERT(context.Context, *Record) (*Bool, error) {
+func (UnimplementedNodoBDConsensoServer) INSERT(context.Context, *Record) (*InsertResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method INSERT not implemented")
 }
 func (UnimplementedNodoBDConsensoServer) PostularALider(context.Context, *Postulante) (*NewLider, error) {
@@ -102,6 +126,12 @@ func (UnimplementedNodoBDConsensoServer) PostularALider(context.Context, *Postul
 }
 func (UnimplementedNodoBDConsensoServer) InformarNewLider(context.Context, *Postulante) (*NewLider, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InformarNewLider not implemented")
+}
+func (UnimplementedNodoBDConsensoServer) Ping(context.Context, *Vacio) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+func (UnimplementedNodoBDConsensoServer) INSERTLIDER(context.Context, *RecordID) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method INSERTLIDER not implemented")
 }
 func (UnimplementedNodoBDConsensoServer) mustEmbedUnimplementedNodoBDConsensoServer() {}
 func (UnimplementedNodoBDConsensoServer) testEmbeddedByValue()                        {}
@@ -178,6 +208,42 @@ func _NodoBDConsenso_InformarNewLider_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NodoBDConsenso_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Vacio)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodoBDConsensoServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NodoBDConsenso_Ping_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodoBDConsensoServer).Ping(ctx, req.(*Vacio))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _NodoBDConsenso_INSERTLIDER_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodoBDConsensoServer).INSERTLIDER(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NodoBDConsenso_INSERTLIDER_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodoBDConsensoServer).INSERTLIDER(ctx, req.(*RecordID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NodoBDConsenso_ServiceDesc is the grpc.ServiceDesc for NodoBDConsenso service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -196,6 +262,14 @@ var NodoBDConsenso_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InformarNewLider",
 			Handler:    _NodoBDConsenso_InformarNewLider_Handler,
+		},
+		{
+			MethodName: "Ping",
+			Handler:    _NodoBDConsenso_Ping_Handler,
+		},
+		{
+			MethodName: "INSERTLIDER",
+			Handler:    _NodoBDConsenso_INSERTLIDER_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -101,6 +101,118 @@ func (*Record) Descriptor() ([]byte, []int) {
 	return file_proto_proto_proto_rawDescGZIP(), []int{1}
 }
 
+type RecordID struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	R             *Record                `protobuf:"bytes,1,opt,name=r,proto3" json:"r,omitempty"`
+	Id            int64                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordID) Reset() {
+	*x = RecordID{}
+	mi := &file_proto_proto_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordID) ProtoMessage() {}
+
+func (x *RecordID) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordID.ProtoReflect.Descriptor instead.
+func (*RecordID) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *RecordID) GetR() *Record {
+	if x != nil {
+		return x.R
+	}
+	return nil
+}
+
+func (x *RecordID) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type InsertResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Lider         bool                   `protobuf:"varint,2,opt,name=lider,proto3" json:"lider,omitempty"` // indica si es el lider o no, la unica respuesta importante es la del lider
+	Exito         bool                   `protobuf:"varint,3,opt,name=exito,proto3" json:"exito,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *InsertResponse) Reset() {
+	*x = InsertResponse{}
+	mi := &file_proto_proto_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InsertResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InsertResponse) ProtoMessage() {}
+
+func (x *InsertResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InsertResponse.ProtoReflect.Descriptor instead.
+func (*InsertResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *InsertResponse) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *InsertResponse) GetLider() bool {
+	if x != nil {
+		return x.Lider
+	}
+	return false
+}
+
+func (x *InsertResponse) GetExito() bool {
+	if x != nil {
+		return x.Exito
+	}
+	return false
+}
+
 type NewLider struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -110,7 +222,7 @@ type NewLider struct {
 
 func (x *NewLider) Reset() {
 	*x = NewLider{}
-	mi := &file_proto_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -122,7 +234,7 @@ func (x *NewLider) String() string {
 func (*NewLider) ProtoMessage() {}
 
 func (x *NewLider) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -135,7 +247,7 @@ func (x *NewLider) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NewLider.ProtoReflect.Descriptor instead.
 func (*NewLider) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{2}
+	return file_proto_proto_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *NewLider) GetId() int64 {
@@ -154,7 +266,7 @@ type Postulante struct {
 
 func (x *Postulante) Reset() {
 	*x = Postulante{}
-	mi := &file_proto_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -166,7 +278,7 @@ func (x *Postulante) String() string {
 func (*Postulante) ProtoMessage() {}
 
 func (x *Postulante) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -179,7 +291,7 @@ func (x *Postulante) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Postulante.ProtoReflect.Descriptor instead.
 func (*Postulante) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{3}
+	return file_proto_proto_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Postulante) GetId() int64 {
@@ -189,6 +301,42 @@ func (x *Postulante) GetId() int64 {
 	return 0
 }
 
+type Vacio struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Vacio) Reset() {
+	*x = Vacio{}
+	mi := &file_proto_proto_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Vacio) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Vacio) ProtoMessage() {}
+
+func (x *Vacio) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Vacio.ProtoReflect.Descriptor instead.
+func (*Vacio) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{6}
+}
+
 var File_proto_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_proto_rawDesc = "" +
@@ -196,16 +344,26 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x11proto/proto.proto\x12\bAeroDist\"\x1a\n" +
 	"\x04Bool\x12\x12\n" +
 	"\x04flag\x18\x01 \x01(\bR\x04flag\"\b\n" +
-	"\x06record\"\x1a\n" +
+	"\x06record\":\n" +
+	"\brecordID\x12\x1e\n" +
+	"\x01r\x18\x01 \x01(\v2\x10.AeroDist.recordR\x01r\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x03R\x02id\"L\n" +
+	"\x0eInsertResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
+	"\x05lider\x18\x02 \x01(\bR\x05lider\x12\x14\n" +
+	"\x05exito\x18\x03 \x01(\bR\x05exito\"\x1a\n" +
 	"\bNewLider\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\x1c\n" +
 	"\n" +
 	"postulante\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id2\xbc\x01\n" +
-	"\x0eNodoBDConsenso\x12,\n" +
-	"\x06INSERT\x12\x10.AeroDist.record\x1a\x0e.AeroDist.Bool\"\x00\x12<\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\a\n" +
+	"\x05Vacio2\xa8\x02\n" +
+	"\x0eNodoBDConsenso\x126\n" +
+	"\x06INSERT\x12\x10.AeroDist.record\x1a\x18.AeroDist.InsertResponse\"\x00\x12<\n" +
 	"\x0ePostularALider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00\x12>\n" +
-	"\x10InformarNewLider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00B\bZ\x06/protob\x06proto3"
+	"\x10InformarNewLider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00\x12*\n" +
+	"\x04Ping\x12\x0f.AeroDist.Vacio\x1a\x0f.AeroDist.Vacio\"\x00\x124\n" +
+	"\vINSERTLIDER\x12\x12.AeroDist.recordID\x1a\x0f.AeroDist.Vacio\"\x00B\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -219,25 +377,33 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_proto_proto_goTypes = []any{
-	(*Bool)(nil),       // 0: AeroDist.Bool
-	(*Record)(nil),     // 1: AeroDist.record
-	(*NewLider)(nil),   // 2: AeroDist.NewLider
-	(*Postulante)(nil), // 3: AeroDist.postulante
+	(*Bool)(nil),           // 0: AeroDist.Bool
+	(*Record)(nil),         // 1: AeroDist.record
+	(*RecordID)(nil),       // 2: AeroDist.recordID
+	(*InsertResponse)(nil), // 3: AeroDist.InsertResponse
+	(*NewLider)(nil),       // 4: AeroDist.NewLider
+	(*Postulante)(nil),     // 5: AeroDist.postulante
+	(*Vacio)(nil),          // 6: AeroDist.Vacio
 }
 var file_proto_proto_proto_depIdxs = []int32{
-	1, // 0: AeroDist.NodoBDConsenso.INSERT:input_type -> AeroDist.record
-	3, // 1: AeroDist.NodoBDConsenso.PostularALider:input_type -> AeroDist.postulante
-	3, // 2: AeroDist.NodoBDConsenso.InformarNewLider:input_type -> AeroDist.postulante
-	0, // 3: AeroDist.NodoBDConsenso.INSERT:output_type -> AeroDist.Bool
-	2, // 4: AeroDist.NodoBDConsenso.PostularALider:output_type -> AeroDist.NewLider
-	2, // 5: AeroDist.NodoBDConsenso.InformarNewLider:output_type -> AeroDist.NewLider
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: AeroDist.recordID.r:type_name -> AeroDist.record
+	1, // 1: AeroDist.NodoBDConsenso.INSERT:input_type -> AeroDist.record
+	5, // 2: AeroDist.NodoBDConsenso.PostularALider:input_type -> AeroDist.postulante
+	5, // 3: AeroDist.NodoBDConsenso.InformarNewLider:input_type -> AeroDist.postulante
+	6, // 4: AeroDist.NodoBDConsenso.Ping:input_type -> AeroDist.Vacio
+	2, // 5: AeroDist.NodoBDConsenso.INSERTLIDER:input_type -> AeroDist.recordID
+	3, // 6: AeroDist.NodoBDConsenso.INSERT:output_type -> AeroDist.InsertResponse
+	4, // 7: AeroDist.NodoBDConsenso.PostularALider:output_type -> AeroDist.NewLider
+	4, // 8: AeroDist.NodoBDConsenso.InformarNewLider:output_type -> AeroDist.NewLider
+	6, // 9: AeroDist.NodoBDConsenso.Ping:output_type -> AeroDist.Vacio
+	6, // 10: AeroDist.NodoBDConsenso.INSERTLIDER:output_type -> AeroDist.Vacio
+	6, // [6:11] is the sub-list for method output_type
+	1, // [1:6] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_proto_init() }
@@ -251,7 +417,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
