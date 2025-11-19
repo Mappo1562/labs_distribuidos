@@ -20,7 +20,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-string flightsFile = "flight_updates.csv"
+var flightsFile = "flight_updates.csv"
 
 const (
 	PortBroker      = ":50050"
@@ -33,6 +33,8 @@ const (
 type server struct {
 	pb.UnimplementedBrokerServer
 }
+
+
 
 
 

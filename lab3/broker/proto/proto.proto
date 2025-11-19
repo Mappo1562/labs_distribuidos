@@ -53,3 +53,9 @@ message BrokerReadResponse{
     bool success = 6;
     string msg = 7;
 }
+
+message FligthStates{
+    string flight_id = 1;
+    string update_type = 2;
+    string update_value = 3;
+}
