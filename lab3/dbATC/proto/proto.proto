@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+
 package AeroDist;
 
 option go_package = "/proto";
@@ -18,6 +20,7 @@ service  NodoBDConsenso{
     rpc InformarNewLider (postulante) returns (NewLider) {}
     rpc Ping(Vacio) returns (Vacio) {}
     rpc INSERTLIDER(recordID) returns (Vacio){}
+    rpc resultadoConsenso(record) returns (Vacio){}
 }
 
 message Bool{

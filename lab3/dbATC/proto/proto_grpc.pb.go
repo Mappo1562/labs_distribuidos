@@ -4,6 +4,8 @@
 // - protoc             v6.32.0
 // source: proto/proto.proto
 
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+
 package proto
 
 import (
@@ -19,11 +21,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	NodoBDConsenso_INSERT_FullMethodName           = "/AeroDist.NodoBDConsenso/INSERT"
-	NodoBDConsenso_PostularALider_FullMethodName   = "/AeroDist.NodoBDConsenso/PostularALider"
-	NodoBDConsenso_InformarNewLider_FullMethodName = "/AeroDist.NodoBDConsenso/InformarNewLider"
-	NodoBDConsenso_Ping_FullMethodName             = "/AeroDist.NodoBDConsenso/Ping"
-	NodoBDConsenso_INSERTLIDER_FullMethodName      = "/AeroDist.NodoBDConsenso/INSERTLIDER"
+	NodoBDConsenso_INSERT_FullMethodName            = "/AeroDist.NodoBDConsenso/INSERT"
+	NodoBDConsenso_PostularALider_FullMethodName    = "/AeroDist.NodoBDConsenso/PostularALider"
+	NodoBDConsenso_InformarNewLider_FullMethodName  = "/AeroDist.NodoBDConsenso/InformarNewLider"
+	NodoBDConsenso_Ping_FullMethodName              = "/AeroDist.NodoBDConsenso/Ping"
+	NodoBDConsenso_INSERTLIDER_FullMethodName       = "/AeroDist.NodoBDConsenso/INSERTLIDER"
+	NodoBDConsenso_ResultadoConsenso_FullMethodName = "/AeroDist.NodoBDConsenso/resultadoConsenso"
 )
 
 // NodoBDConsensoClient is the client API for NodoBDConsenso service.
@@ -37,6 +40,7 @@ type NodoBDConsensoClient interface {
 	InformarNewLider(ctx context.Context, in *Postulante, opts ...grpc.CallOption) (*NewLider, error)
 	Ping(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error)
 	INSERTLIDER(ctx context.Context, in *RecordID, opts ...grpc.CallOption) (*Vacio, error)
+	ResultadoConsenso(ctx context.Context, in *Record, opts ...grpc.CallOption) (*Vacio, error)
 }
 
 type nodoBDConsensoClient struct {
@@ -97,6 +101,16 @@ func (c *nodoBDConsensoClient) INSERTLIDER(ctx context.Context, in *RecordID, op
 	return out, nil
 }
 
+func (c *nodoBDConsensoClient) ResultadoConsenso(ctx context.Context, in *Record, opts ...grpc.CallOption) (*Vacio, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Vacio)
+	err := c.cc.Invoke(ctx, NodoBDConsenso_ResultadoConsenso_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NodoBDConsensoServer is the server API for NodoBDConsenso service.
 // All implementations must embed UnimplementedNodoBDConsensoServer
 // for forward compatibility.
@@ -108,6 +122,7 @@ type NodoBDConsensoServer interface {
 	InformarNewLider(context.Context, *Postulante) (*NewLider, error)
 	Ping(context.Context, *Vacio) (*Vacio, error)
 	INSERTLIDER(context.Context, *RecordID) (*Vacio, error)
+	ResultadoConsenso(context.Context, *Record) (*Vacio, error)
 	mustEmbedUnimplementedNodoBDConsensoServer()
 }
 
@@ -132,6 +147,9 @@ func (UnimplementedNodoBDConsensoServer) Ping(context.Context, *Vacio) (*Vacio, 
 }
 func (UnimplementedNodoBDConsensoServer) INSERTLIDER(context.Context, *RecordID) (*Vacio, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method INSERTLIDER not implemented")
+}
+func (UnimplementedNodoBDConsensoServer) ResultadoConsenso(context.Context, *Record) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResultadoConsenso not implemented")
 }
 func (UnimplementedNodoBDConsensoServer) mustEmbedUnimplementedNodoBDConsensoServer() {}
 func (UnimplementedNodoBDConsensoServer) testEmbeddedByValue()                        {}
@@ -244,6 +262,24 @@ func _NodoBDConsenso_INSERTLIDER_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NodoBDConsenso_ResultadoConsenso_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Record)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodoBDConsensoServer).ResultadoConsenso(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NodoBDConsenso_ResultadoConsenso_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodoBDConsensoServer).ResultadoConsenso(ctx, req.(*Record))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NodoBDConsenso_ServiceDesc is the grpc.ServiceDesc for NodoBDConsenso service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -270,6 +306,10 @@ var NodoBDConsenso_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "INSERTLIDER",
 			Handler:    _NodoBDConsenso_INSERTLIDER_Handler,
+		},
+		{
+			MethodName: "resultadoConsenso",
+			Handler:    _NodoBDConsenso_ResultadoConsenso_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

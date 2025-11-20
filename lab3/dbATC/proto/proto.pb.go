@@ -4,6 +4,8 @@
 // 	protoc        v6.32.0
 // source: proto/proto.proto
 
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+
 package proto
 
 import (
@@ -357,13 +359,14 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"postulante\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\a\n" +
-	"\x05Vacio2\xa8\x02\n" +
+	"\x05Vacio2\xe2\x02\n" +
 	"\x0eNodoBDConsenso\x126\n" +
 	"\x06INSERT\x12\x10.AeroDist.record\x1a\x18.AeroDist.InsertResponse\"\x00\x12<\n" +
 	"\x0ePostularALider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00\x12>\n" +
 	"\x10InformarNewLider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00\x12*\n" +
 	"\x04Ping\x12\x0f.AeroDist.Vacio\x1a\x0f.AeroDist.Vacio\"\x00\x124\n" +
-	"\vINSERTLIDER\x12\x12.AeroDist.recordID\x1a\x0f.AeroDist.Vacio\"\x00B\bZ\x06/protob\x06proto3"
+	"\vINSERTLIDER\x12\x12.AeroDist.recordID\x1a\x0f.AeroDist.Vacio\"\x00\x128\n" +
+	"\x11resultadoConsenso\x12\x10.AeroDist.record\x1a\x0f.AeroDist.Vacio\"\x00B\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -394,13 +397,15 @@ var file_proto_proto_proto_depIdxs = []int32{
 	5, // 3: AeroDist.NodoBDConsenso.InformarNewLider:input_type -> AeroDist.postulante
 	6, // 4: AeroDist.NodoBDConsenso.Ping:input_type -> AeroDist.Vacio
 	2, // 5: AeroDist.NodoBDConsenso.INSERTLIDER:input_type -> AeroDist.recordID
-	3, // 6: AeroDist.NodoBDConsenso.INSERT:output_type -> AeroDist.InsertResponse
-	4, // 7: AeroDist.NodoBDConsenso.PostularALider:output_type -> AeroDist.NewLider
-	4, // 8: AeroDist.NodoBDConsenso.InformarNewLider:output_type -> AeroDist.NewLider
-	6, // 9: AeroDist.NodoBDConsenso.Ping:output_type -> AeroDist.Vacio
-	6, // 10: AeroDist.NodoBDConsenso.INSERTLIDER:output_type -> AeroDist.Vacio
-	6, // [6:11] is the sub-list for method output_type
-	1, // [1:6] is the sub-list for method input_type
+	1, // 6: AeroDist.NodoBDConsenso.resultadoConsenso:input_type -> AeroDist.record
+	3, // 7: AeroDist.NodoBDConsenso.INSERT:output_type -> AeroDist.InsertResponse
+	4, // 8: AeroDist.NodoBDConsenso.PostularALider:output_type -> AeroDist.NewLider
+	4, // 9: AeroDist.NodoBDConsenso.InformarNewLider:output_type -> AeroDist.NewLider
+	6, // 10: AeroDist.NodoBDConsenso.Ping:output_type -> AeroDist.Vacio
+	6, // 11: AeroDist.NodoBDConsenso.INSERTLIDER:output_type -> AeroDist.Vacio
+	6, // 12: AeroDist.NodoBDConsenso.resultadoConsenso:output_type -> AeroDist.Vacio
+	7, // [7:13] is the sub-list for method output_type
+	1, // [1:7] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name

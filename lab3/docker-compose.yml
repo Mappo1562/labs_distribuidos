@@ -1,6 +1,55 @@
 services:
-  broker:
-    build: ./broker
-    container_name: broker
+
+  #broker:
+  #  build: ./broker
+  #  container_name: broker
+  #  ports:
+  #    - "50050:50050"
+
+  # Nodos consenso:
+  dbatc0:
+    build: ./dbatc
+    container_name: dbatc0
+    environment:
+      - ID=0
+    #depends_on:
+    #  - broker
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data0:/app/data0
     ports:
-      - "50050:50050"
+      - "50051:50051"
+  
+  dbatc1:
+    build: ./dbatc
+    container_name: dbatc1
+    environment:
+      - ID=1
+    #depends_on:
+    #  - broker
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data1:/app/data1
+    ports:
+      - "50052:50052"
+
+
+  dbatc2:
+    build: ./dbatc
+    container_name: dbatc2
+    environment:
+      - ID=2
+    #depends_on:
+    #  - broker
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data2:/app/data2
+    ports:
+      - "50053:50053"
+
+networks:
+  grpc-net:
+    driver: bridge
