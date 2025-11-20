@@ -85,6 +85,22 @@ func guardarEnJSON(data *pb.Record) error {
 	return err
 }
 
+/////////////////////////////////
+//
+// Funciones de server
+//
+/////////////////////////////////
+
+func (s *server) ResultadoConsenso(ctx context.Context, in *pb.Record) (*pb.Vacio, error) {
+	// guardar valor nuevo
+	muinsert.Lock()
+	if guardarEnJSON(in) != nil {
+		log.Fatalf("Error al guardar el resultado consensuado")
+	}
+	muinsert.Unlock()
+	return &pb.Vacio{}, nil
+}
+
 func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse, error) {
 	mulider.Lock() // quiza estos candados no sean necesarios
 	liderCopy := lider
@@ -102,7 +118,6 @@ func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse,
 
 		return &pb.InsertResponse{Id: int64(ID), Lider: false}, nil
 	}
-	// hacer la pega de lider
 	log.Printf("Hay un insert y soy el lider, llamando a consenso")
 	muVotos.Lock()
 	votos[int(ID)] = in
@@ -118,189 +133,49 @@ func (s *server) INSERTLIDER(ctx context.Context, in *pb.RecordID) (*pb.Vacio, e
 	return &pb.Vacio{}, nil
 }
 
-// ************************************************ LA IMPLEMENTACIÓN DE CONSENSO NO SOPORTA MUCHAS LLAMADAS SEGUIDAS ************************************************
-func consenso() {
-	time.Sleep(1 * time.Second) // tiempo para que los otros llamen a INSERTLIDER
-	muVotos.Lock()
-	votosCopy := make(map[int]*pb.Record)
-	for k, v := range votos {
-		votosCopy[k] = v
-	}
-	votos = make(map[int]*pb.Record)
-	muVotos.Unlock()
-	final := decidirRecord(votosCopy)
-	if final == nil {
-		log.Printf("No hubo consenso válido")
-		return
-	}
-	for i, cliente := range clientes {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		_, err := cliente.ResultadoConsenso(ctx, final)
-		cancel()
-		if err != nil {
-			log.Printf("Error al mandar el resultado del consenso a %v", err)
-		} else {
-			log.Printf("Valor guardado correctamente por %v", i)
-		}
-	}
-	// guardar valor nuevo
-	muinsert.Lock()
-	if guardarEnJSON(final) != nil {
-		log.Fatalf("Error al guardar el resultado consensuado")
-	}
-	muinsert.Unlock()
-}
-
-func (s *server) ResultadoConsenso(ctx context.Context, in *pb.Record) (*pb.Vacio, error) {
-	// guardar valor nuevo
-	muinsert.Lock()
-	if guardarEnJSON(in) != nil {
-		log.Fatalf("Error al guardar el resultado consensuado")
-	}
-	muinsert.Unlock()
-	return &pb.Vacio{}, nil
-}
-
-func decidirRecord(votos map[int]*pb.Record) *pb.Record {
-	// 1) buscar cualquier par igual (dos iguales -> ganar)
-	ids := make([]int, 0, len(votos))
-	for id := range votos {
-		ids = append(ids, id)
-	}
-
-	for i := 0; i < len(ids); i++ {
-		a := votos[ids[i]]
-		if a == nil {
-			continue
-		}
-		for j := i + 1; j < len(ids); j++ {
-			b := votos[ids[j]]
-			if b == nil {
-				continue
-			}
-			if proto.Equal(a, b) {
-				return a
-			}
-		}
-	}
-
-	return nil
-}
-
-func aplicarHistorico(records []*pb.Record) error {
-	name := "db" + strconv.Itoa(ID)
-	tmp := name + ".tmp"
-
-	f, err := os.Create(tmp)
+func (s *server) GetHistorico(ctx context.Context, in *pb.Vacio) (*pb.Historico, error) {
+	recs, err := leerHistorico()
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	for _, r := range records {
-		b, err := json.Marshal(r)
-		if err != nil {
-			f.Close()
-			return err
-		}
-		if _, err := f.Write(append(b, '\n')); err != nil {
-			f.Close()
-			return err
-		}
-	}
-	if err := f.Sync(); err != nil {
-		f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp, name)
+	// Si quieres, puedes devolver nil en vez de slice vacío cuando no hay nada
+	return &pb.Historico{Records: recs}, nil
 }
 
-func verLider() {
+func (s *server) PostularALider(ctx context.Context, in *pb.Postulante) (*pb.NewLider, error) {
 	mulider.Lock()
-	liderCopy := lider
+	if lider == -1 {
+		lider = int(in.Id)
+		mulider.Unlock()
+		return &pb.NewLider{Id: int64(lider)}, nil
+	}
 	mulider.Unlock()
-
-	if liderCopy != -1 {
-		log.Printf("El lider actual es %v", liderCopy)
-		return
-	}
-
-	log.Printf("Postularé a lider")
-
-	aceptados := 1
-	respuestas := make([]int64, 0)
-
-	for i, cliente := range clientes {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		resp, err := cliente.PostularALider(ctx, &pb.Postulante{Id: int64(ID)})
-		cancel()
-
-		if err != nil {
-			log.Printf("Nodo %d no respondió a PostularALider, esta muerto", i)
-			continue
-		}
-
-		respuestas = append(respuestas, resp.Id)
-		if resp.Id == int64(ID) {
-			aceptados++
-		}
-	}
-
-	// si tengo mayoría, gano
-	if aceptados > 1 {
-		log.Printf("Fui aceptado como líder, notificando...")
-
-		for i, cliente := range clientes {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-			resp, err := cliente.InformarNewLider(ctx, &pb.Postulante{Id: int64(ID)})
-			cancel()
-
-			if err != nil {
-				log.Printf("Nodo %d no aceptó notificación: %v", i, err)
-			} else {
-				log.Printf("Nodo %d confirmó nuevo líder (%d)", i, resp.Id)
-			}
-		}
-
-		mulider.Lock()
-		lider = ID
-		mulider.Unlock()
-
-		log.Printf("Ahora soy el líder")
-		return
-	} else {
-		// significa que esta reviviendo, tiene q actualizar el lider y pedirle el historico
-		log.Printf("Estaba muerto y revivi y ya existe un lider, estableciendo como lider al actual: %v", respuestas[0])
-		mulider.Lock()
-		lider = int(respuestas[0])
-		liderCopy := lider
-		mulider.Unlock()
-		log.Printf("Pidiendo el historico al lider")
-
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-		clienteLider, ok := clientes[liderCopy]
-		if !ok {
-			log.Printf("No puedo contactar al lider para restaurar la bd")
-			return
-		}
-		historicos, err := clienteLider.GetHistorico(ctx, &pb.Vacio{})
-		if err != nil {
-			log.Printf("No puedo llamar a la funcion del lider para restaurar la bd")
-			return
-		}
-		muinsert.Lock()
-		if aplicarHistorico(historicos.Records) == nil {
-			log.Printf("No logre guardar el historico correctamente")
-			return
-		}
-		muinsert.Unlock()
-		log.Printf("historico guardado correctamente")
-		return
-	}
+	log.Printf("el nuevo lider es %v", in.Id)
+	return &pb.NewLider{Id: int64(lider)}, nil
 }
+
+func (s *server) InformarNewLider(ctx context.Context, in *pb.Postulante) (*pb.NewLider, error) {
+	mulider.Lock()
+	lider = int(in.Id)
+	mulider.Unlock()
+	return &pb.NewLider{Id: int64(lider)}, nil
+}
+
+func (s *server) Ping(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
+	mulider.Lock()
+	liderc := lider
+	mulider.Unlock()
+	if liderc == ID {
+		return &pb.Vacio{}, nil
+	}
+	return &pb.Vacio{}, fmt.Errorf("ya no soy el lider :c")
+}
+
+/////////////////////////////////
+//
+// Funciones que ejecutara el lider
+//
+/////////////////////////////////
 
 func leerHistorico() ([]*pb.Record, error) {
 	name := "db" + strconv.Itoa(ID)
@@ -336,32 +211,195 @@ func leerHistorico() ([]*pb.Record, error) {
 	return records, nil
 }
 
-func (s *server) GetHistorico(ctx context.Context, in *pb.Vacio) (*pb.Historico, error) {
-	recs, err := leerHistorico()
+// ************************************************ LA IMPLEMENTACIÓN DE CONSENSO NO SOPORTA MUCHAS LLAMADAS SEGUIDAS ************************************************
+func consenso() {
+	time.Sleep(1 * time.Second) // tiempo para que los otros llamen a INSERTLIDER
+	muVotos.Lock()
+	votosCopy := make(map[int]*pb.Record)
+	for k, v := range votos {
+		votosCopy[k] = v
+	}
+	votos = make(map[int]*pb.Record)
+	muVotos.Unlock()
+	final := decidirRecord(votosCopy)
+	if final == nil {
+		log.Printf("No hubo consenso válido")
+		return
+	}
+	for i, cliente := range clientes {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		_, err := cliente.ResultadoConsenso(ctx, final)
+		cancel()
+		if err != nil {
+			log.Printf("Error al mandar el resultado del consenso a %v", err)
+		} else {
+			log.Printf("Valor guardado correctamente por %v", i)
+		}
+	}
+	// guardar valor nuevo
+	muinsert.Lock()
+	if guardarEnJSON(final) != nil {
+		log.Fatalf("Error al guardar el resultado consensuado")
+	}
+	muinsert.Unlock()
+}
+
+func decidirRecord(votos map[int]*pb.Record) *pb.Record {
+	// 1) buscar cualquier par igual (dos iguales -> ganar)
+	ids := make([]int, 0, len(votos))
+	for id := range votos {
+		ids = append(ids, id)
+	}
+
+	for i := 0; i < len(ids); i++ {
+		a := votos[ids[i]]
+		if a == nil {
+			continue
+		}
+		for j := i + 1; j < len(ids); j++ {
+			b := votos[ids[j]]
+			if b == nil {
+				continue
+			}
+			if proto.Equal(a, b) {
+				return a
+			}
+		}
+	}
+
+	return nil
+}
+
+/////////////////////////////////
+//
+// Funciones genericas para cada nodo
+//
+/////////////////////////////////
+
+func aplicarHistorico(records []*pb.Record) error {
+	name := "db" + strconv.Itoa(ID)
+	tmp := name + ".tmp"
+
+	f, err := os.Create(tmp)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	// Si quieres, puedes devolver nil en vez de slice vacío cuando no hay nada
-	return &pb.Historico{Records: recs}, nil
+
+	for _, r := range records {
+		b, err := json.Marshal(r)
+		if err != nil {
+			f.Close()
+			return err
+		}
+		if _, err := f.Write(append(b, '\n')); err != nil {
+			f.Close()
+			return err
+		}
+	}
+	if err := f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp, name)
 }
 
-func (s *server) PostularALider(ctx context.Context, in *pb.Postulante) (*pb.NewLider, error) {
+func conseguirvotosLider() (int, []int64) {
+	aceptados := 1
+	respuestas := make([]int64, 0)
+
+	for i, cliente := range clientes {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		resp, err := cliente.PostularALider(ctx, &pb.Postulante{Id: int64(ID)})
+		cancel()
+
+		if err != nil {
+			log.Printf("Nodo %d no respondió a PostularALider, esta muerto", i)
+			continue
+		}
+
+		respuestas = append(respuestas, resp.Id)
+		if resp.Id == int64(ID) {
+			aceptados++
+		}
+	}
+	return aceptados, respuestas
+}
+
+func NotificarNuevoLider() {
+	for i, cliente := range clientes {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		resp, err := cliente.InformarNewLider(ctx, &pb.Postulante{Id: int64(ID)})
+		cancel()
+
+		if err != nil {
+			log.Printf("Nodo %d no aceptó notificación: %v", i, err)
+		} else {
+			log.Printf("Nodo %d confirmó nuevo líder (%d)", i, resp.Id)
+		}
+	}
+
 	mulider.Lock()
-	if lider == -1 {
-		lider = int(in.Id)
+	lider = ID
+	mulider.Unlock()
+
+	log.Printf("Ahora soy el líder")
+}
+
+func pedirHistoricoAlLiderYGuardarlo(liderCopy int) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	clienteLider, ok := clientes[liderCopy]
+	if !ok {
+		log.Printf("No puedo contactar al lider para restaurar la bd")
+		return
+	}
+	historicos, err := clienteLider.GetHistorico(ctx, &pb.Vacio{})
+	if err != nil {
+		log.Printf("No puedo llamar a la funcion del lider para restaurar la bd")
+		return
+	}
+	muinsert.Lock()
+	if aplicarHistorico(historicos.Records) == nil {
+		log.Printf("No logre guardar el historico correctamente")
+		return
+	}
+	muinsert.Unlock()
+	log.Printf("historico guardado correctamente")
+}
+
+func verLider() {
+	mulider.Lock()
+	liderCopy := lider
+	mulider.Unlock()
+
+	if liderCopy != -1 {
+		log.Printf("El lider actual es %v", liderCopy)
+		return
+	}
+
+	log.Printf("Postularé a lider")
+
+	aceptados, respuestas := conseguirvotosLider()
+
+	// si tengo mayoría, paso a ser lider
+	if aceptados > 1 {
+		log.Printf("Fui aceptado como líder, notificando...")
+		NotificarNuevoLider()
+		return
+	} else { // si no, significa que hay otro lider y que revivi
+		log.Printf("Estaba muerto y revivi y ya existe un lider, estableciendo como lider al actual: %v", respuestas[0])
+		// actualizar lider
+		mulider.Lock()
+		lider = int(respuestas[0])
+		liderCopy := lider
 		mulider.Unlock()
-		return &pb.NewLider{Id: int64(lider)}, nil
+		log.Printf("Pidiendo el historico al lider")
+		pedirHistoricoAlLiderYGuardarlo(liderCopy)
+		return
 	}
-	mulider.Unlock()
-	log.Printf("el nuevo lider es %v", in.Id)
-	return &pb.NewLider{Id: int64(lider)}, nil
-}
-
-func (s *server) InformarNewLider(ctx context.Context, in *pb.Postulante) (*pb.NewLider, error) {
-	mulider.Lock()
-	lider = int(in.Id)
-	mulider.Unlock()
-	return &pb.NewLider{Id: int64(lider)}, nil
 }
 
 func revisarLiderVivo() {
@@ -403,16 +441,6 @@ func revisarLiderVivo() {
 	log.Printf("Lider %d sigue vivo, larga vida al lider!!", liderActual)
 }
 
-func (s *server) Ping(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
-	mulider.Lock()
-	liderc := lider
-	mulider.Unlock()
-	if liderc == ID {
-		return &pb.Vacio{}, nil
-	}
-	return &pb.Vacio{}, fmt.Errorf("ya no soy el lider :c")
-}
-
 func ciclo() {
 	rand.Seed(int64(ID + ID*5))
 	for true {
@@ -421,6 +449,12 @@ func ciclo() {
 		revisarLiderVivo()
 	}
 }
+
+/////////////////////////////////
+//
+// Funciones relacionadas con el servidor, y cliente de los otros nodos
+//
+/////////////////////////////////
 
 func killNode() {
 	log.Printf("******************--- simulando caída ---******************")
@@ -457,8 +491,7 @@ func conect() {
 }
 
 func runServerLoop() {
-	for i := 0; i < 3; i++ {
-		// Crear listener
+	for i := 0; i < 3; i++ { // uso esto como criterio de termino, pero funcionara pesimo
 		var err error
 		lis, err = net.Listen("tcp", port)
 		if err != nil {
@@ -472,10 +505,8 @@ func runServerLoop() {
 
 		log.Printf("Nodo %d: servidor gRPC iniciado en %s", ID, port)
 
-		// Intentar servir
 		err = grpcServer.Serve(lis)
 
-		// PAUSAR ANTES DE REINTENTAR
 		time.Sleep(5 * time.Second)
 		mulider.Lock()
 		lider = -1
@@ -487,14 +518,8 @@ func runServerLoop() {
 func main() {
 
 	log.Printf("Nodo %d iniciando…", ID)
-
-	// Conectarse inicialmente a los otros nodos
 	conect()
-
-	// Arrancar ciclo que revisa líder y simula muerte
 	go ciclo()
-
-	// Loop que manejará iniciar/caer/revivir
 	runServerLoop()
 
 }
