@@ -10,6 +10,7 @@ service Broker{
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
 
     // Coordinador
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
 
@@ -31,6 +32,16 @@ message MRReadResponse{
     string status = 2;
     string gate = 3;
     int64 version = 4;
+}
+
+message GetInitialInfoRequest{
+    string flight_id = 1;
+}
+
+message GetInitialInfoResponse{
+    string seats = 1;
+    bool success = 2;
+    string msg = 3;
 }
 
 message ApplyWriteRequest{

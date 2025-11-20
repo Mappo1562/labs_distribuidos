@@ -108,12 +108,18 @@ func (s *CoordinadorServer) GetBoardingPass(ctx context.Context, in *pb.GetBoard
 	return resp, nil
 }
 
+func (s *CoordinadorServer) GetSeats(ctx context.Context, in *pb.GetSeatsRequest) (*pb.GetSeatsResponse, error) {
+
+	return nil, nil
+}
 func main() {
 
 	conn, err := grpc.NewClient(brokerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("No se pudo conectar al Broker: %v", err)
 	}
+
+	defer conn.Close()
 
 	server := &CoordinadorServer{
 		sesiones:     make(map[string]SessionInfo),
