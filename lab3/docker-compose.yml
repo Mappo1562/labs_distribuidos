@@ -50,6 +50,66 @@ services:
     ports:
       - "50053:50053"
 
+  coordinador:
+    build: ./coordinador
+    container_name: coordinador
+    ports:
+      - "50060:50060"
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
+  clienteRYW1:
+    build: ./clienteRYW
+    container_name: clienteRYW1
+    environment: 
+      - CLIENT_ID=clienteRYW_1
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+  
+  clienteRYW2:
+    build: ./clienteRYW
+    container_name: clienteRYW2
+    environment: 
+      - CLIENT_ID=clienteRYW_2
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+    
+  clienteRYW3:
+    build: ./clienteRYW
+    container_name: clienteRYW3
+    environment: 
+      - CLIENT_ID=clienteRYW_3
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+
+  clienteMR1:
+    build: ./clienteMR
+    container_name: clienteMR1
+    environment: 
+      - CLIENT_ID=clienteMR_1
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+
+  clienteMR2:
+    build: ./clienteMR
+    container_name: clienteMR2
+    environment: 
+      - CLIENT_ID=clienteMR_2
+    depends_on:
+      - broker
+    networks:
+      - grpc-net
+      
 networks:
   grpc-net:
     driver: bridge

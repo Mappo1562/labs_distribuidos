@@ -10,7 +10,7 @@ service CoordinadorRYW{//Servicio Coordinador con clientes RYW
     rpc GetBoardingPass(GetBoardingPassRequest) returns (GetBoardingPassResponse);
 }
 
-service BrokerCoordinador{
+service Broker{
     rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);

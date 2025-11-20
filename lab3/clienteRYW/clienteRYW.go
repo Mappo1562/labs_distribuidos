@@ -3,7 +3,10 @@ package main
 import (
 	pb "clienteRYW/proto"
 	"context"
+	"encoding/csv"
 	"log"
+	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -15,7 +18,48 @@ const (
 	coordinadorAddr = "localhost:50060"
 )
 
+func leerVuelos(path string) (string, error) {
+
+	archivo, err := os.Open(path)
+
+	if err != nil {
+		return "", err
+	}
+
+	defer archivo.Close()
+
+	lector := csv.NewReader(archivo)
+	lector.TrimLeadingSpace = true
+
+	filas, err := lector.ReadAll()
+
+	if err != nil {
+		return "", err
+	}
+
+	var ayuda string
+
+	for i, fila := range filas {
+		if i == 0 {
+			continue
+		}
+
+		flightIDid := strings.TrimSpace(fila[1])
+		ayuda += flightIDid + ","
+	}
+
+	ayuda = strings.TrimSuffix(ayuda, ",")
+	return ayuda, nil
+}
+
+func elegirAzar(completo string) string {
+	arreglo := strings.Split(completo, ",")
+	escogido := strings.TrimSpace(arreglo[rand.Intn(len(arreglo))])
+	return escogido
+}
 func main() {
+
+	rand.Seed(02122003)
 
 	conn, err := grpc.NewClient(coordinadorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -26,32 +70,30 @@ func main() {
 
 	coordinadorClient := pb.NewCoordinadorRYWClient(conn)
 
+	ayuda, _ := leerVuelos("flight_updates.csv")
+	flightID := elegirAzar(ayuda)
 	clienteID := "cliente-1"
-	flighID := "LA-500"
-	seat := "12A"
 
 	respGetSeats, err := coordinadorClient.GetSeats(context.Background(), &pb.GetSeatsRequest{
-		FlightId: flighID,
+		FlightId: flightID,
 	})
 
 	if err != nil {
-		log.Fatalf("[RYW] Error al obtener los asientos disponibles: %v", err)
+		log.Fatalf("[RYW] Error al obtener los asientos disponibles: %v\n", err)
 	}
 
 	if !respGetSeats.Success {
-		log.Printf("[RYW] No se pudo obtener los asientos disponibles")
+		log.Fatalln("[RYW] No se pudo obtener los asientos disponibles")
 		//volver a intentar o terminar
 	} else {
-		log.Printf("[RYW] Se pudieron obtener los asientos disponibles del vuelo %s", flighID)
+		log.Printf("[RYW] Se pudieron obtener los asientos disponibles del vuelo %s\n", flightID)
 	}
 
-	asientos := strings.Split(respGetSeats.Seats, ",")
-
-	_ = asientos // elegir un asiento random dentro de los disponibles.
+	seat := elegirAzar(respGetSeats.Seats) // elegir un asiento random dentro de los disponibles.
 
 	respChekIn, err := coordinadorClient.CheckIn(context.Background(), &pb.CheckInRequest{
 		ClienteId: clienteID,
-		FlightId:  flighID,
+		FlightId:  flightID,
 		Seat:      seat,
 		RequestId: "hola",
 	})
@@ -71,7 +113,7 @@ func main() {
 
 	respGetBoardingPass, err := coordinadorClient.GetBoardingPass(context.Background(), &pb.GetBoardingPassRequest{
 		ClienteId: clienteID,
-		FlightId:  flighID,
+		FlightId:  flightID,
 	})
 
 	if err != nil {

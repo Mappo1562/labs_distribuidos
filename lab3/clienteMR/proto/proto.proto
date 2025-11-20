@@ -4,7 +4,7 @@ package AeroDist;
 
 option go_package = "/proto";
 
-service BrokerMR{//Servicio Broker con clientes MR
+service Broker{//Servicio Broker con clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
 }
 

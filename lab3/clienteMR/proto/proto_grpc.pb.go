@@ -19,89 +19,89 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	BrokerMR_MRRead_FullMethodName = "/AeroDist.BrokerMR/MRRead"
+	Broker_MRRead_FullMethodName = "/AeroDist.Broker/MRRead"
 )
 
-// BrokerMRClient is the client API for BrokerMR service.
+// BrokerClient is the client API for Broker service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type BrokerMRClient interface {
+type BrokerClient interface {
 	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
 }
 
-type brokerMRClient struct {
+type brokerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewBrokerMRClient(cc grpc.ClientConnInterface) BrokerMRClient {
-	return &brokerMRClient{cc}
+func NewBrokerClient(cc grpc.ClientConnInterface) BrokerClient {
+	return &brokerClient{cc}
 }
 
-func (c *brokerMRClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error) {
+func (c *brokerClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error) {
 	out := new(MRReadResponse)
-	err := c.cc.Invoke(ctx, BrokerMR_MRRead_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Broker_MRRead_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// BrokerMRServer is the server API for BrokerMR service.
-// All implementations must embed UnimplementedBrokerMRServer
+// BrokerServer is the server API for Broker service.
+// All implementations must embed UnimplementedBrokerServer
 // for forward compatibility
-type BrokerMRServer interface {
+type BrokerServer interface {
 	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
-	mustEmbedUnimplementedBrokerMRServer()
+	mustEmbedUnimplementedBrokerServer()
 }
 
-// UnimplementedBrokerMRServer must be embedded to have forward compatible implementations.
-type UnimplementedBrokerMRServer struct {
+// UnimplementedBrokerServer must be embedded to have forward compatible implementations.
+type UnimplementedBrokerServer struct {
 }
 
-func (UnimplementedBrokerMRServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
+func (UnimplementedBrokerServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
 }
-func (UnimplementedBrokerMRServer) mustEmbedUnimplementedBrokerMRServer() {}
+func (UnimplementedBrokerServer) mustEmbedUnimplementedBrokerServer() {}
 
-// UnsafeBrokerMRServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to BrokerMRServer will
+// UnsafeBrokerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BrokerServer will
 // result in compilation errors.
-type UnsafeBrokerMRServer interface {
-	mustEmbedUnimplementedBrokerMRServer()
+type UnsafeBrokerServer interface {
+	mustEmbedUnimplementedBrokerServer()
 }
 
-func RegisterBrokerMRServer(s grpc.ServiceRegistrar, srv BrokerMRServer) {
-	s.RegisterService(&BrokerMR_ServiceDesc, srv)
+func RegisterBrokerServer(s grpc.ServiceRegistrar, srv BrokerServer) {
+	s.RegisterService(&Broker_ServiceDesc, srv)
 }
 
-func _BrokerMR_MRRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Broker_MRRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MRReadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BrokerMRServer).MRRead(ctx, in)
+		return srv.(BrokerServer).MRRead(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BrokerMR_MRRead_FullMethodName,
+		FullMethod: Broker_MRRead_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerMRServer).MRRead(ctx, req.(*MRReadRequest))
+		return srv.(BrokerServer).MRRead(ctx, req.(*MRReadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// BrokerMR_ServiceDesc is the grpc.ServiceDesc for BrokerMR service.
+// Broker_ServiceDesc is the grpc.ServiceDesc for Broker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var BrokerMR_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "AeroDist.BrokerMR",
-	HandlerType: (*BrokerMRServer)(nil),
+var Broker_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AeroDist.Broker",
+	HandlerType: (*BrokerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "MRRead",
-			Handler:    _BrokerMR_MRRead_Handler,
+			Handler:    _Broker_MRRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	pb "coordinador/proto"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -16,7 +17,7 @@ type CoordinadorServer struct {
 	pb.UnimplementedCoordinadorRYWServer
 
 	sesiones     map[string]SessionInfo
-	brokerClient pb.BrokerCoordinadorClient
+	brokerClient pb.BrokerClient
 	mu           sync.Mutex
 }
 
@@ -110,7 +111,24 @@ func (s *CoordinadorServer) GetBoardingPass(ctx context.Context, in *pb.GetBoard
 
 func (s *CoordinadorServer) GetSeats(ctx context.Context, in *pb.GetSeatsRequest) (*pb.GetSeatsResponse, error) {
 
-	return nil, nil
+	vuelo := in.FlightId
+	bResp, err := s.brokerClient.GetInitialInfo(ctx, &pb.GetInitialInfoRequest{
+		FlightId: vuelo,
+	})
+
+	if err != nil {
+		return &pb.GetSeatsResponse{
+			Success: false,
+			Msg:     fmt.Sprintf("error al leer broker: %v", err),
+		}, nil
+	}
+
+	return &pb.GetSeatsResponse{
+		FlightId: in.FlightId,
+		Seats:    bResp.Seats,
+		Success:  true,
+		Msg:      "ok",
+	}, nil
 }
 func main() {
 
@@ -123,7 +141,7 @@ func main() {
 
 	server := &CoordinadorServer{
 		sesiones:     make(map[string]SessionInfo),
-		brokerClient: pb.NewBrokerCoordinadorClient(conn),
+		brokerClient: pb.NewBrokerClient(conn),
 	}
 
 	lis, err := net.Listen("tcp", port)

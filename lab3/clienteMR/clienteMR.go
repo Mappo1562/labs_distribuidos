@@ -14,6 +14,6 @@ const (
 func main() {
 	conn, _ := grpc.NewClient(brokerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	brokerClient := pb.NewBrokerMRClient(conn)
+	brokerClient := pb.NewBrokerClient(conn)
 	_ = brokerClient
 }
