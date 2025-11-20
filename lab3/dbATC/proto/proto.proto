@@ -21,6 +21,7 @@ service  NodoBDConsenso{
     rpc Ping(Vacio) returns (Vacio) {}
     rpc INSERTLIDER(recordID) returns (Vacio){}
     rpc resultadoConsenso(record) returns (Vacio){}
+    rpc GetHistorico(Vacio) returns (Historico){}
 }
 
 message Bool{
@@ -29,6 +30,10 @@ message Bool{
 
 message record{
     
+}
+
+message Historico{
+    repeated record records = 1;
 }
 
 message recordID{

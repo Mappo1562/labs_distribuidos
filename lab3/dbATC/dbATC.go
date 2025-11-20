@@ -16,6 +16,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	pb "dbATC/proto"
 	"encoding/json"
@@ -52,6 +53,7 @@ var (
 	conexiones = make(map[int]*grpc.ClientConn)
 	votos      = make(map[int]*pb.Record)
 	muVotos    sync.Mutex
+	muClients  sync.RWMutex
 	file       *os.File
 	grpcServer *grpc.Server
 	lis        net.Listener
@@ -106,7 +108,7 @@ func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse,
 	votos[int(ID)] = in
 	muVotos.Unlock()
 	consenso() // ************************************************ FALTA UN IF PARA VER SI EL CONCENSO ESTUVO BIEN O NO ************************************************
-	return &pb.InsertResponse{Id: int64(ID), Lider: false}, nil
+	return &pb.InsertResponse{Id: int64(ID), Lider: true}, nil
 }
 
 func (s *server) INSERTLIDER(ctx context.Context, in *pb.RecordID) (*pb.Vacio, error) {
@@ -185,65 +187,35 @@ func decidirRecord(votos map[int]*pb.Record) *pb.Record {
 	return nil
 }
 
-/*
-func verLider() {
-	mulider.Lock() // quiza estos candados no sean necesarios
-	liderCopy := lider
-	mulider.Unlock()
-	if liderCopy == -1 {
-		log.Printf("Postularé a lider")
-		aceptados := 0
-		var ids = make(map[int]int64)
-		for i, cliente := range clientes {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-			defer cancel()
-			resp, err := cliente.PostularALider(ctx, &pb.Postulante{Id: int64(ID)})
-			if err != nil {
-				log.Fatalf("Error al postular como lider: %v", err)
-			}
-			if resp.Id == int64(ID) {
-				aceptados = aceptados + 1
-			} else {
-				log.Printf("Uno de los nodos no me acepto como lider")
-			}
-			ids[i] = resp.Id
+func aplicarHistorico(records []*pb.Record) error {
+	name := "db" + strconv.Itoa(ID)
+	tmp := name + ".tmp"
+
+	f, err := os.Create(tmp)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range records {
+		b, err := json.Marshal(r)
+		if err != nil {
+			f.Close()
+			return err
 		}
-		if aceptados > 1 {
-			notificados := 0
-			log.Println("Fui aceptado como lider por los otros nodos, informandoles del cambio ...")
-			for _, cliente := range clientes {
-				ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-				defer cancel()
-				resp, err := cliente.InformarNewLider(ctx, &pb.Postulante{Id: int64(ID)})
-				if err != nil {
-					log.Fatalf("Error al informar que soy el nuevo lider: %v", err)
-				}
-				if resp.Id == int64(ID) {
-					notificados = notificados + 1
-				} else {
-					log.Printf("Uno de los nodos no acepto la notificacion de actualización de lider ¿?")
-				}
-			}
-			mulider.Lock()
-			lider = ID
-			mulider.Unlock()
-			log.Printf("Activo como lider")
-			// go timeoutLider()  -> estaba pensando en cambiar al lider cada 10 segundos pero mejor un timeout donde si no responde una consulta de otra BD en x tiempo se busca otro lider
-		} else {
-			if ids[0] == ids[1] {
-				log.Printf("me había caido, el lider actual es %v", ids[0])
-				mulider.Lock()
-				lider = int(ids[0])
-				mulider.Unlock()
-				log.Printf("solicitando la data ...")
-				/////////////////////////////////////////////////////////// PEDIR LA DATA QUE NO RECIBIÓ POR ESTAR MUERTO
-			} else {
-				log.Printf("error, lider desconocido")
-			}
+		if _, err := f.Write(append(b, '\n')); err != nil {
+			f.Close()
+			return err
 		}
 	}
+	if err := f.Sync(); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp, name)
 }
-*/
 
 func verLider() {
 	mulider.Lock()
@@ -251,11 +223,11 @@ func verLider() {
 	mulider.Unlock()
 
 	if liderCopy != -1 {
-		log.Printf("El líder actual es %v", liderCopy)
+		log.Printf("El lider actual es %v", liderCopy)
 		return
 	}
 
-	log.Printf("Postularé a líder")
+	log.Printf("Postularé a lider")
 
 	aceptados := 1
 	respuestas := make([]int64, 0)
@@ -278,7 +250,7 @@ func verLider() {
 
 	// si tengo mayoría, gano
 	if aceptados > 1 {
-		log.Println("Fui aceptado como líder, notificando...")
+		log.Printf("Fui aceptado como líder, notificando...")
 
 		for i, cliente := range clientes {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -296,12 +268,81 @@ func verLider() {
 		lider = ID
 		mulider.Unlock()
 
-		log.Println("Ahora soy el líder")
+		log.Printf("Ahora soy el líder")
 		return
 	} else {
 		// significa que esta reviviendo, tiene q actualizar el lider y pedirle el historico
+		log.Printf("Estaba muerto y revivi y ya existe un lider, estableciendo como lider al actual: %v", respuestas[0])
+		mulider.Lock()
+		lider = int(respuestas[0])
+		liderCopy := lider
+		mulider.Unlock()
+		log.Printf("Pidiendo el historico al lider")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		clienteLider, ok := clientes[liderCopy]
+		if !ok {
+			log.Printf("No puedo contactar al lider para restaurar la bd")
+			return
+		}
+		historicos, err := clienteLider.GetHistorico(ctx, &pb.Vacio{})
+		if err != nil {
+			log.Printf("No puedo llamar a la funcion del lider para restaurar la bd")
+			return
+		}
+		muinsert.Lock()
+		if aplicarHistorico(historicos.Records) == nil {
+			log.Printf("No logre guardar el historico correctamente")
+			return
+		}
+		muinsert.Unlock()
+		log.Printf("historico guardado correctamente")
+		return
+	}
+}
+
+func leerHistorico() ([]*pb.Record, error) {
+	name := "db" + strconv.Itoa(ID)
+
+	f, err := os.Open(name)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []*pb.Record{}, nil
+		}
+		return nil, err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	var records []*pb.Record
+
+	for scanner.Scan() {
+		line := scanner.Bytes()
+		var r pb.Record
+		if err := json.Unmarshal(line, &r); err != nil {
+			log.Printf("Error leyendo línea del histórico: %v", err)
+			continue
+		}
+		// copiar a un nuevo puntero
+		rec := r
+		records = append(records, &rec)
 	}
 
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+func (s *server) GetHistorico(ctx context.Context, in *pb.Vacio) (*pb.Historico, error) {
+	recs, err := leerHistorico()
+	if err != nil {
+		return nil, err
+	}
+	// Si quieres, puedes devolver nil en vez de slice vacío cuando no hay nada
+	return &pb.Historico{Records: recs}, nil
 }
 
 func (s *server) PostularALider(ctx context.Context, in *pb.Postulante) (*pb.NewLider, error) {
@@ -333,10 +374,8 @@ func revisarLiderVivo() {
 	}
 	if liderActual == ID {
 		log.Printf("comenzando el conteo para mi muerte XoX")
-		time.Sleep(10 * time.Second) // tiempo activo antes de morir
+		time.Sleep(20 * time.Second) // tiempo activo antes de morir
 		killNode()
-		time.Sleep(5 * time.Second) // tiempo de muerte
-		reviveNode()
 		return
 	}
 
@@ -393,29 +432,6 @@ func killNode() {
 	}
 }
 
-// reviveNode simula que el nodo se reinicia después de un tiempo
-func reviveNode() {
-	go func() {
-		log.Printf("******************--- reviviendo ---******************")
-
-		var err error
-		lis, err = net.Listen("tcp", port)
-		if err != nil {
-			log.Fatalf("Nodo %d: error al re-escuchar: %v", ID, err)
-		}
-
-		grpcServer = grpc.NewServer()
-		pb.RegisterNodoBDConsensoServer(grpcServer, &server{})
-
-		conect()
-
-		log.Printf("Nodo %d: revivido y escuchando en %s", ID, port)
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Nodo %d: servidor gRPC muerto después de revivir: %v", ID, err)
-		}
-	}()
-}
-
 func conect() {
 	for i, conn := range conexiones {
 		conn.Close()
@@ -440,57 +456,45 @@ func conect() {
 	}
 }
 
-func main() {
-
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("conexión fallida: %v", err)
-	}
-
-	grpcServer = grpc.NewServer()
-	pb.RegisterNodoBDConsensoServer(grpcServer, &server{})
-	log.Println("Nodo con consenso activo en el puerto ", port)
-
-	go func() { //////////////////////////////////////////////////////// Criterio de termino
-		time.Sleep(60 * time.Second)
-		log.Println("Tiempo cumplido. Deteniendo...")
-		grpcServer.GracefulStop()
-	}()
-
-	time.Sleep(5 * time.Second)
-	for i, conn := range conexiones {
-		conn.Close()
-		delete(conexiones, i)
-		delete(clientes, i)
-	}
-
-	for i, dir := range AddBD {
-		if i == ID {
+func runServerLoop() {
+	for i := 0; i < 3; i++ {
+		// Crear listener
+		var err error
+		lis, err = net.Listen("tcp", port)
+		if err != nil {
+			log.Printf("Error al escuchar en %s: %v", port, err)
+			time.Sleep(2 * time.Second)
 			continue
 		}
 
-		conn, err := grpc.Dial(dir, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			log.Fatalf("No se pudo conectar a %v: %v", dir, err)
-		}
+		grpcServer = grpc.NewServer()
+		pb.RegisterNodoBDConsensoServer(grpcServer, &server{})
 
-		conexiones[i] = conn
-		clientes[i] = pb.NewNodoBDConsensoClient(conn)
+		log.Printf("Nodo %d: servidor gRPC iniciado en %s", ID, port)
 
-		log.Printf("Conectado al nodo %d en %s", i, dir)
+		// Intentar servir
+		err = grpcServer.Serve(lis)
+
+		// PAUSAR ANTES DE REINTENTAR
+		time.Sleep(5 * time.Second)
+		mulider.Lock()
+		lider = -1
+		mulider.Unlock()
+		log.Printf("******************--- reviviendo ---******************")
 	}
+}
 
+func main() {
+
+	log.Printf("Nodo %d iniciando…", ID)
+
+	// Conectarse inicialmente a los otros nodos
+	conect()
+
+	// Arrancar ciclo que revisa líder y simula muerte
 	go ciclo()
-	/*
-		if ID == 2 {
-			time.Sleep(10 * time.Second) // tiempo activo antes de morir
-			killNode()
-			time.Sleep(10 * time.Second) // tiempo de muerte
-			reviveNode()
-		}
-	*/
-	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("conexión fallida:\n %v", err)
-	}
+
+	// Loop que manejará iniciar/caer/revivir
+	runServerLoop()
 
 }
