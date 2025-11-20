@@ -16,12 +16,12 @@ service  NodoBDConsenso{
     // rpc para ser llamado por el broker:
     rpc INSERT(record) returns (InsertResponse) {}
     // rpc entre nodos (PRIV):
-    rpc PostularALider(postulante) returns (NewLider) {}
-    rpc InformarNewLider (postulante) returns (NewLider) {}
-    rpc Ping(Vacio) returns (Vacio) {}
-    rpc INSERTLIDER(recordID) returns (Vacio){}
-    rpc resultadoConsenso(record) returns (Vacio){}
-    rpc GetHistorico(Vacio) returns (Historico){}
+    rpc PostularALider(postulante) returns (NewLider) {} // nodo x postulara a ser lider
+    rpc InformarNewLider (postulante) returns (NewLider) {} // nodo x fue aceptado como lider por la mayoria
+    rpc Ping(Vacio) returns (Vacio) {} // nodo x hace ping para saber si el lider sigue vivo
+    rpc INSERTLIDER(recordID) returns (Vacio){} // nodo x hace que el lider recopile su voto
+    rpc resultadoConsenso(record) returns (Vacio){} // lider informa el resultado del consenso a los nodos
+    rpc GetHistorico(Vacio) returns (Historico){} // nodo x que revive solicita la data al lider
 }
 
 message Bool{
