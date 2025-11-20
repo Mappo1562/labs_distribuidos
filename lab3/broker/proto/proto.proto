@@ -1,16 +1,24 @@
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
 syntax = "proto3";
 
 package AeroDist;
 
 option go_package = "/proto";
 
-service BrokerMR{//Servicio Broker con clientes MR
+service Broker{
+    // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
-}
 
-service BrokerCoordinador{
+    // Coordinador
     rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+
+    
+}
+
+service Datanode{
+    // Broadcast Datanodes
+    rpc FligthUpdate(FligthStates) returns (Vacio);
 }
 
 message MRReadRequest{
@@ -59,3 +67,5 @@ message FligthStates{
     string update_type = 2;
     string update_value = 3;
 }
+
+message Vacio{}
