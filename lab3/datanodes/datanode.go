@@ -98,7 +98,7 @@ func init() {
 //
 /////////////////////////////////
 
-func (s *server) FligthUpdate(ctx context.Context, in *pb.FligthStates) (*pb.Vacio, error) {
+func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vacio, error) {
 	mureloj.Lock()
 	reloj[ID]++
 	mureloj.Unlock()
