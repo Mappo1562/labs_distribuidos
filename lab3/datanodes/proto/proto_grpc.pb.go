@@ -21,8 +21,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Datanode_FligthUpdate_FullMethodName = "/AeroDist.Datanode/FligthUpdate"
-	Datanode_MRRead_FullMethodName       = "/AeroDist.Datanode/MRRead"
+	Datanode_FligthUpdate_FullMethodName    = "/AeroDist.Datanode/FligthUpdate"
+	Datanode_MRRead_FullMethodName          = "/AeroDist.Datanode/MRRead"
+	Datanode_CompararRelojes_FullMethodName = "/AeroDist.Datanode/CompararRelojes"
 )
 
 // DatanodeClient is the client API for Datanode service.
@@ -33,6 +34,8 @@ type DatanodeClient interface {
 	FligthUpdate(ctx context.Context, in *FligthStates, opts ...grpc.CallOption) (*Vacio, error)
 	// Clientes MR
 	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
+	// solo para datanodes:
+	CompararRelojes(ctx context.Context, in *Data, opts ...grpc.CallOption) (*Data, error)
 }
 
 type datanodeClient struct {
@@ -63,6 +66,16 @@ func (c *datanodeClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...
 	return out, nil
 }
 
+func (c *datanodeClient) CompararRelojes(ctx context.Context, in *Data, opts ...grpc.CallOption) (*Data, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Data)
+	err := c.cc.Invoke(ctx, Datanode_CompararRelojes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatanodeServer is the server API for Datanode service.
 // All implementations must embed UnimplementedDatanodeServer
 // for forward compatibility.
@@ -71,6 +84,8 @@ type DatanodeServer interface {
 	FligthUpdate(context.Context, *FligthStates) (*Vacio, error)
 	// Clientes MR
 	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
+	// solo para datanodes:
+	CompararRelojes(context.Context, *Data) (*Data, error)
 	mustEmbedUnimplementedDatanodeServer()
 }
 
@@ -86,6 +101,9 @@ func (UnimplementedDatanodeServer) FligthUpdate(context.Context, *FligthStates) 
 }
 func (UnimplementedDatanodeServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
+}
+func (UnimplementedDatanodeServer) CompararRelojes(context.Context, *Data) (*Data, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CompararRelojes not implemented")
 }
 func (UnimplementedDatanodeServer) mustEmbedUnimplementedDatanodeServer() {}
 func (UnimplementedDatanodeServer) testEmbeddedByValue()                  {}
@@ -144,6 +162,24 @@ func _Datanode_MRRead_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Datanode_CompararRelojes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Data)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).CompararRelojes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_CompararRelojes_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).CompararRelojes(ctx, req.(*Data))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Datanode_ServiceDesc is the grpc.ServiceDesc for Datanode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -158,6 +194,10 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MRRead",
 			Handler:    _Datanode_MRRead_Handler,
+		},
+		{
+			MethodName: "CompararRelojes",
+			Handler:    _Datanode_CompararRelojes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

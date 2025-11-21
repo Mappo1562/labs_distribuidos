@@ -263,6 +263,186 @@ func (*Vacio) Descriptor() ([]byte, []int) {
 	return file_proto_proto_proto_rawDescGZIP(), []int{3}
 }
 
+type Info struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ID            string                 `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Estado        string                 `protobuf:"bytes,2,opt,name=estado,proto3" json:"estado,omitempty"`
+	Puerta        string                 `protobuf:"bytes,3,opt,name=puerta,proto3" json:"puerta,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Info) Reset() {
+	*x = Info{}
+	mi := &file_proto_proto_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Info) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Info) ProtoMessage() {}
+
+func (x *Info) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Info.ProtoReflect.Descriptor instead.
+func (*Info) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *Info) GetID() string {
+	if x != nil {
+		return x.ID
+	}
+	return ""
+}
+
+func (x *Info) GetEstado() string {
+	if x != nil {
+		return x.Estado
+	}
+	return ""
+}
+
+func (x *Info) GetPuerta() string {
+	if x != nil {
+		return x.Puerta
+	}
+	return ""
+}
+
+type Data struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Flag          int64                  `protobuf:"varint,1,opt,name=flag,proto3" json:"flag,omitempty"` // 0 si no hay cambio, 1 si el solicitante esta desactualizado, 2 si el receptor esta desactualizado, 3 concurrencia
+	Datos         []*Info                `protobuf:"bytes,2,rep,name=datos,proto3" json:"datos,omitempty"`
+	R             *Reloj                 `protobuf:"bytes,4,opt,name=R,proto3" json:"R,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Data) Reset() {
+	*x = Data{}
+	mi := &file_proto_proto_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Data) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Data) ProtoMessage() {}
+
+func (x *Data) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Data.ProtoReflect.Descriptor instead.
+func (*Data) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *Data) GetFlag() int64 {
+	if x != nil {
+		return x.Flag
+	}
+	return 0
+}
+
+func (x *Data) GetDatos() []*Info {
+	if x != nil {
+		return x.Datos
+	}
+	return nil
+}
+
+func (x *Data) GetR() *Reloj {
+	if x != nil {
+		return x.R
+	}
+	return nil
+}
+
+type Reloj struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	R0            int64                  `protobuf:"varint,1,opt,name=R0,proto3" json:"R0,omitempty"`
+	R1            int64                  `protobuf:"varint,2,opt,name=R1,proto3" json:"R1,omitempty"`
+	R2            int64                  `protobuf:"varint,3,opt,name=R2,proto3" json:"R2,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Reloj) Reset() {
+	*x = Reloj{}
+	mi := &file_proto_proto_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Reloj) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Reloj) ProtoMessage() {}
+
+func (x *Reloj) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Reloj.ProtoReflect.Descriptor instead.
+func (*Reloj) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *Reloj) GetR0() int64 {
+	if x != nil {
+		return x.R0
+	}
+	return 0
+}
+
+func (x *Reloj) GetR1() int64 {
+	if x != nil {
+		return x.R1
+	}
+	return 0
+}
+
+func (x *Reloj) GetR2() int64 {
+	if x != nil {
+		return x.R2
+	}
+	return 0
+}
+
 var File_proto_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_proto_rawDesc = "" +
@@ -284,10 +464,23 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\aversion\x18\x04 \x01(\x03R\aversion\x12\x18\n" +
 	"\asuccess\x18\x05 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x06 \x01(\tR\x03msg\"\a\n" +
-	"\x05Vacio2\x80\x01\n" +
+	"\x05Vacio\"F\n" +
+	"\x04Info\x12\x0e\n" +
+	"\x02ID\x18\x01 \x01(\tR\x02ID\x12\x16\n" +
+	"\x06estado\x18\x02 \x01(\tR\x06estado\x12\x16\n" +
+	"\x06puerta\x18\x03 \x01(\tR\x06puerta\"_\n" +
+	"\x04Data\x12\x12\n" +
+	"\x04flag\x18\x01 \x01(\x03R\x04flag\x12$\n" +
+	"\x05datos\x18\x02 \x03(\v2\x0e.AeroDist.InfoR\x05datos\x12\x1d\n" +
+	"\x01R\x18\x04 \x01(\v2\x0f.AeroDist.RelojR\x01R\"7\n" +
+	"\x05Reloj\x12\x0e\n" +
+	"\x02R0\x18\x01 \x01(\x03R\x02R0\x12\x0e\n" +
+	"\x02R1\x18\x02 \x01(\x03R\x02R1\x12\x0e\n" +
+	"\x02R2\x18\x03 \x01(\x03R\x02R22\xb3\x01\n" +
 	"\bDatanode\x127\n" +
 	"\fFligthUpdate\x12\x16.AeroDist.FligthStates\x1a\x0f.AeroDist.Vacio\x12;\n" +
-	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponseB\bZ\x06/protob\x06proto3"
+	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponse\x121\n" +
+	"\x0fCompararRelojes\x12\x0e.AeroDist.Data\x1a\x0e.AeroDist.DataB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -301,23 +494,30 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_proto_proto_goTypes = []any{
 	(*FligthStates)(nil),   // 0: AeroDist.FligthStates
 	(*MRReadRequest)(nil),  // 1: AeroDist.MRReadRequest
 	(*MRReadResponse)(nil), // 2: AeroDist.MRReadResponse
 	(*Vacio)(nil),          // 3: AeroDist.Vacio
+	(*Info)(nil),           // 4: AeroDist.Info
+	(*Data)(nil),           // 5: AeroDist.Data
+	(*Reloj)(nil),          // 6: AeroDist.Reloj
 }
 var file_proto_proto_proto_depIdxs = []int32{
-	0, // 0: AeroDist.Datanode.FligthUpdate:input_type -> AeroDist.FligthStates
-	1, // 1: AeroDist.Datanode.MRRead:input_type -> AeroDist.MRReadRequest
-	3, // 2: AeroDist.Datanode.FligthUpdate:output_type -> AeroDist.Vacio
-	2, // 3: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	4, // 0: AeroDist.Data.datos:type_name -> AeroDist.Info
+	6, // 1: AeroDist.Data.R:type_name -> AeroDist.Reloj
+	0, // 2: AeroDist.Datanode.FligthUpdate:input_type -> AeroDist.FligthStates
+	1, // 3: AeroDist.Datanode.MRRead:input_type -> AeroDist.MRReadRequest
+	5, // 4: AeroDist.Datanode.CompararRelojes:input_type -> AeroDist.Data
+	3, // 5: AeroDist.Datanode.FligthUpdate:output_type -> AeroDist.Vacio
+	2, // 6: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
+	5, // 7: AeroDist.Datanode.CompararRelojes:output_type -> AeroDist.Data
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_proto_init() }
@@ -331,7 +531,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
