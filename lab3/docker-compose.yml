@@ -57,8 +57,8 @@ services:
     container_name: datanode0
     environment:
       - ID=0
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
     volumes:
@@ -71,8 +71,8 @@ services:
     container_name: datanode1
     environment:
       - ID=1
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
     volumes:
@@ -85,8 +85,8 @@ services:
     container_name: datanode2
     environment:
       - ID=2
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
     volumes:
@@ -99,8 +99,8 @@ services:
     container_name: coordinador
     ports:
       - "50060:50060"
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
 
