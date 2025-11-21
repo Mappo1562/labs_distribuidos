@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . .
 
 RUN go mod tidy
-Run go build -o clienteRYW .
+RUN go build -o cliente-ryw .
 
-CMD [ "./clienteRYW" ]
+CMD [ "./cliente-ryw" ]

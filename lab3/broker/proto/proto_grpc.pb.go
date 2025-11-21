@@ -21,9 +21,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Broker_MRRead_FullMethodName     = "/AeroDist.Broker/MRRead"
-	Broker_ApplyWrite_FullMethodName = "/AeroDist.Broker/ApplyWrite"
-	Broker_BrokerRead_FullMethodName = "/AeroDist.Broker/BrokerRead"
+	Broker_MRRead_FullMethodName         = "/AeroDist.Broker/MRRead"
+	Broker_GetInitialInfo_FullMethodName = "/AeroDist.Broker/GetInitialInfo"
+	Broker_ApplyWrite_FullMethodName     = "/AeroDist.Broker/ApplyWrite"
+	Broker_BrokerRead_FullMethodName     = "/AeroDist.Broker/BrokerRead"
 )
 
 // BrokerClient is the client API for Broker service.
@@ -33,6 +34,7 @@ type BrokerClient interface {
 	// Clientes MR
 	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
 	// Coordinador
+	GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error)
 	ApplyWrite(ctx context.Context, in *ApplyWriteRequest, opts ...grpc.CallOption) (*ApplyWriteResponse, error)
 	BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error)
 }
@@ -49,6 +51,16 @@ func (c *brokerClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...gr
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(MRReadResponse)
 	err := c.cc.Invoke(ctx, Broker_MRRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *brokerClient) GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetInitialInfoResponse)
+	err := c.cc.Invoke(ctx, Broker_GetInitialInfo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,6 +94,7 @@ type BrokerServer interface {
 	// Clientes MR
 	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
 	// Coordinador
+	GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error)
 	ApplyWrite(context.Context, *ApplyWriteRequest) (*ApplyWriteResponse, error)
 	BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error)
 	mustEmbedUnimplementedBrokerServer()
@@ -96,6 +109,9 @@ type UnimplementedBrokerServer struct{}
 
 func (UnimplementedBrokerServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
+}
+func (UnimplementedBrokerServer) GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInitialInfo not implemented")
 }
 func (UnimplementedBrokerServer) ApplyWrite(context.Context, *ApplyWriteRequest) (*ApplyWriteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyWrite not implemented")
@@ -138,6 +154,24 @@ func _Broker_MRRead_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BrokerServer).MRRead(ctx, req.(*MRReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Broker_GetInitialInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInitialInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrokerServer).GetInitialInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Broker_GetInitialInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrokerServer).GetInitialInfo(ctx, req.(*GetInitialInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -190,6 +224,10 @@ var Broker_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Broker_MRRead_Handler,
 		},
 		{
+			MethodName: "GetInitialInfo",
+			Handler:    _Broker_GetInitialInfo_Handler,
+		},
+		{
 			MethodName: "ApplyWrite",
 			Handler:    _Broker_ApplyWrite_Handler,
 		},
@@ -204,6 +242,7 @@ var Broker_ServiceDesc = grpc.ServiceDesc{
 
 const (
 	Datanode_FligthUpdate_FullMethodName = "/AeroDist.Datanode/FligthUpdate"
+	Datanode_MRRead_FullMethodName       = "/AeroDist.Datanode/MRRead"
 )
 
 // DatanodeClient is the client API for Datanode service.
@@ -212,6 +251,8 @@ const (
 type DatanodeClient interface {
 	// Broadcast Datanodes
 	FligthUpdate(ctx context.Context, in *FligthStates, opts ...grpc.CallOption) (*Vacio, error)
+	// Clientes MR
+	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
 }
 
 type datanodeClient struct {
@@ -232,12 +273,24 @@ func (c *datanodeClient) FligthUpdate(ctx context.Context, in *FligthStates, opt
 	return out, nil
 }
 
+func (c *datanodeClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MRReadResponse)
+	err := c.cc.Invoke(ctx, Datanode_MRRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatanodeServer is the server API for Datanode service.
 // All implementations must embed UnimplementedDatanodeServer
 // for forward compatibility.
 type DatanodeServer interface {
 	// Broadcast Datanodes
 	FligthUpdate(context.Context, *FligthStates) (*Vacio, error)
+	// Clientes MR
+	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
 	mustEmbedUnimplementedDatanodeServer()
 }
 
@@ -250,6 +303,9 @@ type UnimplementedDatanodeServer struct{}
 
 func (UnimplementedDatanodeServer) FligthUpdate(context.Context, *FligthStates) (*Vacio, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FligthUpdate not implemented")
+}
+func (UnimplementedDatanodeServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
 }
 func (UnimplementedDatanodeServer) mustEmbedUnimplementedDatanodeServer() {}
 func (UnimplementedDatanodeServer) testEmbeddedByValue()                  {}
@@ -290,6 +346,24 @@ func _Datanode_FligthUpdate_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Datanode_MRRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MRReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).MRRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_MRRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).MRRead(ctx, req.(*MRReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Datanode_ServiceDesc is the grpc.ServiceDesc for Datanode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -300,6 +374,10 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FligthUpdate",
 			Handler:    _Datanode_FligthUpdate_Handler,
+		},
+		{
+			MethodName: "MRRead",
+			Handler:    _Datanode_MRRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

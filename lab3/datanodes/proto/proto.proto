@@ -14,6 +14,9 @@ service Datanode{
 
     // solo para datanodes:
     rpc CompararRelojes(Data) returns (Data);
+    
+    // Coordinador
+    rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
 }
 
 message FligthStates{
@@ -37,8 +40,6 @@ message MRReadResponse{
     string msg = 6;
 }
 
-message Vacio{}
-
 message Info{
     string ID = 1;
     string estado = 2;
@@ -56,3 +57,17 @@ message Reloj{
     int64 R1 = 2;
     int64 R2 = 3;
 }
+message CoordinadorWriteRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
+
+message CoordinadorWriteResponse{
+    bool success = 1;
+    string msg = 2;
+    int64 version = 4;
+}
+
+message Vacio{}

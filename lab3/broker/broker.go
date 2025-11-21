@@ -10,9 +10,8 @@
 package main
 
 import (
-	"bufio"
 	"context"
-	"fmt"
+	"encoding/csv"
 	"log"
 	"net"
 	"os"
@@ -58,11 +57,16 @@ type Broker struct {
 }
 
 func NewBroker() *Broker {
-	b := &Broker{}
+	b := &Broker{RoundRobinIndex: 0}
 	b.connectToDatanodes()
 	return b
 }
 
+var broker = NewBroker()
+
+// -------------------------
+// *  CLIENTE MR DATANODE  *
+// -------------------------
 func RoundRobinIndex(b *Broker) pb.DatanodeClient {
 	client := b.datanodeClients[b.RoundRobinIndex]
 	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % len(b.datanodeClients)
@@ -70,20 +74,33 @@ func RoundRobinIndex(b *Broker) pb.DatanodeClient {
 }
 
 func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadResponse, error) {
-
-	return &pb.MRReadResponse{}, nil
+	client := RoundRobinIndex(broker)
+	res, err := client.MRRead(ctx, req)
+	if err != nil {
+		log.Printf("Error comunicandose con datanode: %v", err)
+		return nil, err
+	}
+	return res, nil
 }
 
-// -------------------------
-// *  BROADCAST DATANODES  *
-// -------------------------
+//	-------------------------
+// 	*      Coordinador      *
+// 	-------------------------
 
-// Parsea una línea del archivo CSV de actualizaciones de vuelo
-func parseFlightUpdate(line string) (string, string, string, string) {
-	var sim_time, flight_id, update_type, update_value string
-	fmt.Sscanf(line, "%[^,],%[^,],%[^,],%s", &sim_time, &flight_id, &update_type, &update_value)
-	return sim_time, flight_id, update_type, update_value
+func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb.ApplyWriteResponse, error) {
+	log.Printf("Escritura recibida de: %s asiento: %s\n", req.ClienteId, req.Seat)
+	client := RoundRobinIndex(broker)
+	res, err := client.ApplyWrite(ctx, req)
+	if err != nil {
+		log.Printf("Error comunicandose con datanode: %v", err)
+		return nil, err
+	}
+	return res, nil
 }
+
+//	-------------------------
+//	*  BROADCAST DATANODES  *
+//	-------------------------
 
 // Carga las actualizaciones de vuelo desde un archivo CSV
 func loadFlightUpdates(filename string) ([]FligthStates, error) {
@@ -95,22 +112,34 @@ func loadFlightUpdates(filename string) ([]FligthStates, error) {
 	defer file.Close()
 
 	var updates []FligthStates
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		sim_time, flight_id, update_type, update_value := parseFlightUpdate(line)
-		sim_time_int, _ := strconv.Atoi(sim_time)
-		update := FligthStates{
-			SimTime:     int64(sim_time_int),
-			FlightId:    flight_id,
-			UpdateType:  update_type,
-			UpdateValue: update_value,
-		}
-		updates = append(updates, update)
-	}
-	if err := scanner.Err(); err != nil {
+
+	r := csv.NewReader(file)
+	_, err = r.Read()
+	if err != nil {
 		return nil, err
 	}
+
+	for {
+		record, err := r.Read()
+		if err != nil {
+			break
+		}
+
+		simTime, err := strconv.ParseInt(record[0], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		update := FligthStates{
+			SimTime:     simTime,
+			FlightId:    record[1],
+			UpdateType:  record[2],
+			UpdateValue: record[3],
+		}
+		log.Printf("Flight Update Simulation Loaded - Time: %d, FlightID: %s, Type: %s, Value: %s", update.SimTime, update.FlightId, update.UpdateType, update.UpdateValue)
+		updates = append(updates, update)
+	}
+
 	log.Printf("Cargadas %d actualizaciones de vuelo", len(updates))
 	return updates, nil
 }
@@ -160,11 +189,12 @@ func main() {
 
 	go func() {
 		log.Println("Iniciando simulación de actualizaciones de vuelo...")
-		broker := NewBroker()
 		updates, err := loadFlightUpdates(flightsFile)
 		if err != nil {
 			log.Fatalf("Error loading flight updates: %v", err)
 		}
+
+		time.Sleep(5 * time.Second) // Espera antes de iniciar la simulación
 
 		startTime := time.Now()
 		for _, update := range updates {
