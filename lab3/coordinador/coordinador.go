@@ -27,7 +27,7 @@ type SessionInfo struct {
 }
 
 const (
-	brokerAddr = "localhost:50050"
+	brokerAddr = "broker:50050"
 	port       = ":50060"
 )
 

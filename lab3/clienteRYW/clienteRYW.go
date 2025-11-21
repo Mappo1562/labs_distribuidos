@@ -57,6 +57,7 @@ func elegirAzar(completo string) string {
 	escogido := strings.TrimSpace(arreglo[rand.Intn(len(arreglo))])
 	return escogido
 }
+
 func main() {
 
 	rand.Seed(02122003)
@@ -72,7 +73,7 @@ func main() {
 
 	ayuda, _ := leerVuelos("flight_updates.csv")
 	flightID := elegirAzar(ayuda)
-	clienteID := "cliente-1"
+	clienteID := os.Getenv("CLIENT_ID")
 
 	respGetSeats, err := coordinadorClient.GetSeats(context.Background(), &pb.GetSeatsRequest{
 		FlightId: flightID,
