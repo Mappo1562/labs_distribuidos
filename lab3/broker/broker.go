@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/csv"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -38,8 +39,23 @@ const (
 	PortDatanode3   = "db3:50063"
 )
 
+// Cantidad de pistas = 8
+// Asientos por avion = 15 * A o B = 30
+
+type Seat struct {
+	SeatId   string
+	Occupied bool
+}
+
+type Flight struct {
+	FlightId string
+	Seats    []Seat
+}
+
+var Flights []Flight
+
 // Estructura para representar una actualización de vuelo
-type FligthStates struct {
+type FlightStates struct {
 	SimTime     int64
 	FlightId    string
 	UpdateType  string
@@ -102,8 +118,30 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 //	*  BROADCAST DATANODES  *
 //	-------------------------
 
+func DisponibilidadSeats() []Seat {
+	var seats []Seat
+	for i := 1; i <= 15; i++ {
+		seatId := "A" + strconv.Itoa(i)
+		occupied := rand.Intn(2) == 0
+		seats = append(seats, Seat{SeatId: seatId, Occupied: occupied})
+		seatId = "B" + strconv.Itoa(i)
+		occupied = rand.Intn(2) == 0
+		seats = append(seats, Seat{SeatId: seatId, Occupied: occupied})
+	}
+	return seats
+}
+
+func ExisteFlight(flightId string) bool {
+	for _, flight := range Flights {
+		if flight.FlightId == flightId {
+			return true
+		}
+	}
+	return false
+}
+
 // Carga las actualizaciones de vuelo desde un archivo CSV
-func loadFlightUpdates(filename string) ([]FligthStates, error) {
+func loadFlightUpdates(filename string) ([]FlightStates, error) {
 	log.Printf("Cargando actualizaciones de vuelo desde %s", filename)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -111,7 +149,7 @@ func loadFlightUpdates(filename string) ([]FligthStates, error) {
 	}
 	defer file.Close()
 
-	var updates []FligthStates
+	var updates []FlightStates
 
 	r := csv.NewReader(file)
 	_, err = r.Read()
@@ -130,7 +168,7 @@ func loadFlightUpdates(filename string) ([]FligthStates, error) {
 			return nil, err
 		}
 
-		update := FligthStates{
+		update := FlightStates{
 			SimTime:     simTime,
 			FlightId:    record[1],
 			UpdateType:  record[2],
@@ -138,6 +176,14 @@ func loadFlightUpdates(filename string) ([]FligthStates, error) {
 		}
 		log.Printf("Flight Update Simulation Loaded - Time: %d, FlightID: %s, Type: %s, Value: %s", update.SimTime, update.FlightId, update.UpdateType, update.UpdateValue)
 		updates = append(updates, update)
+
+		if !ExisteFlight(update.FlightId) {
+			newFlight := Flight{
+				FlightId: update.FlightId,
+				Seats:    DisponibilidadSeats(),
+			}
+			Flights = append(Flights, newFlight)
+		}
 	}
 
 	log.Printf("Cargadas %d actualizaciones de vuelo", len(updates))
@@ -165,17 +211,37 @@ func (b *Broker) BroadcastDatanodes(flight_id string, update_type string, update
 	for _, client := range b.datanodeClients {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		update := &pb.FligthStates{
+		update := &pb.FlightStates{
 			FlightId:    flight_id,
 			UpdateType:  update_type,
 			UpdateValue: update_value,
 		}
-		_, err := client.FligthUpdate(ctx, update)
+		_, err := client.FlightUpdate(ctx, update)
 		if err != nil {
 			log.Printf("Error comunicandose con datanode: %v", err)
 		}
 	}
 
+}
+
+func convertFlightsToProto(flights []Flight) []*pb.Flight {
+	var protoFlights []*pb.Flight
+	for _, flight := range flights {
+		var protoSeats []*pb.Seat
+		for _, seat := range flight.Seats {
+			protoSeat := &pb.Seat{
+				SeatId:   seat.SeatId,
+				Occupied: seat.Occupied,
+			}
+			protoSeats = append(protoSeats, protoSeat)
+		}
+		protoFlight := &pb.Flight{
+			FlightId: flight.FlightId,
+			Seats:    protoSeats,
+		}
+		protoFlights = append(protoFlights, protoFlight)
+	}
+	return protoFlights
 }
 
 func main() {
@@ -190,6 +256,8 @@ func main() {
 	go func() {
 		log.Println("Iniciando simulación de actualizaciones de vuelo...")
 		updates, err := loadFlightUpdates(flightsFile)
+		datanode := broker.datanodeClients[0]
+		_, err = datanode.CreateFlights(context.Background(), &pb.Flights{Flights: convertFlightsToProto(Flights)})
 		if err != nil {
 			log.Fatalf("Error loading flight updates: %v", err)
 		}

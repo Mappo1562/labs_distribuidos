@@ -7,7 +7,7 @@ option go_package = "/proto";
 
 service Datanode{
     // Broker
-    rpc FligthUpdate(FligthStates) returns (Vacio);
+    rpc FlightUpdate(FlightStates) returns (Vacio);
 
     // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
@@ -19,7 +19,7 @@ service Datanode{
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
 }
 
-message FligthStates{
+message FlightStates{
     string flight_id = 1;
     string update_type = 2;
     string update_value = 3;

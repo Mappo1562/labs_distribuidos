@@ -23,6 +23,154 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Seat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SeatId        string                 `protobuf:"bytes,1,opt,name=seatId,proto3" json:"seatId,omitempty"`
+	Occupied      bool                   `protobuf:"varint,2,opt,name=occupied,proto3" json:"occupied,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Seat) Reset() {
+	*x = Seat{}
+	mi := &file_proto_proto_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Seat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Seat) ProtoMessage() {}
+
+func (x *Seat) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Seat.ProtoReflect.Descriptor instead.
+func (*Seat) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Seat) GetSeatId() string {
+	if x != nil {
+		return x.SeatId
+	}
+	return ""
+}
+
+func (x *Seat) GetOccupied() bool {
+	if x != nil {
+		return x.Occupied
+	}
+	return false
+}
+
+type Flight struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FlightId      string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
+	Seats         []*Seat                `protobuf:"bytes,2,rep,name=seats,proto3" json:"seats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Flight) Reset() {
+	*x = Flight{}
+	mi := &file_proto_proto_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Flight) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Flight) ProtoMessage() {}
+
+func (x *Flight) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Flight.ProtoReflect.Descriptor instead.
+func (*Flight) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Flight) GetFlightId() string {
+	if x != nil {
+		return x.FlightId
+	}
+	return ""
+}
+
+func (x *Flight) GetSeats() []*Seat {
+	if x != nil {
+		return x.Seats
+	}
+	return nil
+}
+
+type Flights struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Flights       []*Flight              `protobuf:"bytes,1,rep,name=flights,proto3" json:"flights,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Flights) Reset() {
+	*x = Flights{}
+	mi := &file_proto_proto_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Flights) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Flights) ProtoMessage() {}
+
+func (x *Flights) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Flights.ProtoReflect.Descriptor instead.
+func (*Flights) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Flights) GetFlights() []*Flight {
+	if x != nil {
+		return x.Flights
+	}
+	return nil
+}
+
 type MRReadRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	FlightId        string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
@@ -34,7 +182,7 @@ type MRReadRequest struct {
 
 func (x *MRReadRequest) Reset() {
 	*x = MRReadRequest{}
-	mi := &file_proto_proto_proto_msgTypes[0]
+	mi := &file_proto_proto_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +194,7 @@ func (x *MRReadRequest) String() string {
 func (*MRReadRequest) ProtoMessage() {}
 
 func (x *MRReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[0]
+	mi := &file_proto_proto_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +207,7 @@ func (x *MRReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MRReadRequest.ProtoReflect.Descriptor instead.
 func (*MRReadRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{0}
+	return file_proto_proto_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *MRReadRequest) GetFlightId() string {
@@ -97,7 +245,7 @@ type MRReadResponse struct {
 
 func (x *MRReadResponse) Reset() {
 	*x = MRReadResponse{}
-	mi := &file_proto_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -109,7 +257,7 @@ func (x *MRReadResponse) String() string {
 func (*MRReadResponse) ProtoMessage() {}
 
 func (x *MRReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -122,7 +270,7 @@ func (x *MRReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MRReadResponse.ProtoReflect.Descriptor instead.
 func (*MRReadResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{1}
+	return file_proto_proto_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *MRReadResponse) GetFlightId() string {
@@ -176,7 +324,7 @@ type GetInitialInfoRequest struct {
 
 func (x *GetInitialInfoRequest) Reset() {
 	*x = GetInitialInfoRequest{}
-	mi := &file_proto_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -188,7 +336,7 @@ func (x *GetInitialInfoRequest) String() string {
 func (*GetInitialInfoRequest) ProtoMessage() {}
 
 func (x *GetInitialInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[2]
+	mi := &file_proto_proto_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -201,7 +349,7 @@ func (x *GetInitialInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInitialInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetInitialInfoRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{2}
+	return file_proto_proto_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetInitialInfoRequest) GetFlightId() string {
@@ -222,7 +370,7 @@ type GetInitialInfoResponse struct {
 
 func (x *GetInitialInfoResponse) Reset() {
 	*x = GetInitialInfoResponse{}
-	mi := &file_proto_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -234,7 +382,7 @@ func (x *GetInitialInfoResponse) String() string {
 func (*GetInitialInfoResponse) ProtoMessage() {}
 
 func (x *GetInitialInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[3]
+	mi := &file_proto_proto_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,7 +395,7 @@ func (x *GetInitialInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInitialInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetInitialInfoResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{3}
+	return file_proto_proto_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetInitialInfoResponse) GetSeats() string {
@@ -283,7 +431,7 @@ type ApplyWriteRequest struct {
 
 func (x *ApplyWriteRequest) Reset() {
 	*x = ApplyWriteRequest{}
-	mi := &file_proto_proto_proto_msgTypes[4]
+	mi := &file_proto_proto_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -295,7 +443,7 @@ func (x *ApplyWriteRequest) String() string {
 func (*ApplyWriteRequest) ProtoMessage() {}
 
 func (x *ApplyWriteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[4]
+	mi := &file_proto_proto_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -308,7 +456,7 @@ func (x *ApplyWriteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplyWriteRequest.ProtoReflect.Descriptor instead.
 func (*ApplyWriteRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{4}
+	return file_proto_proto_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ApplyWriteRequest) GetClienteId() string {
@@ -351,7 +499,7 @@ type ApplyWriteResponse struct {
 
 func (x *ApplyWriteResponse) Reset() {
 	*x = ApplyWriteResponse{}
-	mi := &file_proto_proto_proto_msgTypes[5]
+	mi := &file_proto_proto_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -363,7 +511,7 @@ func (x *ApplyWriteResponse) String() string {
 func (*ApplyWriteResponse) ProtoMessage() {}
 
 func (x *ApplyWriteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[5]
+	mi := &file_proto_proto_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -376,7 +524,7 @@ func (x *ApplyWriteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplyWriteResponse.ProtoReflect.Descriptor instead.
 func (*ApplyWriteResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{5}
+	return file_proto_proto_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ApplyWriteResponse) GetSuccess() bool {
@@ -417,7 +565,7 @@ type BrokerReadRequest struct {
 
 func (x *BrokerReadRequest) Reset() {
 	*x = BrokerReadRequest{}
-	mi := &file_proto_proto_proto_msgTypes[6]
+	mi := &file_proto_proto_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -429,7 +577,7 @@ func (x *BrokerReadRequest) String() string {
 func (*BrokerReadRequest) ProtoMessage() {}
 
 func (x *BrokerReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[6]
+	mi := &file_proto_proto_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -442,7 +590,7 @@ func (x *BrokerReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BrokerReadRequest.ProtoReflect.Descriptor instead.
 func (*BrokerReadRequest) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{6}
+	return file_proto_proto_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *BrokerReadRequest) GetFlightId() string {
@@ -474,7 +622,7 @@ type BrokerReadResponse struct {
 
 func (x *BrokerReadResponse) Reset() {
 	*x = BrokerReadResponse{}
-	mi := &file_proto_proto_proto_msgTypes[7]
+	mi := &file_proto_proto_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -486,7 +634,7 @@ func (x *BrokerReadResponse) String() string {
 func (*BrokerReadResponse) ProtoMessage() {}
 
 func (x *BrokerReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[7]
+	mi := &file_proto_proto_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -499,7 +647,7 @@ func (x *BrokerReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BrokerReadResponse.ProtoReflect.Descriptor instead.
 func (*BrokerReadResponse) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{7}
+	return file_proto_proto_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *BrokerReadResponse) GetFlightId() string {
@@ -551,7 +699,7 @@ func (x *BrokerReadResponse) GetMsg() string {
 	return ""
 }
 
-type FligthStates struct {
+type FlightStates struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	FlightId      string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
 	UpdateType    string                 `protobuf:"bytes,2,opt,name=update_type,json=updateType,proto3" json:"update_type,omitempty"`
@@ -560,21 +708,21 @@ type FligthStates struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *FligthStates) Reset() {
-	*x = FligthStates{}
-	mi := &file_proto_proto_proto_msgTypes[8]
+func (x *FlightStates) Reset() {
+	*x = FlightStates{}
+	mi := &file_proto_proto_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FligthStates) String() string {
+func (x *FlightStates) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FligthStates) ProtoMessage() {}
+func (*FlightStates) ProtoMessage() {}
 
-func (x *FligthStates) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[8]
+func (x *FlightStates) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -585,30 +733,158 @@ func (x *FligthStates) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FligthStates.ProtoReflect.Descriptor instead.
-func (*FligthStates) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{8}
+// Deprecated: Use FlightStates.ProtoReflect.Descriptor instead.
+func (*FlightStates) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *FligthStates) GetFlightId() string {
+func (x *FlightStates) GetFlightId() string {
 	if x != nil {
 		return x.FlightId
 	}
 	return ""
 }
 
-func (x *FligthStates) GetUpdateType() string {
+func (x *FlightStates) GetUpdateType() string {
 	if x != nil {
 		return x.UpdateType
 	}
 	return ""
 }
 
-func (x *FligthStates) GetUpdateValue() string {
+func (x *FlightStates) GetUpdateValue() string {
 	if x != nil {
 		return x.UpdateValue
 	}
 	return ""
+}
+
+type CoordinadorWriteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ClienteId     string                 `protobuf:"bytes,1,opt,name=cliente_id,json=clienteId,proto3" json:"cliente_id,omitempty"`
+	FlightId      string                 `protobuf:"bytes,2,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
+	Seat          string                 `protobuf:"bytes,3,opt,name=seat,proto3" json:"seat,omitempty"`
+	RequestId     string                 `protobuf:"bytes,4,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CoordinadorWriteRequest) Reset() {
+	*x = CoordinadorWriteRequest{}
+	mi := &file_proto_proto_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CoordinadorWriteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CoordinadorWriteRequest) ProtoMessage() {}
+
+func (x *CoordinadorWriteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CoordinadorWriteRequest.ProtoReflect.Descriptor instead.
+func (*CoordinadorWriteRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CoordinadorWriteRequest) GetClienteId() string {
+	if x != nil {
+		return x.ClienteId
+	}
+	return ""
+}
+
+func (x *CoordinadorWriteRequest) GetFlightId() string {
+	if x != nil {
+		return x.FlightId
+	}
+	return ""
+}
+
+func (x *CoordinadorWriteRequest) GetSeat() string {
+	if x != nil {
+		return x.Seat
+	}
+	return ""
+}
+
+func (x *CoordinadorWriteRequest) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
+type CoordinadorWriteResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	Version       int64                  `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CoordinadorWriteResponse) Reset() {
+	*x = CoordinadorWriteResponse{}
+	mi := &file_proto_proto_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CoordinadorWriteResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CoordinadorWriteResponse) ProtoMessage() {}
+
+func (x *CoordinadorWriteResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CoordinadorWriteResponse.ProtoReflect.Descriptor instead.
+func (*CoordinadorWriteResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CoordinadorWriteResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *CoordinadorWriteResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
+func (x *CoordinadorWriteResponse) GetVersion() int64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
 }
 
 type Vacio struct {
@@ -619,7 +895,7 @@ type Vacio struct {
 
 func (x *Vacio) Reset() {
 	*x = Vacio{}
-	mi := &file_proto_proto_proto_msgTypes[9]
+	mi := &file_proto_proto_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -631,7 +907,7 @@ func (x *Vacio) String() string {
 func (*Vacio) ProtoMessage() {}
 
 func (x *Vacio) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[9]
+	mi := &file_proto_proto_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -644,14 +920,22 @@ func (x *Vacio) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vacio.ProtoReflect.Descriptor instead.
 func (*Vacio) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{9}
+	return file_proto_proto_proto_rawDescGZIP(), []int{14}
 }
 
 var File_proto_proto_proto protoreflect.FileDescriptor
 
 const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/proto.proto\x12\bAeroDist\"u\n" +
+	"\x11proto/proto.proto\x12\bAeroDist\":\n" +
+	"\x04Seat\x12\x16\n" +
+	"\x06seatId\x18\x01 \x01(\tR\x06seatId\x12\x1a\n" +
+	"\boccupied\x18\x02 \x01(\bR\boccupied\"K\n" +
+	"\x06Flight\x12\x1b\n" +
+	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12$\n" +
+	"\x05seats\x18\x02 \x03(\v2\x0e.AeroDist.SeatR\x05seats\"5\n" +
+	"\aFlights\x12*\n" +
+	"\aflights\x18\x01 \x03(\v2\x10.AeroDist.FlightR\aflights\"u\n" +
 	"\rMRReadRequest\x12\x1b\n" +
 	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x1b\n" +
 	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12*\n" +
@@ -694,11 +978,22 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\aversion\x18\x05 \x01(\x03R\aversion\x12\x18\n" +
 	"\asuccess\x18\x06 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\a \x01(\tR\x03msg\"o\n" +
-	"\fFligthStates\x12\x1b\n" +
+	"\fFlightStates\x12\x1b\n" +
 	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x1f\n" +
 	"\vupdate_type\x18\x02 \x01(\tR\n" +
 	"updateType\x12!\n" +
-	"\fupdate_value\x18\x03 \x01(\tR\vupdateValue\"\a\n" +
+	"\fupdate_value\x18\x03 \x01(\tR\vupdateValue\"\x88\x01\n" +
+	"\x17CoordinadorWriteRequest\x12\x1d\n" +
+	"\n" +
+	"cliente_id\x18\x01 \x01(\tR\tclienteId\x12\x1b\n" +
+	"\tflight_id\x18\x02 \x01(\tR\bflightId\x12\x12\n" +
+	"\x04seat\x18\x03 \x01(\tR\x04seat\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x04 \x01(\tR\trequestId\"`\n" +
+	"\x18CoordinadorWriteResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x18\n" +
+	"\aversion\x18\x04 \x01(\x03R\aversion\"\a\n" +
 	"\x05Vacio2\xac\x02\n" +
 	"\x06Broker\x12;\n" +
 	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponse\x12S\n" +
@@ -706,10 +1001,12 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"ApplyWrite\x12\x1b.AeroDist.ApplyWriteRequest\x1a\x1c.AeroDist.ApplyWriteResponse\x12G\n" +
 	"\n" +
-	"BrokerRead\x12\x1b.AeroDist.BrokerReadRequest\x1a\x1c.AeroDist.BrokerReadResponse2\x80\x01\n" +
+	"BrokerRead\x12\x1b.AeroDist.BrokerReadRequest\x1a\x1c.AeroDist.BrokerReadResponse2\x90\x02\n" +
 	"\bDatanode\x127\n" +
-	"\fFligthUpdate\x12\x16.AeroDist.FligthStates\x1a\x0f.AeroDist.Vacio\x12;\n" +
-	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponseB\bZ\x06/protob\x06proto3"
+	"\fFlightUpdate\x12\x16.AeroDist.FlightStates\x1a\x0f.AeroDist.Vacio\x123\n" +
+	"\rCreateFlights\x12\x11.AeroDist.Flights\x1a\x0f.AeroDist.Vacio\x12;\n" +
+	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponse\x12Y\n" +
+	"\x10CoordinadorWrite\x12!.AeroDist.CoordinadorWriteRequest\x1a\".AeroDist.CoordinadorWriteResponseB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -723,37 +1020,48 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_proto_proto_proto_goTypes = []any{
-	(*MRReadRequest)(nil),          // 0: AeroDist.MRReadRequest
-	(*MRReadResponse)(nil),         // 1: AeroDist.MRReadResponse
-	(*GetInitialInfoRequest)(nil),  // 2: AeroDist.GetInitialInfoRequest
-	(*GetInitialInfoResponse)(nil), // 3: AeroDist.GetInitialInfoResponse
-	(*ApplyWriteRequest)(nil),      // 4: AeroDist.ApplyWriteRequest
-	(*ApplyWriteResponse)(nil),     // 5: AeroDist.ApplyWriteResponse
-	(*BrokerReadRequest)(nil),      // 6: AeroDist.BrokerReadRequest
-	(*BrokerReadResponse)(nil),     // 7: AeroDist.BrokerReadResponse
-	(*FligthStates)(nil),           // 8: AeroDist.FligthStates
-	(*Vacio)(nil),                  // 9: AeroDist.Vacio
+	(*Seat)(nil),                     // 0: AeroDist.Seat
+	(*Flight)(nil),                   // 1: AeroDist.Flight
+	(*Flights)(nil),                  // 2: AeroDist.Flights
+	(*MRReadRequest)(nil),            // 3: AeroDist.MRReadRequest
+	(*MRReadResponse)(nil),           // 4: AeroDist.MRReadResponse
+	(*GetInitialInfoRequest)(nil),    // 5: AeroDist.GetInitialInfoRequest
+	(*GetInitialInfoResponse)(nil),   // 6: AeroDist.GetInitialInfoResponse
+	(*ApplyWriteRequest)(nil),        // 7: AeroDist.ApplyWriteRequest
+	(*ApplyWriteResponse)(nil),       // 8: AeroDist.ApplyWriteResponse
+	(*BrokerReadRequest)(nil),        // 9: AeroDist.BrokerReadRequest
+	(*BrokerReadResponse)(nil),       // 10: AeroDist.BrokerReadResponse
+	(*FlightStates)(nil),             // 11: AeroDist.FlightStates
+	(*CoordinadorWriteRequest)(nil),  // 12: AeroDist.CoordinadorWriteRequest
+	(*CoordinadorWriteResponse)(nil), // 13: AeroDist.CoordinadorWriteResponse
+	(*Vacio)(nil),                    // 14: AeroDist.Vacio
 }
 var file_proto_proto_proto_depIdxs = []int32{
-	0, // 0: AeroDist.Broker.MRRead:input_type -> AeroDist.MRReadRequest
-	2, // 1: AeroDist.Broker.GetInitialInfo:input_type -> AeroDist.GetInitialInfoRequest
-	4, // 2: AeroDist.Broker.ApplyWrite:input_type -> AeroDist.ApplyWriteRequest
-	6, // 3: AeroDist.Broker.BrokerRead:input_type -> AeroDist.BrokerReadRequest
-	8, // 4: AeroDist.Datanode.FligthUpdate:input_type -> AeroDist.FligthStates
-	0, // 5: AeroDist.Datanode.MRRead:input_type -> AeroDist.MRReadRequest
-	1, // 6: AeroDist.Broker.MRRead:output_type -> AeroDist.MRReadResponse
-	3, // 7: AeroDist.Broker.GetInitialInfo:output_type -> AeroDist.GetInitialInfoResponse
-	5, // 8: AeroDist.Broker.ApplyWrite:output_type -> AeroDist.ApplyWriteResponse
-	7, // 9: AeroDist.Broker.BrokerRead:output_type -> AeroDist.BrokerReadResponse
-	9, // 10: AeroDist.Datanode.FligthUpdate:output_type -> AeroDist.Vacio
-	1, // 11: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
-	6, // [6:12] is the sub-list for method output_type
-	0, // [0:6] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: AeroDist.Flight.seats:type_name -> AeroDist.Seat
+	1,  // 1: AeroDist.Flights.flights:type_name -> AeroDist.Flight
+	3,  // 2: AeroDist.Broker.MRRead:input_type -> AeroDist.MRReadRequest
+	5,  // 3: AeroDist.Broker.GetInitialInfo:input_type -> AeroDist.GetInitialInfoRequest
+	7,  // 4: AeroDist.Broker.ApplyWrite:input_type -> AeroDist.ApplyWriteRequest
+	9,  // 5: AeroDist.Broker.BrokerRead:input_type -> AeroDist.BrokerReadRequest
+	11, // 6: AeroDist.Datanode.FlightUpdate:input_type -> AeroDist.FlightStates
+	2,  // 7: AeroDist.Datanode.CreateFlights:input_type -> AeroDist.Flights
+	3,  // 8: AeroDist.Datanode.MRRead:input_type -> AeroDist.MRReadRequest
+	12, // 9: AeroDist.Datanode.CoordinadorWrite:input_type -> AeroDist.CoordinadorWriteRequest
+	4,  // 10: AeroDist.Broker.MRRead:output_type -> AeroDist.MRReadResponse
+	6,  // 11: AeroDist.Broker.GetInitialInfo:output_type -> AeroDist.GetInitialInfoResponse
+	8,  // 12: AeroDist.Broker.ApplyWrite:output_type -> AeroDist.ApplyWriteResponse
+	10, // 13: AeroDist.Broker.BrokerRead:output_type -> AeroDist.BrokerReadResponse
+	14, // 14: AeroDist.Datanode.FlightUpdate:output_type -> AeroDist.Vacio
+	14, // 15: AeroDist.Datanode.CreateFlights:output_type -> AeroDist.Vacio
+	4,  // 16: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
+	13, // 17: AeroDist.Datanode.CoordinadorWrite:output_type -> AeroDist.CoordinadorWriteResponse
+	10, // [10:18] is the sub-list for method output_type
+	2,  // [2:10] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_proto_proto_proto_init() }
@@ -767,7 +1075,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

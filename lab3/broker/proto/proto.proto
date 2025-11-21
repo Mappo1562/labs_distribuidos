@@ -19,13 +19,28 @@ service Broker{
 
 service Datanode{
     // Broadcast Datanodes
-    rpc FligthUpdate(FligthStates) returns (Vacio);
+    rpc FlightUpdate(FlightStates) returns (Vacio);
+    rpc CreateFlights(Flights) returns (Vacio);
 
     // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
 
     // Coordinador
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
+}
+
+message Seat{
+    string seatId = 1;
+	bool occupied = 2;
+}
+
+message Flight{
+    string flight_id = 1;
+    repeated Seat seats = 2;
+}
+
+message Flights{
+    repeated Flight flights = 1;
 }
 
 message MRReadRequest{
@@ -82,7 +97,7 @@ message BrokerReadResponse{
     string msg = 7;
 }
 
-message FligthStates{
+message FlightStates{
     string flight_id = 1;
     string update_type = 2;
     string update_value = 3;

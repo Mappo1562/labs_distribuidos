@@ -241,8 +241,10 @@ var Broker_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	Datanode_FligthUpdate_FullMethodName = "/AeroDist.Datanode/FligthUpdate"
-	Datanode_MRRead_FullMethodName       = "/AeroDist.Datanode/MRRead"
+	Datanode_FlightUpdate_FullMethodName     = "/AeroDist.Datanode/FlightUpdate"
+	Datanode_CreateFlights_FullMethodName    = "/AeroDist.Datanode/CreateFlights"
+	Datanode_MRRead_FullMethodName           = "/AeroDist.Datanode/MRRead"
+	Datanode_CoordinadorWrite_FullMethodName = "/AeroDist.Datanode/CoordinadorWrite"
 )
 
 // DatanodeClient is the client API for Datanode service.
@@ -250,9 +252,12 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DatanodeClient interface {
 	// Broadcast Datanodes
-	FligthUpdate(ctx context.Context, in *FligthStates, opts ...grpc.CallOption) (*Vacio, error)
+	FlightUpdate(ctx context.Context, in *FlightStates, opts ...grpc.CallOption) (*Vacio, error)
+	CreateFlights(ctx context.Context, in *Flights, opts ...grpc.CallOption) (*Vacio, error)
 	// Clientes MR
 	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
+	// Coordinador
+	CoordinadorWrite(ctx context.Context, in *CoordinadorWriteRequest, opts ...grpc.CallOption) (*CoordinadorWriteResponse, error)
 }
 
 type datanodeClient struct {
@@ -263,10 +268,20 @@ func NewDatanodeClient(cc grpc.ClientConnInterface) DatanodeClient {
 	return &datanodeClient{cc}
 }
 
-func (c *datanodeClient) FligthUpdate(ctx context.Context, in *FligthStates, opts ...grpc.CallOption) (*Vacio, error) {
+func (c *datanodeClient) FlightUpdate(ctx context.Context, in *FlightStates, opts ...grpc.CallOption) (*Vacio, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Vacio)
-	err := c.cc.Invoke(ctx, Datanode_FligthUpdate_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, Datanode_FlightUpdate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datanodeClient) CreateFlights(ctx context.Context, in *Flights, opts ...grpc.CallOption) (*Vacio, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Vacio)
+	err := c.cc.Invoke(ctx, Datanode_CreateFlights_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -283,14 +298,27 @@ func (c *datanodeClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...
 	return out, nil
 }
 
+func (c *datanodeClient) CoordinadorWrite(ctx context.Context, in *CoordinadorWriteRequest, opts ...grpc.CallOption) (*CoordinadorWriteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CoordinadorWriteResponse)
+	err := c.cc.Invoke(ctx, Datanode_CoordinadorWrite_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatanodeServer is the server API for Datanode service.
 // All implementations must embed UnimplementedDatanodeServer
 // for forward compatibility.
 type DatanodeServer interface {
 	// Broadcast Datanodes
-	FligthUpdate(context.Context, *FligthStates) (*Vacio, error)
+	FlightUpdate(context.Context, *FlightStates) (*Vacio, error)
+	CreateFlights(context.Context, *Flights) (*Vacio, error)
 	// Clientes MR
 	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
+	// Coordinador
+	CoordinadorWrite(context.Context, *CoordinadorWriteRequest) (*CoordinadorWriteResponse, error)
 	mustEmbedUnimplementedDatanodeServer()
 }
 
@@ -301,11 +329,17 @@ type DatanodeServer interface {
 // pointer dereference when methods are called.
 type UnimplementedDatanodeServer struct{}
 
-func (UnimplementedDatanodeServer) FligthUpdate(context.Context, *FligthStates) (*Vacio, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FligthUpdate not implemented")
+func (UnimplementedDatanodeServer) FlightUpdate(context.Context, *FlightStates) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlightUpdate not implemented")
+}
+func (UnimplementedDatanodeServer) CreateFlights(context.Context, *Flights) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateFlights not implemented")
 }
 func (UnimplementedDatanodeServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
+}
+func (UnimplementedDatanodeServer) CoordinadorWrite(context.Context, *CoordinadorWriteRequest) (*CoordinadorWriteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CoordinadorWrite not implemented")
 }
 func (UnimplementedDatanodeServer) mustEmbedUnimplementedDatanodeServer() {}
 func (UnimplementedDatanodeServer) testEmbeddedByValue()                  {}
@@ -328,20 +362,38 @@ func RegisterDatanodeServer(s grpc.ServiceRegistrar, srv DatanodeServer) {
 	s.RegisterService(&Datanode_ServiceDesc, srv)
 }
 
-func _Datanode_FligthUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FligthStates)
+func _Datanode_FlightUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FlightStates)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DatanodeServer).FligthUpdate(ctx, in)
+		return srv.(DatanodeServer).FlightUpdate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Datanode_FligthUpdate_FullMethodName,
+		FullMethod: Datanode_FlightUpdate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DatanodeServer).FligthUpdate(ctx, req.(*FligthStates))
+		return srv.(DatanodeServer).FlightUpdate(ctx, req.(*FlightStates))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Datanode_CreateFlights_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Flights)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).CreateFlights(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_CreateFlights_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).CreateFlights(ctx, req.(*Flights))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -364,6 +416,24 @@ func _Datanode_MRRead_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Datanode_CoordinadorWrite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CoordinadorWriteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).CoordinadorWrite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_CoordinadorWrite_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).CoordinadorWrite(ctx, req.(*CoordinadorWriteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Datanode_ServiceDesc is the grpc.ServiceDesc for Datanode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -372,12 +442,20 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DatanodeServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "FligthUpdate",
-			Handler:    _Datanode_FligthUpdate_Handler,
+			MethodName: "FlightUpdate",
+			Handler:    _Datanode_FlightUpdate_Handler,
+		},
+		{
+			MethodName: "CreateFlights",
+			Handler:    _Datanode_CreateFlights_Handler,
 		},
 		{
 			MethodName: "MRRead",
 			Handler:    _Datanode_MRRead_Handler,
+		},
+		{
+			MethodName: "CoordinadorWrite",
+			Handler:    _Datanode_CoordinadorWrite_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
