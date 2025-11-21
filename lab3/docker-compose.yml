@@ -50,17 +50,59 @@ services:
     ports:
       - "50053:50053"
 
+  datanode0:
+    build: ./datanodes
+    container_name: datanode0
+    environment:
+      - ID=0
+    #depends_on:
+    #  - broker
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data0:/app/data0
+    ports:
+      - "50061:50061"
+
+  datanode1:
+    build: ./datanodes
+    container_name: datanode1
+    environment:
+      - ID=1
+    #depends_on:
+    #  - broker
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data0:/app/data1
+    ports:
+      - "50062:50062"
+  
+  datanode2:
+    build: ./datanodes
+    container_name: datanode2
+    environment:
+      - ID=2
+    #depends_on:
+    #  - broker
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data2:/app/data2
+    ports:
+      - "50063:50063"
+
   coordinador:
     build: ./coordinador
     container_name: coordinador
     ports:
       - "50060:50060"
-    depends_on:
-      - broker
+    #depends_on:
+    #  - broker
     networks:
       - grpc-net
 
-  clienteRYW1:
+  clienteryw1:
     build: ./clienteRYW
     container_name: clienteRYW1
     environment: 
@@ -70,7 +112,7 @@ services:
     networks:
       - grpc-net
   
-  clienteRYW2:
+  clienteryw2:
     build: ./clienteRYW
     container_name: clienteRYW2
     environment: 
@@ -80,7 +122,7 @@ services:
     networks:
       - grpc-net
     
-  clienteRYW3:
+  clienteryw3:
     build: ./clienteRYW
     container_name: clienteRYW3
     environment: 
@@ -90,23 +132,23 @@ services:
     networks:
       - grpc-net
 
-  clienteMR1:
+  clientemr1:
     build: ./clienteMR
     container_name: clienteMR1
     environment: 
       - CLIENT_ID=clienteMR_1
-    depends_on:
-      - broker
+    #depends_on:
+    #  - broker
     networks:
       - grpc-net
 
-  clienteMR2:
+  clientemr2:
     build: ./clienteMR
     container_name: clienteMR2
     environment: 
       - CLIENT_ID=clienteMR_2
-    depends_on:
-      - broker
+    #depends_on:
+    #  - broker
     networks:
       - grpc-net
       

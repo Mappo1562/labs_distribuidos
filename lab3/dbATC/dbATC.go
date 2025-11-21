@@ -459,6 +459,10 @@ func killNode() {
 
 	grpcServer.Stop()
 
+	mulider.Lock()
+	lider = -1
+	mulider.Unlock()
+
 	if lis != nil {
 		lis.Close()
 	}
