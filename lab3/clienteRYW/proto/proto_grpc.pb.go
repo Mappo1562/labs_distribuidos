@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	CoordinadorRYW_CheckIn_FullMethodName         = "/AeroDist.CoordinadorRYW/CheckIn"
 	CoordinadorRYW_GetBoardingPass_FullMethodName = "/AeroDist.CoordinadorRYW/GetBoardingPass"
+	CoordinadorRYW_GetSeats_FullMethodName        = "/AeroDist.CoordinadorRYW/GetSeats"
 )
 
 // CoordinadorRYWClient is the client API for CoordinadorRYW service.
@@ -29,6 +30,7 @@ const (
 type CoordinadorRYWClient interface {
 	CheckIn(ctx context.Context, in *CheckInRequest, opts ...grpc.CallOption) (*CheckInResponse, error)
 	GetBoardingPass(ctx context.Context, in *GetBoardingPassRequest, opts ...grpc.CallOption) (*GetBoardingPassResponse, error)
+	GetSeats(ctx context.Context, in *GetSeatsRequest, opts ...grpc.CallOption) (*GetSeatsResponse, error)
 }
 
 type coordinadorRYWClient struct {
@@ -57,12 +59,22 @@ func (c *coordinadorRYWClient) GetBoardingPass(ctx context.Context, in *GetBoard
 	return out, nil
 }
 
+func (c *coordinadorRYWClient) GetSeats(ctx context.Context, in *GetSeatsRequest, opts ...grpc.CallOption) (*GetSeatsResponse, error) {
+	out := new(GetSeatsResponse)
+	err := c.cc.Invoke(ctx, CoordinadorRYW_GetSeats_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CoordinadorRYWServer is the server API for CoordinadorRYW service.
 // All implementations must embed UnimplementedCoordinadorRYWServer
 // for forward compatibility
 type CoordinadorRYWServer interface {
 	CheckIn(context.Context, *CheckInRequest) (*CheckInResponse, error)
 	GetBoardingPass(context.Context, *GetBoardingPassRequest) (*GetBoardingPassResponse, error)
+	GetSeats(context.Context, *GetSeatsRequest) (*GetSeatsResponse, error)
 	mustEmbedUnimplementedCoordinadorRYWServer()
 }
 
@@ -75,6 +87,9 @@ func (UnimplementedCoordinadorRYWServer) CheckIn(context.Context, *CheckInReques
 }
 func (UnimplementedCoordinadorRYWServer) GetBoardingPass(context.Context, *GetBoardingPassRequest) (*GetBoardingPassResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBoardingPass not implemented")
+}
+func (UnimplementedCoordinadorRYWServer) GetSeats(context.Context, *GetSeatsRequest) (*GetSeatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSeats not implemented")
 }
 func (UnimplementedCoordinadorRYWServer) mustEmbedUnimplementedCoordinadorRYWServer() {}
 
@@ -125,6 +140,24 @@ func _CoordinadorRYW_GetBoardingPass_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CoordinadorRYW_GetSeats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSeatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinadorRYWServer).GetSeats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CoordinadorRYW_GetSeats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinadorRYWServer).GetSeats(ctx, req.(*GetSeatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CoordinadorRYW_ServiceDesc is the grpc.ServiceDesc for CoordinadorRYW service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -139,6 +172,10 @@ var CoordinadorRYW_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBoardingPass",
 			Handler:    _CoordinadorRYW_GetBoardingPass_Handler,
+		},
+		{
+			MethodName: "GetSeats",
+			Handler:    _CoordinadorRYW_GetSeats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

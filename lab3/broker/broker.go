@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// Archivo CSV de actualizaciones de vuelo
 var flightsFile = "flight_updates.csv"
 
 const (
@@ -38,6 +39,7 @@ const (
 	PortDatanode3   = "db3:50063"
 )
 
+// Estructura para representar una actualización de vuelo
 type FligthStates struct {
 	SimTime     int64
 	FlightId    string
@@ -50,7 +52,9 @@ type server struct {
 }
 
 type Broker struct {
+	// Clientes gRPC para los Datanodes
 	datanodeClients []pb.DatanodeClient
+	RoundRobinIndex int
 }
 
 func NewBroker() *Broker {
@@ -59,13 +63,31 @@ func NewBroker() *Broker {
 	return b
 }
 
+func RoundRobinIndex(b *Broker) pb.DatanodeClient {
+	client := b.datanodeClients[b.RoundRobinIndex]
+	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % len(b.datanodeClients)
+	return client
+}
+
+func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadResponse, error) {
+
+	return &pb.MRReadResponse{}, nil
+}
+
+// -------------------------
+// *  BROADCAST DATANODES  *
+// -------------------------
+
+// Parsea una línea del archivo CSV de actualizaciones de vuelo
 func parseFlightUpdate(line string) (string, string, string, string) {
 	var sim_time, flight_id, update_type, update_value string
 	fmt.Sscanf(line, "%[^,],%[^,],%[^,],%s", &sim_time, &flight_id, &update_type, &update_value)
 	return sim_time, flight_id, update_type, update_value
 }
 
+// Carga las actualizaciones de vuelo desde un archivo CSV
 func loadFlightUpdates(filename string) ([]FligthStates, error) {
+	log.Printf("Cargando actualizaciones de vuelo desde %s", filename)
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -89,10 +111,13 @@ func loadFlightUpdates(filename string) ([]FligthStates, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
+	log.Printf("Cargadas %d actualizaciones de vuelo", len(updates))
 	return updates, nil
 }
 
+// Conecta a los Datanodes
 func (b *Broker) connectToDatanodes() {
+	log.Println("Conectando a Datanodes...")
 	var datanodes = []string{PortDatanode1, PortDatanode2, PortDatanode3}
 	for _, address := range datanodes {
 		conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -105,7 +130,9 @@ func (b *Broker) connectToDatanodes() {
 	}
 }
 
+// BroadcastDatanodes envía las actualizaciones de vuelo a todos los Datanodes
 func (b *Broker) BroadcastDatanodes(flight_id string, update_type string, update_value string) {
+	log.Printf("Broadcasting to Datanodes: FlightID=%s, Type=%s, Value=%s", flight_id, update_type, update_value)
 	for _, client := range b.datanodeClients {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
@@ -132,6 +159,7 @@ func main() {
 	log.Printf("Broker listening at %v", lis.Addr())
 
 	go func() {
+		log.Println("Iniciando simulación de actualizaciones de vuelo...")
 		broker := NewBroker()
 		updates, err := loadFlightUpdates(flightsFile)
 		if err != nil {
@@ -145,6 +173,7 @@ func main() {
 			log.Printf("Broadcasting update: FlightID=%s, Type=%s, Value=%s", update.FlightId, update.UpdateType, update.UpdateValue)
 			broker.BroadcastDatanodes(update.FlightId, update.UpdateType, update.UpdateValue)
 		}
+		log.Println("Simulación de actualizaciones de vuelo completada.")
 	}()
 
 	if err := s.Serve(lis); err != nil {

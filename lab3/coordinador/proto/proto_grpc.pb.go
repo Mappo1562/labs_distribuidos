@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	CoordinadorRYW_GetSeats_FullMethodName        = "/AeroDist.CoordinadorRYW/GetSeats"
 	CoordinadorRYW_CheckIn_FullMethodName         = "/AeroDist.CoordinadorRYW/CheckIn"
 	CoordinadorRYW_GetBoardingPass_FullMethodName = "/AeroDist.CoordinadorRYW/GetBoardingPass"
 )
@@ -27,6 +28,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CoordinadorRYWClient interface {
+	GetSeats(ctx context.Context, in *GetSeatsRequest, opts ...grpc.CallOption) (*GetSeatsResponse, error)
 	CheckIn(ctx context.Context, in *CheckInRequest, opts ...grpc.CallOption) (*CheckInResponse, error)
 	GetBoardingPass(ctx context.Context, in *GetBoardingPassRequest, opts ...grpc.CallOption) (*GetBoardingPassResponse, error)
 }
@@ -37,6 +39,15 @@ type coordinadorRYWClient struct {
 
 func NewCoordinadorRYWClient(cc grpc.ClientConnInterface) CoordinadorRYWClient {
 	return &coordinadorRYWClient{cc}
+}
+
+func (c *coordinadorRYWClient) GetSeats(ctx context.Context, in *GetSeatsRequest, opts ...grpc.CallOption) (*GetSeatsResponse, error) {
+	out := new(GetSeatsResponse)
+	err := c.cc.Invoke(ctx, CoordinadorRYW_GetSeats_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *coordinadorRYWClient) CheckIn(ctx context.Context, in *CheckInRequest, opts ...grpc.CallOption) (*CheckInResponse, error) {
@@ -61,6 +72,7 @@ func (c *coordinadorRYWClient) GetBoardingPass(ctx context.Context, in *GetBoard
 // All implementations must embed UnimplementedCoordinadorRYWServer
 // for forward compatibility
 type CoordinadorRYWServer interface {
+	GetSeats(context.Context, *GetSeatsRequest) (*GetSeatsResponse, error)
 	CheckIn(context.Context, *CheckInRequest) (*CheckInResponse, error)
 	GetBoardingPass(context.Context, *GetBoardingPassRequest) (*GetBoardingPassResponse, error)
 	mustEmbedUnimplementedCoordinadorRYWServer()
@@ -70,6 +82,9 @@ type CoordinadorRYWServer interface {
 type UnimplementedCoordinadorRYWServer struct {
 }
 
+func (UnimplementedCoordinadorRYWServer) GetSeats(context.Context, *GetSeatsRequest) (*GetSeatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSeats not implemented")
+}
 func (UnimplementedCoordinadorRYWServer) CheckIn(context.Context, *CheckInRequest) (*CheckInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckIn not implemented")
 }
@@ -87,6 +102,24 @@ type UnsafeCoordinadorRYWServer interface {
 
 func RegisterCoordinadorRYWServer(s grpc.ServiceRegistrar, srv CoordinadorRYWServer) {
 	s.RegisterService(&CoordinadorRYW_ServiceDesc, srv)
+}
+
+func _CoordinadorRYW_GetSeats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSeatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinadorRYWServer).GetSeats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CoordinadorRYW_GetSeats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinadorRYWServer).GetSeats(ctx, req.(*GetSeatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _CoordinadorRYW_CheckIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -133,6 +166,10 @@ var CoordinadorRYW_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*CoordinadorRYWServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetSeats",
+			Handler:    _CoordinadorRYW_GetSeats_Handler,
+		},
+		{
 			MethodName: "CheckIn",
 			Handler:    _CoordinadorRYW_CheckIn_Handler,
 		},
@@ -146,126 +183,163 @@ var CoordinadorRYW_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	BrokerCoordinador_ApplyWrite_FullMethodName = "/AeroDist.BrokerCoordinador/ApplyWrite"
-	BrokerCoordinador_BrokerRead_FullMethodName = "/AeroDist.BrokerCoordinador/BrokerRead"
+	Broker_GetInitialInfo_FullMethodName = "/AeroDist.Broker/GetInitialInfo"
+	Broker_ApplyWrite_FullMethodName     = "/AeroDist.Broker/ApplyWrite"
+	Broker_BrokerRead_FullMethodName     = "/AeroDist.Broker/BrokerRead"
 )
 
-// BrokerCoordinadorClient is the client API for BrokerCoordinador service.
+// BrokerClient is the client API for Broker service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type BrokerCoordinadorClient interface {
+type BrokerClient interface {
+	GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error)
 	ApplyWrite(ctx context.Context, in *ApplyWriteRequest, opts ...grpc.CallOption) (*ApplyWriteResponse, error)
 	BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error)
 }
 
-type brokerCoordinadorClient struct {
+type brokerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewBrokerCoordinadorClient(cc grpc.ClientConnInterface) BrokerCoordinadorClient {
-	return &brokerCoordinadorClient{cc}
+func NewBrokerClient(cc grpc.ClientConnInterface) BrokerClient {
+	return &brokerClient{cc}
 }
 
-func (c *brokerCoordinadorClient) ApplyWrite(ctx context.Context, in *ApplyWriteRequest, opts ...grpc.CallOption) (*ApplyWriteResponse, error) {
+func (c *brokerClient) GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error) {
+	out := new(GetInitialInfoResponse)
+	err := c.cc.Invoke(ctx, Broker_GetInitialInfo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *brokerClient) ApplyWrite(ctx context.Context, in *ApplyWriteRequest, opts ...grpc.CallOption) (*ApplyWriteResponse, error) {
 	out := new(ApplyWriteResponse)
-	err := c.cc.Invoke(ctx, BrokerCoordinador_ApplyWrite_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Broker_ApplyWrite_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *brokerCoordinadorClient) BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error) {
+func (c *brokerClient) BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error) {
 	out := new(BrokerReadResponse)
-	err := c.cc.Invoke(ctx, BrokerCoordinador_BrokerRead_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, Broker_BrokerRead_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// BrokerCoordinadorServer is the server API for BrokerCoordinador service.
-// All implementations must embed UnimplementedBrokerCoordinadorServer
+// BrokerServer is the server API for Broker service.
+// All implementations must embed UnimplementedBrokerServer
 // for forward compatibility
-type BrokerCoordinadorServer interface {
+type BrokerServer interface {
+	GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error)
 	ApplyWrite(context.Context, *ApplyWriteRequest) (*ApplyWriteResponse, error)
 	BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error)
-	mustEmbedUnimplementedBrokerCoordinadorServer()
+	mustEmbedUnimplementedBrokerServer()
 }
 
-// UnimplementedBrokerCoordinadorServer must be embedded to have forward compatible implementations.
-type UnimplementedBrokerCoordinadorServer struct {
+// UnimplementedBrokerServer must be embedded to have forward compatible implementations.
+type UnimplementedBrokerServer struct {
 }
 
-func (UnimplementedBrokerCoordinadorServer) ApplyWrite(context.Context, *ApplyWriteRequest) (*ApplyWriteResponse, error) {
+func (UnimplementedBrokerServer) GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInitialInfo not implemented")
+}
+func (UnimplementedBrokerServer) ApplyWrite(context.Context, *ApplyWriteRequest) (*ApplyWriteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ApplyWrite not implemented")
 }
-func (UnimplementedBrokerCoordinadorServer) BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error) {
+func (UnimplementedBrokerServer) BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BrokerRead not implemented")
 }
-func (UnimplementedBrokerCoordinadorServer) mustEmbedUnimplementedBrokerCoordinadorServer() {}
+func (UnimplementedBrokerServer) mustEmbedUnimplementedBrokerServer() {}
 
-// UnsafeBrokerCoordinadorServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to BrokerCoordinadorServer will
+// UnsafeBrokerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BrokerServer will
 // result in compilation errors.
-type UnsafeBrokerCoordinadorServer interface {
-	mustEmbedUnimplementedBrokerCoordinadorServer()
+type UnsafeBrokerServer interface {
+	mustEmbedUnimplementedBrokerServer()
 }
 
-func RegisterBrokerCoordinadorServer(s grpc.ServiceRegistrar, srv BrokerCoordinadorServer) {
-	s.RegisterService(&BrokerCoordinador_ServiceDesc, srv)
+func RegisterBrokerServer(s grpc.ServiceRegistrar, srv BrokerServer) {
+	s.RegisterService(&Broker_ServiceDesc, srv)
 }
 
-func _BrokerCoordinador_ApplyWrite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Broker_GetInitialInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInitialInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BrokerServer).GetInitialInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Broker_GetInitialInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BrokerServer).GetInitialInfo(ctx, req.(*GetInitialInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Broker_ApplyWrite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApplyWriteRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BrokerCoordinadorServer).ApplyWrite(ctx, in)
+		return srv.(BrokerServer).ApplyWrite(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BrokerCoordinador_ApplyWrite_FullMethodName,
+		FullMethod: Broker_ApplyWrite_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerCoordinadorServer).ApplyWrite(ctx, req.(*ApplyWriteRequest))
+		return srv.(BrokerServer).ApplyWrite(ctx, req.(*ApplyWriteRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BrokerCoordinador_BrokerRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Broker_BrokerRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BrokerReadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BrokerCoordinadorServer).BrokerRead(ctx, in)
+		return srv.(BrokerServer).BrokerRead(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BrokerCoordinador_BrokerRead_FullMethodName,
+		FullMethod: Broker_BrokerRead_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BrokerCoordinadorServer).BrokerRead(ctx, req.(*BrokerReadRequest))
+		return srv.(BrokerServer).BrokerRead(ctx, req.(*BrokerReadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// BrokerCoordinador_ServiceDesc is the grpc.ServiceDesc for BrokerCoordinador service.
+// Broker_ServiceDesc is the grpc.ServiceDesc for Broker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var BrokerCoordinador_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "AeroDist.BrokerCoordinador",
-	HandlerType: (*BrokerCoordinadorServer)(nil),
+var Broker_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AeroDist.Broker",
+	HandlerType: (*BrokerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetInitialInfo",
+			Handler:    _Broker_GetInitialInfo_Handler,
+		},
+		{
 			MethodName: "ApplyWrite",
-			Handler:    _BrokerCoordinador_ApplyWrite_Handler,
+			Handler:    _Broker_ApplyWrite_Handler,
 		},
 		{
 			MethodName: "BrokerRead",
-			Handler:    _BrokerCoordinador_BrokerRead_Handler,
+			Handler:    _Broker_BrokerRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

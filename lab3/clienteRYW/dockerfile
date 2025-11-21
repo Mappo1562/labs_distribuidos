@@ -1,0 +1,10 @@
+FROM golang:latest
+
+WORKDIR /app
+
+COPY . .
+
+RUN go mod tidy
+Run go build -o clienteRYW .
+
+CMD [ "./clienteRYW" ]

@@ -10,6 +10,7 @@ service Broker{
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
 
     // Coordinador
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
 
@@ -19,11 +20,15 @@ service Broker{
 service Datanode{
     // Broadcast Datanodes
     rpc FligthUpdate(FligthStates) returns (Vacio);
+
+    // Clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
 }
 
 message MRReadRequest{
     string flight_id = 1;
-    int64 last_version_seen = 2;
+    string client_id = 2;
+    int64 last_version_seen = 3;
 }
 
 message MRReadResponse{
@@ -31,6 +36,18 @@ message MRReadResponse{
     string status = 2;
     string gate = 3;
     int64 version = 4;
+    bool success = 5;
+    string msg = 6;
+}
+
+message GetInitialInfoRequest{
+    string flight_id = 1;
+}
+
+message GetInitialInfoResponse{
+    string seats = 1;
+    bool success = 2;
+    string msg = 3;
 }
 
 message ApplyWriteRequest{
@@ -67,5 +84,7 @@ message FligthStates{
     string update_type = 2;
     string update_value = 3;
 }
+
+
 
 message Vacio{}

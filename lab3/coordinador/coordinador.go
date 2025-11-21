@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	pb "coordinador/proto"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -16,7 +17,7 @@ type CoordinadorServer struct {
 	pb.UnimplementedCoordinadorRYWServer
 
 	sesiones     map[string]SessionInfo
-	brokerClient pb.BrokerCoordinadorClient
+	brokerClient pb.BrokerClient
 	mu           sync.Mutex
 }
 
@@ -26,7 +27,7 @@ type SessionInfo struct {
 }
 
 const (
-	brokerAddr = "localhost:50050"
+	brokerAddr = "broker:50050"
 	port       = ":50060"
 )
 
@@ -108,6 +109,27 @@ func (s *CoordinadorServer) GetBoardingPass(ctx context.Context, in *pb.GetBoard
 	return resp, nil
 }
 
+func (s *CoordinadorServer) GetSeats(ctx context.Context, in *pb.GetSeatsRequest) (*pb.GetSeatsResponse, error) {
+
+	vuelo := in.FlightId
+	bResp, err := s.brokerClient.GetInitialInfo(ctx, &pb.GetInitialInfoRequest{
+		FlightId: vuelo,
+	})
+
+	if err != nil {
+		return &pb.GetSeatsResponse{
+			Success: false,
+			Msg:     fmt.Sprintf("error al leer broker: %v", err),
+		}, nil
+	}
+
+	return &pb.GetSeatsResponse{
+		FlightId: in.FlightId,
+		Seats:    bResp.Seats,
+		Success:  true,
+		Msg:      "ok",
+	}, nil
+}
 func main() {
 
 	conn, err := grpc.NewClient(brokerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -115,9 +137,11 @@ func main() {
 		log.Fatalf("No se pudo conectar al Broker: %v", err)
 	}
 
+	defer conn.Close()
+
 	server := &CoordinadorServer{
 		sesiones:     make(map[string]SessionInfo),
-		brokerClient: pb.NewBrokerCoordinadorClient(conn),
+		brokerClient: pb.NewBrokerClient(conn),
 	}
 
 	lis, err := net.Listen("tcp", port)

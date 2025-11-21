@@ -5,11 +5,13 @@ package AeroDist;
 option go_package = "/proto";
 
 service CoordinadorRYW{//Servicio Coordinador con clientes RYW
+    rpc GetSeats(GetSeatsRequest) returns (GetSeatsResponse);
     rpc CheckIn(CheckInRequest) returns (CheckInResponse);
     rpc GetBoardingPass(GetBoardingPassRequest) returns (GetBoardingPassResponse);
 }
 
-service BrokerCoordinador{
+service Broker{
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
 }
@@ -38,6 +40,27 @@ message GetBoardingPassResponse{
     int64 version = 3;
     bool success = 4;
     string msg = 5;
+}
+
+message GetSeatsRequest{
+    string flight_id = 1;
+}
+
+message GetSeatsResponse{
+    string flight_id = 1;
+    string seats = 2; //lista de asientos libres en el vuelo
+    bool success = 3;
+    string msg = 4;
+}
+
+message GetInitialInfoRequest{
+    string flight_id = 1;
+}
+
+message GetInitialInfoResponse{
+    string seats = 1;
+    bool success = 2;
+    string msg = 3;
 }
 
 message ApplyWriteRequest{
