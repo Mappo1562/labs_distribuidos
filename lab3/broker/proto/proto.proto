@@ -20,6 +20,9 @@ service Broker{
 service Datanode{
     // Broadcast Datanodes
     rpc FligthUpdate(FligthStates) returns (Vacio);
+
+    // Clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
 }
 
 message MRReadRequest{
@@ -81,5 +84,7 @@ message FligthStates{
     string update_type = 2;
     string update_value = 3;
 }
+
+
 
 message Vacio{}
