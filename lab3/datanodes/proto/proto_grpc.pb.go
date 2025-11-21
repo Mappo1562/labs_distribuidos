@@ -22,14 +22,17 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	Datanode_FligthUpdate_FullMethodName = "/AeroDist.Datanode/FligthUpdate"
+	Datanode_MRRead_FullMethodName       = "/AeroDist.Datanode/MRRead"
 )
 
 // DatanodeClient is the client API for Datanode service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DatanodeClient interface {
-	// Broadcast Datanodes
+	// Broker
 	FligthUpdate(ctx context.Context, in *FligthStates, opts ...grpc.CallOption) (*Vacio, error)
+	// Clientes MR
+	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
 }
 
 type datanodeClient struct {
@@ -50,12 +53,24 @@ func (c *datanodeClient) FligthUpdate(ctx context.Context, in *FligthStates, opt
 	return out, nil
 }
 
+func (c *datanodeClient) MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(MRReadResponse)
+	err := c.cc.Invoke(ctx, Datanode_MRRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatanodeServer is the server API for Datanode service.
 // All implementations must embed UnimplementedDatanodeServer
 // for forward compatibility.
 type DatanodeServer interface {
-	// Broadcast Datanodes
+	// Broker
 	FligthUpdate(context.Context, *FligthStates) (*Vacio, error)
+	// Clientes MR
+	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
 	mustEmbedUnimplementedDatanodeServer()
 }
 
@@ -68,6 +83,9 @@ type UnimplementedDatanodeServer struct{}
 
 func (UnimplementedDatanodeServer) FligthUpdate(context.Context, *FligthStates) (*Vacio, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FligthUpdate not implemented")
+}
+func (UnimplementedDatanodeServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
 }
 func (UnimplementedDatanodeServer) mustEmbedUnimplementedDatanodeServer() {}
 func (UnimplementedDatanodeServer) testEmbeddedByValue()                  {}
@@ -108,6 +126,24 @@ func _Datanode_FligthUpdate_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Datanode_MRRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MRReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).MRRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_MRRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).MRRead(ctx, req.(*MRReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Datanode_ServiceDesc is the grpc.ServiceDesc for Datanode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -118,6 +154,10 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FligthUpdate",
 			Handler:    _Datanode_FligthUpdate_Handler,
+		},
+		{
+			MethodName: "MRRead",
+			Handler:    _Datanode_MRRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

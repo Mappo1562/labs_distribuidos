@@ -6,14 +6,32 @@ package AeroDist;
 option go_package = "/proto";
 
 service Datanode{
-    // Broadcast Datanodes
+    // Broker
     rpc FligthUpdate(FligthStates) returns (Vacio);
+
+    // Clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
 }
 
 message FligthStates{
     string flight_id = 1;
     string update_type = 2;
     string update_value = 3;
+}
+
+message MRReadRequest{
+    string flight_id = 1;
+    string client_id = 2;
+    int64 last_version_seen = 3;
+}
+
+message MRReadResponse{
+    string flight_id = 1;
+    string status = 2;
+    string gate = 3;
+    int64 version = 4;
+    bool success = 5;
+    string msg = 6;
 }
 
 message Vacio{}

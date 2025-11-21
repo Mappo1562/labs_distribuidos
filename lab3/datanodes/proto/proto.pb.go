@@ -83,6 +83,150 @@ func (x *FligthStates) GetUpdateValue() string {
 	return ""
 }
 
+type MRReadRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	FlightId        string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
+	ClientId        string                 `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"`
+	LastVersionSeen int64                  `protobuf:"varint,3,opt,name=last_version_seen,json=lastVersionSeen,proto3" json:"last_version_seen,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *MRReadRequest) Reset() {
+	*x = MRReadRequest{}
+	mi := &file_proto_proto_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MRReadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MRReadRequest) ProtoMessage() {}
+
+func (x *MRReadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MRReadRequest.ProtoReflect.Descriptor instead.
+func (*MRReadRequest) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *MRReadRequest) GetFlightId() string {
+	if x != nil {
+		return x.FlightId
+	}
+	return ""
+}
+
+func (x *MRReadRequest) GetClientId() string {
+	if x != nil {
+		return x.ClientId
+	}
+	return ""
+}
+
+func (x *MRReadRequest) GetLastVersionSeen() int64 {
+	if x != nil {
+		return x.LastVersionSeen
+	}
+	return 0
+}
+
+type MRReadResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FlightId      string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	Gate          string                 `protobuf:"bytes,3,opt,name=gate,proto3" json:"gate,omitempty"`
+	Version       int64                  `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
+	Success       bool                   `protobuf:"varint,5,opt,name=success,proto3" json:"success,omitempty"`
+	Msg           string                 `protobuf:"bytes,6,opt,name=msg,proto3" json:"msg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MRReadResponse) Reset() {
+	*x = MRReadResponse{}
+	mi := &file_proto_proto_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MRReadResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MRReadResponse) ProtoMessage() {}
+
+func (x *MRReadResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_proto_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MRReadResponse.ProtoReflect.Descriptor instead.
+func (*MRReadResponse) Descriptor() ([]byte, []int) {
+	return file_proto_proto_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *MRReadResponse) GetFlightId() string {
+	if x != nil {
+		return x.FlightId
+	}
+	return ""
+}
+
+func (x *MRReadResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *MRReadResponse) GetGate() string {
+	if x != nil {
+		return x.Gate
+	}
+	return ""
+}
+
+func (x *MRReadResponse) GetVersion() int64 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *MRReadResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *MRReadResponse) GetMsg() string {
+	if x != nil {
+		return x.Msg
+	}
+	return ""
+}
+
 type Vacio struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -91,7 +235,7 @@ type Vacio struct {
 
 func (x *Vacio) Reset() {
 	*x = Vacio{}
-	mi := &file_proto_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -103,7 +247,7 @@ func (x *Vacio) String() string {
 func (*Vacio) ProtoMessage() {}
 
 func (x *Vacio) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_proto_proto_msgTypes[1]
+	mi := &file_proto_proto_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -116,7 +260,7 @@ func (x *Vacio) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vacio.ProtoReflect.Descriptor instead.
 func (*Vacio) Descriptor() ([]byte, []int) {
-	return file_proto_proto_proto_rawDescGZIP(), []int{1}
+	return file_proto_proto_proto_rawDescGZIP(), []int{3}
 }
 
 var File_proto_proto_proto protoreflect.FileDescriptor
@@ -128,10 +272,22 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x1f\n" +
 	"\vupdate_type\x18\x02 \x01(\tR\n" +
 	"updateType\x12!\n" +
-	"\fupdate_value\x18\x03 \x01(\tR\vupdateValue\"\a\n" +
-	"\x05Vacio2C\n" +
+	"\fupdate_value\x18\x03 \x01(\tR\vupdateValue\"u\n" +
+	"\rMRReadRequest\x12\x1b\n" +
+	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x1b\n" +
+	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12*\n" +
+	"\x11last_version_seen\x18\x03 \x01(\x03R\x0flastVersionSeen\"\x9f\x01\n" +
+	"\x0eMRReadResponse\x12\x1b\n" +
+	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\x12\x12\n" +
+	"\x04gate\x18\x03 \x01(\tR\x04gate\x12\x18\n" +
+	"\aversion\x18\x04 \x01(\x03R\aversion\x12\x18\n" +
+	"\asuccess\x18\x05 \x01(\bR\asuccess\x12\x10\n" +
+	"\x03msg\x18\x06 \x01(\tR\x03msg\"\a\n" +
+	"\x05Vacio2\x80\x01\n" +
 	"\bDatanode\x127\n" +
-	"\fFligthUpdate\x12\x16.AeroDist.FligthStates\x1a\x0f.AeroDist.VacioB\bZ\x06/protob\x06proto3"
+	"\fFligthUpdate\x12\x16.AeroDist.FligthStates\x1a\x0f.AeroDist.Vacio\x12;\n" +
+	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponseB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -145,16 +301,20 @@ func file_proto_proto_proto_rawDescGZIP() []byte {
 	return file_proto_proto_proto_rawDescData
 }
 
-var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_proto_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_proto_proto_proto_goTypes = []any{
-	(*FligthStates)(nil), // 0: AeroDist.FligthStates
-	(*Vacio)(nil),        // 1: AeroDist.Vacio
+	(*FligthStates)(nil),   // 0: AeroDist.FligthStates
+	(*MRReadRequest)(nil),  // 1: AeroDist.MRReadRequest
+	(*MRReadResponse)(nil), // 2: AeroDist.MRReadResponse
+	(*Vacio)(nil),          // 3: AeroDist.Vacio
 }
 var file_proto_proto_proto_depIdxs = []int32{
 	0, // 0: AeroDist.Datanode.FligthUpdate:input_type -> AeroDist.FligthStates
-	1, // 1: AeroDist.Datanode.FligthUpdate:output_type -> AeroDist.Vacio
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 1: AeroDist.Datanode.MRRead:input_type -> AeroDist.MRReadRequest
+	3, // 2: AeroDist.Datanode.FligthUpdate:output_type -> AeroDist.Vacio
+	2, // 3: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -171,7 +331,7 @@ func file_proto_proto_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_proto_proto_rawDesc), len(file_proto_proto_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
