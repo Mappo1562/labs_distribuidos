@@ -68,23 +68,6 @@ func init() {
 	port = AddBD[ID][6:]
 }
 
-func guardarEnJSON(data *pb.Record) error {
-	name := "db" + strconv.Itoa(ID)
-	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	_, err = file.Write(append(bytes, '\n'))
-	return err
-}
-
 /////////////////////////////////
 //
 // Funciones de server
@@ -92,7 +75,6 @@ func guardarEnJSON(data *pb.Record) error {
 /////////////////////////////////
 
 func (s *server) ResultadoConsenso(ctx context.Context, in *pb.Record) (*pb.Vacio, error) {
-	// guardar valor nuevo
 	muinsert.Lock()
 	if guardarEnJSON(in) != nil {
 		log.Fatalf("Error al guardar el resultado consensuado")
@@ -138,7 +120,6 @@ func (s *server) GetHistorico(ctx context.Context, in *pb.Vacio) (*pb.Historico,
 	if err != nil {
 		return nil, err
 	}
-	// Si quieres, puedes devolver nil en vez de slice vacío cuando no hay nada
 	return &pb.Historico{Records: recs}, nil
 }
 
@@ -213,7 +194,7 @@ func leerHistorico() ([]*pb.Record, error) {
 
 // ************************************************ LA IMPLEMENTACIÓN DE CONSENSO NO SOPORTA MUCHAS LLAMADAS SEGUIDAS ************************************************
 func consenso() {
-	time.Sleep(1 * time.Second) // tiempo para que los otros llamen a INSERTLIDER
+	time.Sleep(1 * time.Second) // ********************************* tiempo para que los otros llamen a INSERTLIDER *********************************
 	muVotos.Lock()
 	votosCopy := make(map[int]*pb.Record)
 	for k, v := range votos {
@@ -236,7 +217,7 @@ func consenso() {
 			log.Printf("Valor guardado correctamente por %v", i)
 		}
 	}
-	// guardar valor nuevo
+
 	muinsert.Lock()
 	if guardarEnJSON(final) != nil {
 		log.Fatalf("Error al guardar el resultado consensuado")
@@ -245,7 +226,7 @@ func consenso() {
 }
 
 func decidirRecord(votos map[int]*pb.Record) *pb.Record {
-	// 1) buscar cualquier par igual (dos iguales -> ganar)
+
 	ids := make([]int, 0, len(votos))
 	for id := range votos {
 		ids = append(ids, id)
@@ -275,6 +256,23 @@ func decidirRecord(votos map[int]*pb.Record) *pb.Record {
 // Funciones genericas para cada nodo
 //
 /////////////////////////////////
+
+func guardarEnJSON(data *pb.Record) error {
+	name := "db" + strconv.Itoa(ID)
+	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(append(bytes, '\n'))
+	return err
+}
 
 func aplicarHistorico(records []*pb.Record) error {
 	name := "db" + strconv.Itoa(ID)
@@ -412,7 +410,7 @@ func revisarLiderVivo() {
 	}
 	if liderActual == ID {
 		log.Printf("comenzando el conteo para mi muerte XoX")
-		time.Sleep(20 * time.Second) // tiempo activo antes de morir
+		time.Sleep(20 * time.Second)
 		killNode()
 		return
 	}
@@ -491,7 +489,7 @@ func conect() {
 }
 
 func runServerLoop() {
-	for i := 0; i < 3; i++ { // uso esto como criterio de termino, pero funcionara pesimo
+	for i := 0; i < 3; i++ { // ********************************* uso esto como criterio de termino, pero funcionara pesimo *********************************
 		var err error
 		lis, err = net.Listen("tcp", port)
 		if err != nil {

@@ -1,0 +1,19 @@
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service Datanode{
+    // Broadcast Datanodes
+    rpc FligthUpdate(FligthStates) returns (Vacio);
+}
+
+message FligthStates{
+    string flight_id = 1;
+    string update_type = 2;
+    string update_value = 3;
+}
+
+message Vacio{}
