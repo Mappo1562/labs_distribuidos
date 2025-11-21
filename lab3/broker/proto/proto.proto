@@ -23,6 +23,9 @@ service Datanode{
 
     // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
+
+    // Coordinador
+    rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
 }
 
 message MRReadRequest{
@@ -85,6 +88,17 @@ message FligthStates{
     string update_value = 3;
 }
 
+message CoordinadorWriteRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
 
+message CoordinadorWriteResponse{
+    bool success = 1;
+    string msg = 2;
+    int64 version = 4;
+}
 
 message Vacio{}

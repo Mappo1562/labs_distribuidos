@@ -1,10 +1,12 @@
 services:
 
-  #broker:
-  #  build: ./broker
-  #  container_name: broker
-  #  ports:
-  #    - "50050:50050"
+  broker:
+    build: ./broker
+    container_name: broker
+    ports:
+      - "50050:50050"
+    networks:
+      - grpc-net
 
   # Nodos consenso:
   dbatc0:
@@ -12,8 +14,8 @@ services:
     container_name: dbatc0
     environment:
       - ID=0
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
     volumes:
@@ -26,8 +28,8 @@ services:
     container_name: dbatc1
     environment:
       - ID=1
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
     volumes:
@@ -41,8 +43,8 @@ services:
     container_name: dbatc2
     environment:
       - ID=2
-    #depends_on:
-    #  - broker
+    depends_on:
+      - broker
     networks:
       - grpc-net
     volumes:
@@ -102,53 +104,53 @@ services:
     networks:
       - grpc-net
 
-  clienteryw1:
+  cliente-ryw1:
     build: ./clienteRYW
-    container_name: clienteRYW1
+    container_name: cliente-ryw1
     environment: 
-      - CLIENT_ID=clienteRYW_1
+      - CLIENT_ID=cliente-ryw_1
     depends_on:
       - coordinador
     networks:
       - grpc-net
   
-  clienteryw2:
+  cliente-ryw2:
     build: ./clienteRYW
-    container_name: clienteRYW2
+    container_name: cliente-ryw2
     environment: 
-      - CLIENT_ID=clienteRYW_2
+      - CLIENT_ID=cliente-ryw_2
     depends_on:
       - coordinador
     networks:
       - grpc-net
     
-  clienteryw3:
+  cliente-ryw3:
     build: ./clienteRYW
-    container_name: clienteRYW3
+    container_name: cliente-ryw3
     environment: 
-      - CLIENT_ID=clienteRYW_3
+      - CLIENT_ID=cliente-ryw_3
     depends_on:
       - coordinador
     networks:
       - grpc-net
 
-  clientemr1:
+  cliente-mr1:
     build: ./clienteMR
-    container_name: clienteMR1
+    container_name: cliente-mr1
     environment: 
-      - CLIENT_ID=clienteMR_1
-    #depends_on:
-    #  - broker
+      - CLIENT_ID=cliente-mr_1
+    depends_on:
+      - broker
     networks:
       - grpc-net
 
-  clientemr2:
+  cliente-mr2:
     build: ./clienteMR
-    container_name: clienteMR2
+    container_name: cliente-mr2
     environment: 
-      - CLIENT_ID=clienteMR_2
-    #depends_on:
-    #  - broker
+      - CLIENT_ID=cliente-mr_2
+    depends_on:
+      - broker
     networks:
       - grpc-net
       
