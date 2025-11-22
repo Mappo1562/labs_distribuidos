@@ -18,6 +18,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	pb "broker/proto"
@@ -28,8 +29,6 @@ import (
 
 // Archivo CSV de actualizaciones de vuelo
 var flightsFile = "flight_updates.csv"
-
-var reporteFile = "Reporte.txt"
 
 const (
 	PortBroker      = ":50050"
@@ -106,6 +105,7 @@ type Broker struct {
 	datanodeClients []pb.DatanodeClient
 	RoundRobinIndex int64
 	RoundRobinPista int64
+	mu              sync.Mutex
 }
 
 func NewBroker() *Broker {
@@ -203,15 +203,18 @@ func AsignarPistaConsenso(flight_id string) (int64, bool) {
 // -------------------------
 // *  CLIENTE MR DATANODE  *
 // -------------------------
-func RoundRobinIndex(b *Broker) pb.DatanodeClient {
+func RoundRobinIndex(b *Broker) (pb.DatanodeClient, int64) {
 	client := b.datanodeClients[b.RoundRobinIndex]
 	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % int64(len(b.datanodeClients))
-	return client
+	return client, b.RoundRobinIndex
 }
 
 func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadResponse, error) {
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, roundRobinIndex := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	res, err := client.MRRead(ctx, req)
+	log.Printf("Solicitud MRRead para vuelo: %s asignada al Datanode %d\n", req.FlightId, roundRobinIndex)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
 		return nil, err
@@ -225,7 +228,9 @@ func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadR
 
 func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb.ApplyWriteResponse, error) {
 	log.Printf("Escritura recibida de: %s asiento: %s\n", req.ClienteId, req.Seat)
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, roundRobinIndex := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	coordinadorReq := &pb.CoordinadorWriteRequest{
 		FlightId:  req.FlightId,
 		ClienteId: req.ClienteId,
@@ -239,7 +244,7 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 	res := &pb.ApplyWriteResponse{
 		Success:    coordinadorRes.Success,
 		Msg:        coordinadorRes.Msg,
-		DatonodeId: broker.RoundRobinIndex,
+		DatonodeId: roundRobinIndex,
 		Version:    coordinadorRes.Version,
 	}
 	return res, nil
@@ -247,7 +252,9 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 
 func (s *server) GetInitialInfo(ctx context.Context, req *pb.GetInitialInfoRequest) (*pb.GetInitialInfoResponse, error) {
 	log.Printf("Solicitud de info inicial para vuelo: %s\n", req.FlightId)
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, _ := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	res, err := client.GetInitialInfo(ctx, req)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
@@ -268,7 +275,9 @@ func (s *server) BrokerRead(ctx context.Context, req *pb.BrokerReadRequest) (*pb
 		return res, nil
 	}
 	log.Printf("Solicitud de lectura para vuelo: %s en datanode seleccionado por round robin\n", req.FlightId)
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, _ := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	res, err := client.BrokerRead(ctx, req)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
