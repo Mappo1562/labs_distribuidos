@@ -438,6 +438,7 @@ func revisarLiderVivo() {
 }
 
 func ciclo() {
+	time.Sleep(5 * time.Second)
 	rand.Seed(int64(ID + ID*5))
 	for true {
 		time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)

@@ -239,6 +239,7 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 	a := comparar(relojRecibido, reloj)
 	if a == 0 {
 		log.Printf("Comparando relojes descubri que tenemos los relojes igual")
+		go compararRelojConElSiguiente(0)
 		return &pb.Data{Flag: 0}, nil
 	}
 	if a == -1 { // el solicitante esta desactualizado
@@ -273,6 +274,7 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 			}
 			datos2 = append(datos2, d)
 		}
+		go compararRelojConElSiguiente(0)
 		return &pb.Data{Flag: 1, Datosv: datos, Datosa: datos2, R: r}, nil
 	}
 	if a == 1 { // estoy desactualizado desactualizado
@@ -299,7 +301,7 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 			R2: int64(reloj[2]),
 		}
 		mureloj.Unlock()
-
+		go compararRelojConElSiguiente(0)
 		return &pb.Data{Flag: 2, R: r}, nil
 
 	}
@@ -382,7 +384,7 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 			UserID:   v.userID,
 		})
 	}
-
+	go compararRelojConElSiguiente(0)
 	return &pb.Data{Flag: 3, Datosv: datos, Datosa: datos2, R: r}, nil
 
 }
@@ -417,14 +419,14 @@ func actualizarbdseats(datos []*pb.Infoa) {
 	}
 }
 
-func compararRelojConElSiguiente() {
+func compararRelojConElSiguiente(i int) {
 	time.Sleep(10 * time.Second)
 	mureloj.Lock()
-	IDsiguiente := (ID + 1) % 3
+	IDsiguiente := (ID + i + 1) % 3
 	if IDsiguiente == ID {
 		IDsiguiente = (IDsiguiente + 1) % 3
 	}
-	log.Printf("voy a comparar mi reloj con %v", IDsiguiente)
+	log.Printf("voy a comparar mi reloj con datanode%v", IDsiguiente)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	r := &pb.Reloj{
@@ -450,15 +452,19 @@ func compararRelojConElSiguiente() {
 			UserID:   v.userID,
 		})
 	}
+
 	resp, err := clientes[IDsiguiente].CompararRelojes(ctx, &pb.Data{Datosv: datos, Datosa: datos2, R: r})
 	cancel()
 
 	if err != nil {
-		log.Printf("Nodo %d no aceptó recibió compararReloj: %v", IDsiguiente, err)
+		log.Printf("Nodo %d no acepto compararReloj: %v", IDsiguiente, err)
 		log.Printf("Probando comparar reloj con otro nodo...")
 		mureloj.Unlock()
-		compararRelojConElSiguiente()
+		compararRelojConElSiguiente(i + 1)
 		return
+	}
+	if resp.Flag == 0 {
+		log.Printf("Los relojes son iguales, nada que hacer")
 	}
 	if resp.Flag == 1 {
 		log.Printf("Estoy desactualizazo, actualizando...")
@@ -473,7 +479,9 @@ func compararRelojConElSiguiente() {
 		actualizarbd(resp.Datosv)
 		actualizarbdseats(resp.Datosa)
 	}
-	reloj = [3]int{int(resp.R.R0), int(resp.R.R1), int(resp.R.R2)}
+	if resp.Flag != 0 {
+		reloj = [3]int{int(resp.R.R0), int(resp.R.R1), int(resp.R.R2)}
+	}
 	mureloj.Unlock()
 }
 
@@ -491,7 +499,7 @@ func ciclo() {
 	rand.Seed(int64(ID + ID*5))
 	if ID == 0 {
 		time.Sleep(10 * time.Second)
-		compararRelojConElSiguiente()
+		compararRelojConElSiguiente(0)
 	}
 	for true {
 		time.Sleep(time.Duration(rand.Int()%5+1) * time.Second)
