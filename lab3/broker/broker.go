@@ -178,7 +178,7 @@ func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
 
 	// solo el líder decide
 	if respuestaLider != nil {
-		log.Printf("Líder ATC %d asignó pista %d al vuelo %s", respuestaLider.id, pista, flight_id)
+		log.Printf("Operacion Crítica - Líder ATC %d asignó pista %d al vuelo %s", respuestaLider.id, pista, flight_id)
 		reporteText := fmt.Sprintf(
 			"Operacion Crítica: Pista %d asignada al vuelo %s por ATC %d",
 			pista, flight_id, respuestaLider.id,

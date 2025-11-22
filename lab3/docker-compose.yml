@@ -12,7 +12,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./reporte:/app/reporte
+      - ./reportes:/app/reportes
 
   # Nodos consenso:
   dbatc0:
