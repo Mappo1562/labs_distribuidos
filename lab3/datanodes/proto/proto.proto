@@ -7,17 +7,17 @@ option go_package = "/proto";
 
 service Datanode{
     // Broker
-    rpc FlightUpdate(FlightStates) returns (Vacio);
+    rpc FlightUpdate(FlightStates) returns (Vacio);//
 
     // Clientes MR
-    rpc MRRead(MRReadRequest) returns (MRReadResponse);
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);//
 
     // solo para datanodes:
-    rpc CompararRelojes(Data) returns (Data);
+    rpc CompararRelojes(Data) returns (Data);//
     
     // Coordinador
-    rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
-    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
+    rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);//
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);//
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
 }
 
@@ -42,15 +42,24 @@ message MRReadResponse{
     string msg = 6;
 }
 
-message Info{
+message Infov{
     string ID = 1;
     string estado = 2;
     string puerta = 3;
 }
 
+message Infoa{
+    string ID = 1;
+	string FlightID = 2;
+	string SeatID = 3;
+	bool Ocuppied = 4;
+	string userID = 5;
+}
+
 message Data{
     int64 flag = 1; // 0 si no hay cambio, 1 si el solicitante esta desactualizado, 2 si el receptor esta desactualizado, 3 concurrencia
-    repeated Info datos = 2;
+    repeated Infov datosv = 2;
+    repeated Infoa datosa = 3;
     Reloj R = 4;
 }
 

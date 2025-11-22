@@ -55,8 +55,16 @@ const (
 )
 
 type Record struct {
-	Estado string
-	Puerta string
+	Estado  string
+	Puerta  string
+	version int
+}
+
+type Seat struct {
+	FlightID string
+	SeatID   string
+	Ocuppied bool
+	userID   string
 }
 
 var (
@@ -67,19 +75,16 @@ var (
 	reloj       [3]int
 	muescritura sync.Mutex
 	ID          int
-	lider       = -1
 	clientes    = make(map[int]pb.DatanodeClient)
 	conexiones  = make(map[int]*grpc.ClientConn)
-	muClients   sync.RWMutex
-
-	file       *os.File
-	grpcServer *grpc.Server
-	lis        net.Listener
-	mapeo      = map[string]int{
+	grpcServer  *grpc.Server
+	lis         net.Listener
+	mapeo       = map[string]int{
 		"estado": 0,
 		"puerta": 1,
 	}
-	bd map[string]Record
+	bd      map[string]Record
+	bdseats map[string]Seat
 )
 
 type server struct {
@@ -114,6 +119,7 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 	rec, ok := bd[in.FlightId]
 	if !ok {
 		rec = Record{}
+		rec.version = 0
 	}
 
 	if idx == 0 {
@@ -121,6 +127,7 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 	} else {
 		rec.Puerta = in.UpdateValue
 	}
+	rec.version++
 	bd[in.FlightId] = rec
 
 	return &pb.Vacio{}, nil
@@ -162,6 +169,67 @@ func merge(a [3]int, b [3]int) [3]int {
 	return m
 }
 
+func (s *server) CoordinadorWrite(ctx context.Context, in *pb.CoordinadorWriteRequest) (*pb.CoordinadorWriteResponse, error) {
+	muescritura.Lock()
+	defer muescritura.Unlock()
+
+	rec := Seat{
+		FlightID: in.FlightId,
+		SeatID:   in.Seat,
+		Ocuppied: true,
+		userID:   in.ClienteId,
+	}
+	bdseats[in.RequestId] = rec
+	return &pb.CoordinadorWriteResponse{Success: true}, nil
+}
+
+// enviar asientos que ya estan ocupados para un vuelo
+func (s *server) GetInitialInfo(ctx context.Context, in *pb.GetInitialInfoRequest) (*pb.GetInitialInfoResponse, error) {
+	texto := ""
+	usados := []int{}
+	for _, v := range bdseats {
+		if in.FlightId == v.FlightID {
+			if v.Ocuppied == true {
+				idAsiento, _ := strconv.Atoi(v.SeatID)
+				usados = append(usados, idAsiento)
+			}
+		}
+	}
+	for i := 0; i <= 30; i++ {
+		agregar := true
+		for j := 0; j < len(usados); j++ {
+			if i == usados[j] {
+				agregar = false
+				break
+			}
+		}
+		if agregar {
+			texto += strconv.Itoa(i) + ","
+		}
+	}
+	return &pb.GetInitialInfoResponse{Seats: texto, Success: true, Msg: "Todo bien"}, nil
+}
+
+func (s *server) MRRead(ctx context.Context, in *pb.MRReadRequest) (*pb.MRReadResponse, error) {
+	muescritura.Lock()
+	defer muescritura.Unlock()
+	rec, ok := bd[in.FlightId]
+	if !ok {
+		return &pb.MRReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
+	}
+	return &pb.MRReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
+}
+
+func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
+	muescritura.Lock()
+	defer muescritura.Unlock()
+	rec, ok := bd[in.FlightId]
+	if !ok {
+		return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
+	}
+	return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
+}
+
 func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, error) {
 	relojRecibido := [3]int{int(in.R.R0), int(in.R.R1), int(in.R.R2)}
 
@@ -175,9 +243,9 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 	}
 	if a == -1 { // el solicitante esta desactualizado
 		log.Printf("Comparando relojes descubri que el solicitante esta desactualizado")
-		datos := make([]*pb.Info, 0, len(bd))
+		datos := make([]*pb.Infov, 0, len(bd))
 		for k, v := range bd {
-			d := &pb.Info{
+			d := &pb.Infov{
 				ID:     k,
 				Estado: v.Estado,
 				Puerta: v.Puerta,
@@ -193,17 +261,36 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 			R2: int64(reloj[2]),
 		}
 		mureloj.Unlock()
-		return &pb.Data{Flag: 1, Datos: datos, R: r}, nil
+
+		datos2 := make([]*pb.Infoa, 0, len(bd))
+		for k, v := range bdseats {
+			d := &pb.Infoa{
+				ID:       k,
+				FlightID: v.FlightID,
+				SeatID:   v.SeatID,
+				Ocuppied: v.Ocuppied,
+				UserID:   v.userID,
+			}
+			datos2 = append(datos2, d)
+		}
+		return &pb.Data{Flag: 1, Datosv: datos, Datosa: datos2, R: r}, nil
 	}
 	if a == 1 { // estoy desactualizado desactualizado
 		log.Printf("Comparando relojes descubri que estoy desactualizado")
-		for _, v := range in.Datos {
+		for _, v := range in.Datosv {
 			bd[v.ID] = Record{
 				Estado: v.Estado,
 				Puerta: v.Puerta,
 			}
 		}
-
+		for _, v := range in.Datosa {
+			bdseats[v.ID] = Seat{
+				FlightID: v.FlightID,
+				SeatID:   v.SeatID,
+				Ocuppied: v.Ocuppied,
+				userID:   v.UserID,
+			}
+		}
 		mureloj.Lock()
 		reloj = merge(relojRecibido, reloj)
 		r := &pb.Reloj{
@@ -217,7 +304,7 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 
 	}
 	log.Printf("Comparando relojes descubri que tenemos un conflicto")
-	for _, remoto := range in.Datos {
+	for _, remoto := range in.Datosv {
 		local, existeLocal := bd[remoto.ID]
 		if !existeLocal {
 			bd[remoto.ID] = Record{
@@ -240,6 +327,33 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 		}
 	}
 
+	for _, remoto := range in.Datosa {
+		local, existeLocal := bdseats[remoto.ID]
+		if !existeLocal {
+			bdseats[remoto.ID] = Seat{
+				FlightID: remoto.FlightID,
+				SeatID:   remoto.SeatID,
+				Ocuppied: remoto.Ocuppied,
+				userID:   remoto.UserID,
+			}
+			continue
+		}
+
+		// Deterministico:
+		// Comparamos tuplas lexicográficamente: (Estado, Puerta)
+		localTuple := local.FlightID + "|" + local.SeatID + "|" + strconv.FormatBool(local.Ocuppied) + "|" + local.userID
+		remotoTuple := remoto.FlightID + "|" + remoto.SeatID + "|" + strconv.FormatBool(remoto.Ocuppied) + "|" + remoto.UserID
+
+		if remotoTuple > localTuple {
+			bdseats[remoto.ID] = Seat{
+				FlightID: remoto.FlightID,
+				SeatID:   remoto.SeatID,
+				Ocuppied: remoto.Ocuppied,
+				userID:   remoto.UserID,
+			}
+		}
+	}
+
 	mureloj.Lock()
 	reloj = merge(relojRecibido, reloj)
 	r := &pb.Reloj{
@@ -249,16 +363,27 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 	}
 	mureloj.Unlock()
 
-	datos := make([]*pb.Info, 0, len(bd))
+	datos := make([]*pb.Infov, 0, len(bd))
 	for k, v := range bd {
-		datos = append(datos, &pb.Info{
+		datos = append(datos, &pb.Infov{
 			ID:     k,
 			Estado: v.Estado,
 			Puerta: v.Puerta,
 		})
 	}
 
-	return &pb.Data{Flag: 3, Datos: datos, R: r}, nil
+	datos2 := make([]*pb.Infoa, 0, len(bdseats))
+	for k, v := range bdseats {
+		datos2 = append(datos2, &pb.Infoa{
+			ID:       k,
+			FlightID: v.FlightID,
+			SeatID:   v.SeatID,
+			Ocuppied: v.Ocuppied,
+			UserID:   v.userID,
+		})
+	}
+
+	return &pb.Data{Flag: 3, Datosv: datos, Datosa: datos2, R: r}, nil
 
 }
 
@@ -268,13 +393,26 @@ func (s *server) CompararRelojes(ctx context.Context, in *pb.Data) (*pb.Data, er
 //
 /////////////////////////////////
 
-func actualizarbd(datos []*pb.Info) {
+func actualizarbd(datos []*pb.Infov) {
 	muescritura.Lock()
 	defer muescritura.Unlock()
 	for _, v := range datos {
 		bd[v.ID] = Record{
 			Estado: v.Estado,
 			Puerta: v.Puerta,
+		}
+	}
+}
+
+func actualizarbdseats(datos []*pb.Infoa) {
+	muescritura.Lock()
+	defer muescritura.Unlock()
+	for _, v := range datos {
+		bdseats[v.ID] = Seat{
+			FlightID: v.FlightID,
+			SeatID:   v.SeatID,
+			Ocuppied: v.Ocuppied,
+			userID:   v.UserID,
 		}
 	}
 }
@@ -294,15 +432,25 @@ func compararRelojConElSiguiente() {
 		R1: int64(reloj[1]),
 		R2: int64(reloj[2]),
 	}
-	datos := make([]*pb.Info, 0, len(bd))
+	datos := make([]*pb.Infov, 0, len(bd))
 	for k, v := range bd {
-		datos = append(datos, &pb.Info{
+		datos = append(datos, &pb.Infov{
 			ID:     k,
 			Estado: v.Estado,
 			Puerta: v.Puerta,
 		})
 	}
-	resp, err := clientes[IDsiguiente].CompararRelojes(ctx, &pb.Data{Datos: datos, R: r})
+	datos2 := make([]*pb.Infoa, 0, len(bdseats))
+	for k, v := range bdseats {
+		datos2 = append(datos2, &pb.Infoa{
+			ID:       k,
+			FlightID: v.FlightID,
+			SeatID:   v.SeatID,
+			Ocuppied: v.Ocuppied,
+			UserID:   v.userID,
+		})
+	}
+	resp, err := clientes[IDsiguiente].CompararRelojes(ctx, &pb.Data{Datosv: datos, Datosa: datos2, R: r})
 	cancel()
 
 	if err != nil {
@@ -314,15 +462,18 @@ func compararRelojConElSiguiente() {
 	}
 	if resp.Flag == 1 {
 		log.Printf("Estoy desactualizazo, actualizando...")
-		actualizarbd(resp.Datos)
+		actualizarbd(resp.Datosv)
+		actualizarbdseats(resp.Datosa)
 	}
 	if resp.Flag == 2 {
 		log.Printf("El otro nodo estaba desactualizado, le mande mi data")
 	}
 	if resp.Flag == 3 {
 		log.Printf("Hubo conflicto, se hizo merge")
-		actualizarbd(resp.Datos)
+		actualizarbd(resp.Datosv)
+		actualizarbdseats(resp.Datosa)
 	}
+	reloj = [3]int{int(resp.R.R0), int(resp.R.R1), int(resp.R.R2)}
 	mureloj.Unlock()
 }
 
