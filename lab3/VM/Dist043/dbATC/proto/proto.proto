@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+
+package AeroDist;
+
+option go_package = "/proto";
+
+    /*
+    si alguien se cae y no tiene un lider definido, llamara a
+    PostularALider, si los dos le responden que el newlider 
+    tiene un id distinto al suyo asume que ese es el lider actual
+    */
+
+service  NodoBDConsenso{
+    // rpc para ser llamado por el broker:
+    rpc INSERT(record) returns (InsertResponse) {}
+    // rpc entre nodos (PRIV):
+    rpc PostularALider(postulante) returns (NewLider) {} // nodo x postulara a ser lider
+    rpc InformarNewLider (postulante) returns (NewLider) {} // nodo x fue aceptado como lider por la mayoria
+    rpc Ping(Vacio) returns (Vacio) {} // nodo x hace ping para saber si el lider sigue vivo
+    rpc INSERTLIDER(recordID) returns (Vacio){} // nodo x hace que el lider recopile su voto
+    rpc resultadoConsenso(record) returns (Vacio){} // lider informa el resultado del consenso a los nodos
+    rpc GetHistorico(Vacio) returns (Historico){} // nodo x que revive solicita la data al lider
+}
+
+message Bool{
+    bool flag = 1;
+}
+
+message record{
+    string flight_id = 1;
+    int64 pista = 2;
+}
+
+message Historico{
+    repeated record records = 1;
+}
+
+message recordID{
+    record r = 1;
+    int64 id = 2;
+}
+
+message InsertResponse{
+    int64 id = 1;
+    bool lider = 2; // indica si es el lider o no, la unica respuesta importante es la del lider
+    bool exito = 3;
+}
+
+message NewLider{
+    int64 id = 1;
+}
+
+message postulante{
+    int64 id = 1;
+}
+
+message Vacio{}

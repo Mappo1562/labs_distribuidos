@@ -1,0 +1,39 @@
+services:
+
+  dbatc2:
+    build: ./dbatc
+    container_name: dbatc2
+    environment:
+      - ID=2
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data2:/app/data2
+    ports:
+      - "50053:50053"
+      
+  datanode1:
+    build: ./datanodes
+    container_name: datanode1
+    environment:
+      - ID=1
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data0:/app/data1
+    ports:
+      - "50062:50062"
+  
+  coordinador:
+    build: ./coordinador
+    container_name: coordinador
+    depends_on:
+      - broker
+    ports:
+      - "50060:50060"
+    networks:
+      - grpc-net
+      
+networks:
+  grpc-net:
+    driver: bridge

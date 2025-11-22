@@ -1,0 +1,34 @@
+services:
+  dbatc0:
+    build: ./dbatc
+    container_name: dbatc0
+    environment:
+      - ID=0
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data0:/app/data0
+    ports:
+      - "50051:50051"
+
+  cliente-ryw2:
+    build: ./clienteRYW
+    container_name: cliente-ryw2
+    environment: 
+      - CLIENT_ID=cliente-ryw_2
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+    
+  cliente-mr2:
+    build: ./clienteMR
+    container_name: cliente-mr2
+    environment: 
+      - CLIENT_ID=cliente-mr_2
+    networks:
+      - grpc-net
+      
+networks:
+  grpc-net:
+    driver: bridge

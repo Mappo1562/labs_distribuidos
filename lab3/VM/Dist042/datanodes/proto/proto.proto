@@ -1,0 +1,111 @@
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service Datanode{
+    // Broker
+    rpc FlightUpdate(FlightStates) returns (Vacio);//
+
+    // Clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);//
+
+    // solo para datanodes:
+    rpc CompararRelojes(Data) returns (Data);//
+    
+    // Coordinador
+    rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);//
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);//
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+}
+
+message FlightStates{
+    string flight_id = 1;
+    string update_type = 2;
+    string update_value = 3;
+}
+
+message MRReadRequest{
+    string flight_id = 1;
+    string client_id = 2;
+    int64 last_version_seen = 3;
+}
+
+message MRReadResponse{
+    string flight_id = 1;
+    string status = 2;
+    string gate = 3;
+    int64 version = 4;
+    bool success = 5;
+    string msg = 6;
+}
+
+message Infov{
+    string ID = 1;
+    string estado = 2;
+    string puerta = 3;
+}
+
+message Infoa{
+    string ID = 1;
+	string FlightID = 2;
+	string SeatID = 3;
+	bool Ocuppied = 4;
+	string userID = 5;
+}
+
+message Data{
+    int64 flag = 1; // 0 si no hay cambio, 1 si el solicitante esta desactualizado, 2 si el receptor esta desactualizado, 3 concurrencia
+    repeated Infov datosv = 2;
+    repeated Infoa datosa = 3;
+    Reloj R = 4;
+}
+
+message Reloj{
+    int64 R0 = 1;
+    int64 R1 = 2;
+    int64 R2 = 3;
+}
+
+// Coordinador
+message CoordinadorWriteRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
+
+message CoordinadorWriteResponse{
+    bool success = 1;
+    string msg = 2;
+    int64 version = 4;
+}
+
+message GetInitialInfoRequest{
+    string flight_id = 1;
+}
+
+message GetInitialInfoResponse{
+    string seats = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message BrokerReadRequest{
+    string flight_id = 1;
+    int64 datanode_id = 2;
+}
+
+message BrokerReadResponse{
+    string flight_id = 1;
+    string seat = 2;
+    string status = 3;
+    string gate = 4;
+    int64 version = 5;
+    bool success = 6;
+    string msg = 7;
+}
+
+message Vacio{}
