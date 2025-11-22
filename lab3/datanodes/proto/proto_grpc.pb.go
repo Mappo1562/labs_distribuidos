@@ -25,6 +25,8 @@ const (
 	Datanode_MRRead_FullMethodName           = "/AeroDist.Datanode/MRRead"
 	Datanode_CompararRelojes_FullMethodName  = "/AeroDist.Datanode/CompararRelojes"
 	Datanode_CoordinadorWrite_FullMethodName = "/AeroDist.Datanode/CoordinadorWrite"
+	Datanode_GetInitialInfo_FullMethodName   = "/AeroDist.Datanode/GetInitialInfo"
+	Datanode_BrokerRead_FullMethodName       = "/AeroDist.Datanode/BrokerRead"
 )
 
 // DatanodeClient is the client API for Datanode service.
@@ -39,6 +41,8 @@ type DatanodeClient interface {
 	CompararRelojes(ctx context.Context, in *Data, opts ...grpc.CallOption) (*Data, error)
 	// Coordinador
 	CoordinadorWrite(ctx context.Context, in *CoordinadorWriteRequest, opts ...grpc.CallOption) (*CoordinadorWriteResponse, error)
+	GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error)
+	BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error)
 }
 
 type datanodeClient struct {
@@ -89,6 +93,26 @@ func (c *datanodeClient) CoordinadorWrite(ctx context.Context, in *CoordinadorWr
 	return out, nil
 }
 
+func (c *datanodeClient) GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetInitialInfoResponse)
+	err := c.cc.Invoke(ctx, Datanode_GetInitialInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datanodeClient) BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BrokerReadResponse)
+	err := c.cc.Invoke(ctx, Datanode_BrokerRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatanodeServer is the server API for Datanode service.
 // All implementations must embed UnimplementedDatanodeServer
 // for forward compatibility.
@@ -101,6 +125,8 @@ type DatanodeServer interface {
 	CompararRelojes(context.Context, *Data) (*Data, error)
 	// Coordinador
 	CoordinadorWrite(context.Context, *CoordinadorWriteRequest) (*CoordinadorWriteResponse, error)
+	GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error)
+	BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error)
 	mustEmbedUnimplementedDatanodeServer()
 }
 
@@ -122,6 +148,12 @@ func (UnimplementedDatanodeServer) CompararRelojes(context.Context, *Data) (*Dat
 }
 func (UnimplementedDatanodeServer) CoordinadorWrite(context.Context, *CoordinadorWriteRequest) (*CoordinadorWriteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CoordinadorWrite not implemented")
+}
+func (UnimplementedDatanodeServer) GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInitialInfo not implemented")
+}
+func (UnimplementedDatanodeServer) BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BrokerRead not implemented")
 }
 func (UnimplementedDatanodeServer) mustEmbedUnimplementedDatanodeServer() {}
 func (UnimplementedDatanodeServer) testEmbeddedByValue()                  {}
@@ -216,6 +248,42 @@ func _Datanode_CoordinadorWrite_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Datanode_GetInitialInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInitialInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).GetInitialInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_GetInitialInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).GetInitialInfo(ctx, req.(*GetInitialInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Datanode_BrokerRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BrokerReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).BrokerRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_BrokerRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).BrokerRead(ctx, req.(*BrokerReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Datanode_ServiceDesc is the grpc.ServiceDesc for Datanode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -238,6 +306,14 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CoordinadorWrite",
 			Handler:    _Datanode_CoordinadorWrite_Handler,
+		},
+		{
+			MethodName: "GetInitialInfo",
+			Handler:    _Datanode_GetInitialInfo_Handler,
+		},
+		{
+			MethodName: "BrokerRead",
+			Handler:    _Datanode_BrokerRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

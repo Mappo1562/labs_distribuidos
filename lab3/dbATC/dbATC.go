@@ -53,8 +53,6 @@ var (
 	conexiones = make(map[int]*grpc.ClientConn)
 	votos      = make(map[int]*pb.Record)
 	muVotos    sync.Mutex
-	muClients  sync.RWMutex
-	file       *os.File
 	grpcServer *grpc.Server
 	lis        net.Listener
 )
