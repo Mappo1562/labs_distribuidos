@@ -17,6 +17,7 @@ service Datanode{
     
     // Coordinador
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
 }
 
 message FlightStates{
@@ -57,6 +58,8 @@ message Reloj{
     int64 R1 = 2;
     int64 R2 = 3;
 }
+
+// Coordinador
 message CoordinadorWriteRequest{
     string cliente_id = 1;
     string flight_id = 2;
@@ -68,6 +71,16 @@ message CoordinadorWriteResponse{
     bool success = 1;
     string msg = 2;
     int64 version = 4;
+}
+
+message GetInitialInfoRequest{
+    string flight_id = 1;
+}
+
+message GetInitialInfoResponse{
+    string seats = 1;
+    bool success = 2;
+    string msg = 3;
 }
 
 message Vacio{}

@@ -491,7 +491,7 @@ type ApplyWriteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	Msg           string                 `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	DatonodeId    string                 `protobuf:"bytes,3,opt,name=datonode_id,json=datonodeId,proto3" json:"datonode_id,omitempty"`
+	DatonodeId    int64                  `protobuf:"varint,3,opt,name=datonode_id,json=datonodeId,proto3" json:"datonode_id,omitempty"`
 	Version       int64                  `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -541,11 +541,11 @@ func (x *ApplyWriteResponse) GetMsg() string {
 	return ""
 }
 
-func (x *ApplyWriteResponse) GetDatonodeId() string {
+func (x *ApplyWriteResponse) GetDatonodeId() int64 {
 	if x != nil {
 		return x.DatonodeId
 	}
-	return ""
+	return 0
 }
 
 func (x *ApplyWriteResponse) GetVersion() int64 {
@@ -963,7 +963,7 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\x12ApplyWriteResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x10\n" +
 	"\x03msg\x18\x02 \x01(\tR\x03msg\x12\x1f\n" +
-	"\vdatonode_id\x18\x03 \x01(\tR\n" +
+	"\vdatonode_id\x18\x03 \x01(\x03R\n" +
 	"datonodeId\x12\x18\n" +
 	"\aversion\x18\x04 \x01(\x03R\aversion\"Q\n" +
 	"\x11BrokerReadRequest\x12\x1b\n" +
@@ -1001,12 +1001,13 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"ApplyWrite\x12\x1b.AeroDist.ApplyWriteRequest\x1a\x1c.AeroDist.ApplyWriteResponse\x12G\n" +
 	"\n" +
-	"BrokerRead\x12\x1b.AeroDist.BrokerReadRequest\x1a\x1c.AeroDist.BrokerReadResponse2\x90\x02\n" +
+	"BrokerRead\x12\x1b.AeroDist.BrokerReadRequest\x1a\x1c.AeroDist.BrokerReadResponse2\xe5\x02\n" +
 	"\bDatanode\x127\n" +
 	"\fFlightUpdate\x12\x16.AeroDist.FlightStates\x1a\x0f.AeroDist.Vacio\x123\n" +
 	"\rCreateFlights\x12\x11.AeroDist.Flights\x1a\x0f.AeroDist.Vacio\x12;\n" +
 	"\x06MRRead\x12\x17.AeroDist.MRReadRequest\x1a\x18.AeroDist.MRReadResponse\x12Y\n" +
-	"\x10CoordinadorWrite\x12!.AeroDist.CoordinadorWriteRequest\x1a\".AeroDist.CoordinadorWriteResponseB\bZ\x06/protob\x06proto3"
+	"\x10CoordinadorWrite\x12!.AeroDist.CoordinadorWriteRequest\x1a\".AeroDist.CoordinadorWriteResponse\x12S\n" +
+	"\x0eGetInitialInfo\x12\x1f.AeroDist.GetInitialInfoRequest\x1a .AeroDist.GetInitialInfoResponseB\bZ\x06/protob\x06proto3"
 
 var (
 	file_proto_proto_proto_rawDescOnce sync.Once
@@ -1049,16 +1050,18 @@ var file_proto_proto_proto_depIdxs = []int32{
 	2,  // 7: AeroDist.Datanode.CreateFlights:input_type -> AeroDist.Flights
 	3,  // 8: AeroDist.Datanode.MRRead:input_type -> AeroDist.MRReadRequest
 	12, // 9: AeroDist.Datanode.CoordinadorWrite:input_type -> AeroDist.CoordinadorWriteRequest
-	4,  // 10: AeroDist.Broker.MRRead:output_type -> AeroDist.MRReadResponse
-	6,  // 11: AeroDist.Broker.GetInitialInfo:output_type -> AeroDist.GetInitialInfoResponse
-	8,  // 12: AeroDist.Broker.ApplyWrite:output_type -> AeroDist.ApplyWriteResponse
-	10, // 13: AeroDist.Broker.BrokerRead:output_type -> AeroDist.BrokerReadResponse
-	14, // 14: AeroDist.Datanode.FlightUpdate:output_type -> AeroDist.Vacio
-	14, // 15: AeroDist.Datanode.CreateFlights:output_type -> AeroDist.Vacio
-	4,  // 16: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
-	13, // 17: AeroDist.Datanode.CoordinadorWrite:output_type -> AeroDist.CoordinadorWriteResponse
-	10, // [10:18] is the sub-list for method output_type
-	2,  // [2:10] is the sub-list for method input_type
+	5,  // 10: AeroDist.Datanode.GetInitialInfo:input_type -> AeroDist.GetInitialInfoRequest
+	4,  // 11: AeroDist.Broker.MRRead:output_type -> AeroDist.MRReadResponse
+	6,  // 12: AeroDist.Broker.GetInitialInfo:output_type -> AeroDist.GetInitialInfoResponse
+	8,  // 13: AeroDist.Broker.ApplyWrite:output_type -> AeroDist.ApplyWriteResponse
+	10, // 14: AeroDist.Broker.BrokerRead:output_type -> AeroDist.BrokerReadResponse
+	14, // 15: AeroDist.Datanode.FlightUpdate:output_type -> AeroDist.Vacio
+	14, // 16: AeroDist.Datanode.CreateFlights:output_type -> AeroDist.Vacio
+	4,  // 17: AeroDist.Datanode.MRRead:output_type -> AeroDist.MRReadResponse
+	13, // 18: AeroDist.Datanode.CoordinadorWrite:output_type -> AeroDist.CoordinadorWriteResponse
+	6,  // 19: AeroDist.Datanode.GetInitialInfo:output_type -> AeroDist.GetInitialInfoResponse
+	11, // [11:20] is the sub-list for method output_type
+	2,  // [2:11] is the sub-list for method input_type
 	2,  // [2:2] is the sub-list for extension type_name
 	2,  // [2:2] is the sub-list for extension extendee
 	0,  // [0:2] is the sub-list for field type_name

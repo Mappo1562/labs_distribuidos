@@ -73,7 +73,7 @@ message ApplyWriteRequest{
 message ApplyWriteResponse{
     bool success = 1;
     string msg = 2;
-    string datonode_id = 3;
+    int64 datonode_id = 3;
     int64 version = 4;
 }
 

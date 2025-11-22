@@ -69,7 +69,7 @@ type server struct {
 type Broker struct {
 	// Clientes gRPC para los Datanodes
 	datanodeClients []pb.DatanodeClient
-	RoundRobinIndex int
+	RoundRobinIndex int64
 }
 
 func NewBroker() *Broker {
@@ -85,7 +85,7 @@ var broker = NewBroker()
 // -------------------------
 func RoundRobinIndex(b *Broker) pb.DatanodeClient {
 	client := b.datanodeClients[b.RoundRobinIndex]
-	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % len(b.datanodeClients)
+	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % int64(len(b.datanodeClients))
 	return client
 }
 
@@ -106,7 +106,28 @@ func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadR
 func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb.ApplyWriteResponse, error) {
 	log.Printf("Escritura recibida de: %s asiento: %s\n", req.ClienteId, req.Seat)
 	client := RoundRobinIndex(broker)
-	res, err := client.ApplyWrite(ctx, req)
+	coordinadorReq := &pb.CoordinadorWriteRequest{
+		ClienteId: req.ClienteId,
+		Seat:      req.Seat,
+	}
+	coordinadorRes, err := client.CoordinadorWrite(ctx, coordinadorReq)
+	if err != nil {
+		log.Printf("Error comunicandose con datanode: %v", err)
+		return nil, err
+	}
+	res := &pb.ApplyWriteResponse{
+		Success:    coordinadorRes.Success,
+		Msg:        coordinadorRes.Msg,
+		DatonodeId: broker.RoundRobinIndex,
+		Version:    coordinadorRes.Version,
+	}
+	return res, nil
+}
+
+func (s *server) GetInitialInfo(ctx context.Context, req *pb.GetInitialInfoRequest) (*pb.GetInitialInfoResponse, error) {
+	log.Printf("Solicitud de info inicial para vuelo: %s\n", req.FlightId)
+	client := RoundRobinIndex(broker)
+	res, err := client.GetInitialInfo(ctx, req)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
 		return nil, err
@@ -256,10 +277,15 @@ func main() {
 	go func() {
 		log.Println("Iniciando simulación de actualizaciones de vuelo...")
 		updates, err := loadFlightUpdates(flightsFile)
-		datanode := broker.datanodeClients[0]
-		_, err = datanode.CreateFlights(context.Background(), &pb.Flights{Flights: convertFlightsToProto(Flights)})
 		if err != nil {
-			log.Fatalf("Error loading flight updates: %v", err)
+			log.Fatalf("Error cargando flight updates: %v", err)
+		}
+		datanodes := broker.datanodeClients
+		for node := range datanodes {
+			_, err = datanodes[node].CreateFlights(context.Background(), &pb.Flights{Flights: convertFlightsToProto(Flights)})
+			if err != nil {
+				log.Fatalf("Error enviando vuelos iniciales al datanode %d: %v", node, err)
+			}
 		}
 
 		time.Sleep(5 * time.Second) // Espera antes de iniciar la simulación
