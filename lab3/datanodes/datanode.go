@@ -232,14 +232,12 @@ func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.
 		return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
 	}
 
-	// buscar el asiento de este weon
-	/*
-		for _, v := range bdseats {
-			if in.Client_id == v.userID && in.FlightId == v.FlightID {
-				return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version), Seat: v.SeatID}
-			}
+	for _, v := range bdseats {
+		if in.ClienteId == v.userID && in.FlightId == v.FlightID {
+			return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version), Seat: v.SeatID}, nil
 		}
-	*/
+	}
+
 	return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
 }
 

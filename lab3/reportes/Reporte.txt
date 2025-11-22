@@ -1,0 +1,7 @@
+Reporte de Operaciones Críticas
+===============================
+[2025-11-22 18:26:44] Operacion Crítica: Pista 1 asignada al vuelo AF-021 por ATC 0
+[2025-11-22 18:26:46] Operacion Crítica: Pista 2 asignada al vuelo LA-500 por ATC 0
+[2025-11-22 18:26:48] Operacion Crítica: Pista 3 asignada al vuelo DL-456 por ATC 0
+[2025-11-22 18:26:51] Operacion Crítica: Pista 4 asignada al vuelo AA-901 por ATC 0
+[2025-11-22 18:26:53] Operacion Crítica: Pista 5 asignada al vuelo SK-772 por ATC 0
