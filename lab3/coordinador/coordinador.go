@@ -85,6 +85,7 @@ func (s *CoordinadorServer) GetBoardingPass(ctx context.Context, in *pb.GetBoard
 		mensaje = &pb.BrokerReadRequest{
 			FlightId:   in.FlightId,
 			DatanodeId: sesion.Datanode,
+			ClienteId:  in.ClienteId,
 		}
 
 	} else {
