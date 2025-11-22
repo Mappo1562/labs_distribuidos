@@ -64,6 +64,12 @@ type server struct {
 func init() {
 	ID, _ = strconv.Atoi(os.Getenv("ID"))
 	port = AddBD[ID][6:]
+	name := "data/db" + strconv.Itoa(ID)
+	file, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
 }
 
 /////////////////////////////////

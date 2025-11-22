@@ -184,7 +184,7 @@ func (s *server) CoordinadorWrite(ctx context.Context, in *pb.CoordinadorWriteRe
 		userID:   in.ClienteId,
 	}
 	bdseats[in.RequestId] = rec
-	return &pb.CoordinadorWriteResponse{Success: true}, nil
+	return &pb.CoordinadorWriteResponse{Success: true, Msg: "todo bien"}, nil
 }
 
 // enviar asientos que ya estan ocupados para un vuelo
@@ -231,6 +231,15 @@ func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.
 	if !ok {
 		return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
 	}
+
+	// buscar el asiento de este weon
+	/*
+		for _, v := range bdseats {
+			if in.Client_id == v.userID && in.FlightId == v.FlightID {
+				return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version), Seat: v.SeatID}
+			}
+		}
+	*/
 	return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
 }
 
