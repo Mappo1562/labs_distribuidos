@@ -49,7 +49,7 @@ var (
 	muinsert   sync.Mutex
 	ID         int
 	lider      = -1
-	clientes   = make(map[int]pb.NodoBDConsensoClient)
+	clientes   = make(map[int]pb.ATCClient)
 	conexiones = make(map[int]*grpc.ClientConn)
 	votos      = make(map[int]*pb.Record)
 	muVotos    sync.Mutex
@@ -58,7 +58,7 @@ var (
 )
 
 type server struct {
-	pb.UnimplementedNodoBDConsensoServer
+	pb.UnimplementedATCServer
 }
 
 func init() {
@@ -81,7 +81,7 @@ func (s *server) ResultadoConsenso(ctx context.Context, in *pb.Record) (*pb.Vaci
 	return &pb.Vacio{}, nil
 }
 
-func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse, error) {
+func (s *server) Insert(ctx context.Context, in *pb.Record) (*pb.InsertResponse, error) {
 	mulider.Lock() // quiza estos candados no sean necesarios
 	liderCopy := lider
 	mulider.Unlock()
@@ -103,7 +103,7 @@ func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse,
 	votos[int(ID)] = in
 	muVotos.Unlock()
 	consenso() // ************************************************ FALTA UN IF PARA VER SI EL CONCENSO ESTUVO BIEN O NO ************************************************
-	return &pb.InsertResponse{Id: int64(ID), Lider: true}, nil
+	return &pb.InsertResponse{Id: int64(ID), Lider: true, Exito: true}, nil
 }
 
 func (s *server) INSERTLIDER(ctx context.Context, in *pb.RecordID) (*pb.Vacio, error) {
@@ -192,7 +192,7 @@ func leerHistorico() ([]*pb.Record, error) {
 
 // ************************************************ LA IMPLEMENTACIÓN DE CONSENSO NO SOPORTA MUCHAS LLAMADAS SEGUIDAS ************************************************
 func consenso() {
-	time.Sleep(1 * time.Second) // ********************************* tiempo para que los otros llamen a INSERTLIDER *********************************
+	time.Sleep(2 * time.Second) // ********************************* tiempo para que los otros llamen a INSERTLIDER *********************************
 	muVotos.Lock()
 	votosCopy := make(map[int]*pb.Record)
 	for k, v := range votos {
@@ -205,6 +205,7 @@ func consenso() {
 		log.Printf("No hubo consenso válido")
 		return
 	}
+	log.Printf("concenso exitoso pista: %v, vuelo: %v", final.Pista, final.FlightId)
 	for i, cliente := range clientes {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		_, err := cliente.ResultadoConsenso(ctx, final)
@@ -256,7 +257,8 @@ func decidirRecord(votos map[int]*pb.Record) *pb.Record {
 /////////////////////////////////
 
 func guardarEnJSON(data *pb.Record) error {
-	name := "db" + strconv.Itoa(ID)
+	log.Printf("************************ Guardando en JSON: FlightID=%s, Pista=%d ***********************", data.FlightId, data.Pista)
+	name := "data/db" + strconv.Itoa(ID)
 	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -358,7 +360,7 @@ func pedirHistoricoAlLiderYGuardarlo(liderCopy int) {
 		return
 	}
 	muinsert.Lock()
-	if aplicarHistorico(historicos.Records) == nil {
+	if err := aplicarHistorico(historicos.Records); err != nil {
 		log.Printf("No logre guardar el historico correctamente")
 		return
 	}
@@ -485,7 +487,7 @@ func conect() {
 		}
 
 		conexiones[i] = conn
-		clientes[i] = pb.NewNodoBDConsensoClient(conn)
+		clientes[i] = pb.NewATCClient(conn)
 
 		log.Printf("Conectado al nodo %d en %s", i, dir)
 	}
@@ -502,7 +504,7 @@ func runServerLoop() {
 		}
 
 		grpcServer = grpc.NewServer()
-		pb.RegisterNodoBDConsensoServer(grpcServer, &server{})
+		pb.RegisterATCServer(grpcServer, &server{})
 
 		log.Printf("Nodo %d: servidor gRPC iniciado en %s", ID, port)
 

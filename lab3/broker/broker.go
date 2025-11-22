@@ -120,6 +120,13 @@ var broker = NewBroker()
 // 	*       Consenso        *
 // 	-------------------------
 
+type resultadoATC struct {
+	pista int64
+	ok    bool
+	lider bool
+	id    int64
+}
+
 func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
 	log.Printf("Broadcasting to ATCs: FlightID=%s, Pista=%d", flight_id, pista)
 	var atcClients []pb.ATCClient
@@ -133,26 +140,54 @@ func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
 		atcClients = append(atcClients, client)
 	}
 
+	results := make(chan resultadoATC, len(atcClients))
+
 	for _, client := range atcClients {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		req := &pb.Record{
-			FlightId: flight_id,
-			Pista:    pista,
-		}
-		res, err := client.Insert(ctx, req)
-		if err != nil {
-			log.Printf("Error comunicandose con ATC: %v", err)
-		}
-		if res.Exito && res.Lider {
-			log.Printf("ATC %d asignó pista %d para vuelo %s", res.Id, pista, flight_id)
-			reporteText := "Operacion Crítica: Pista " + strconv.FormatInt(pista, 10) + " asignada al vuelo " + flight_id
-			AddToReporte(reporteText)
-			return pista, true
-		} else {
-			return 0, false
+		go func(client pb.ATCClient) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			req := &pb.Record{
+				FlightId: flight_id,
+				Pista:    pista,
+			}
+
+			res, err := client.Insert(ctx, req)
+			if err != nil {
+				results <- resultadoATC{0, false, false, 0}
+				return
+			}
+
+			results <- resultadoATC{
+				ok:    res.Exito,
+				lider: res.Lider,
+				id:    res.Id,
+			}
+		}(client)
+	}
+
+	// necesitamos recibir las respuestas de todos
+	var respuestaLider *resultadoATC
+
+	for i := 0; i < len(atcClients); i++ {
+		r := <-results
+		if r.lider && r.ok {
+			respuestaLider = &r
 		}
 	}
+
+	// solo el líder decide
+	if respuestaLider != nil {
+		log.Printf("Líder ATC %d asignó pista %d al vuelo %s", respuestaLider.id, pista, flight_id)
+		reporteText := fmt.Sprintf(
+			"Operacion Crítica: Pista %d asignada al vuelo %s por ATC %d",
+			pista, flight_id, respuestaLider.id,
+		)
+		AddToReporte(reporteText)
+
+		return respuestaLider.pista, true
+	}
+
 	return 0, false
 }
 
@@ -386,13 +421,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error cargando flight updates: %v", err)
 		}
-		datanodes := broker.datanodeClients
-		for node := range datanodes {
-			_, err = datanodes[node].CreateFlights(context.Background(), &pb.Flights{Flights: convertFlightsToProto(Flights)})
-			if err != nil {
-				log.Fatalf("Error enviando vuelos iniciales al datanode %d: %v", node, err)
-			}
-		}
 
 		time.Sleep(5 * time.Second) // Espera antes de iniciar la simulación
 
@@ -408,7 +436,7 @@ func main() {
 
 	go func() {
 
-		time.Sleep(30 * time.Second)
+		time.Sleep(10 * time.Second)
 		log.Println("Solicitando Pistas mediante consenso...")
 		for _, flight := range Flights {
 			pista, ok := AsignarPistaConsenso(flight.FlightId)

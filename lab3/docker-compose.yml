@@ -23,7 +23,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./dbATC/data0:/app/data0
+      - ./dbATC/data0:/app/data
     ports:
       - "50051:50051"
   
@@ -35,7 +35,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./dbATC/data1:/app/data1
+      - ./dbATC/data1:/app/data
     ports:
       - "50052:50052"
 
@@ -48,7 +48,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./dbATC/data2:/app/data2
+      - ./dbATC/data2:/app/data
     ports:
       - "50053:50053"
 

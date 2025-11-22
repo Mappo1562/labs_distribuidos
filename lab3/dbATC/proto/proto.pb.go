@@ -69,6 +69,8 @@ func (x *Bool) GetFlag() bool {
 
 type Record struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	FlightId      string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
+	Pista         int64                  `protobuf:"varint,2,opt,name=pista,proto3" json:"pista,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -101,6 +103,20 @@ func (x *Record) ProtoReflect() protoreflect.Message {
 // Deprecated: Use Record.ProtoReflect.Descriptor instead.
 func (*Record) Descriptor() ([]byte, []int) {
 	return file_proto_proto_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Record) GetFlightId() string {
+	if x != nil {
+		return x.FlightId
+	}
+	return ""
+}
+
+func (x *Record) GetPista() int64 {
+	if x != nil {
+		return x.Pista
+	}
+	return 0
 }
 
 type Historico struct {
@@ -389,8 +405,10 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"\x11proto/proto.proto\x12\bAeroDist\"\x1a\n" +
 	"\x04Bool\x12\x12\n" +
-	"\x04flag\x18\x01 \x01(\bR\x04flag\"\b\n" +
-	"\x06record\"7\n" +
+	"\x04flag\x18\x01 \x01(\bR\x04flag\";\n" +
+	"\x06record\x12\x1b\n" +
+	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x14\n" +
+	"\x05pista\x18\x02 \x01(\x03R\x05pista\"7\n" +
 	"\tHistorico\x12*\n" +
 	"\arecords\x18\x01 \x03(\v2\x10.AeroDist.recordR\arecords\":\n" +
 	"\brecordID\x12\x1e\n" +
@@ -405,9 +423,9 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\n" +
 	"postulante\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\a\n" +
-	"\x05Vacio2\x9a\x03\n" +
-	"\x0eNodoBDConsenso\x126\n" +
-	"\x06INSERT\x12\x10.AeroDist.record\x1a\x18.AeroDist.InsertResponse\"\x00\x12<\n" +
+	"\x05Vacio2\x8f\x03\n" +
+	"\x03ATC\x126\n" +
+	"\x06Insert\x12\x10.AeroDist.record\x1a\x18.AeroDist.InsertResponse\"\x00\x12<\n" +
 	"\x0ePostularALider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00\x12>\n" +
 	"\x10InformarNewLider\x12\x14.AeroDist.postulante\x1a\x12.AeroDist.NewLider\"\x00\x12*\n" +
 	"\x04Ping\x12\x0f.AeroDist.Vacio\x1a\x0f.AeroDist.Vacio\"\x00\x124\n" +
@@ -441,20 +459,20 @@ var file_proto_proto_proto_goTypes = []any{
 var file_proto_proto_proto_depIdxs = []int32{
 	1, // 0: AeroDist.Historico.records:type_name -> AeroDist.record
 	1, // 1: AeroDist.recordID.r:type_name -> AeroDist.record
-	1, // 2: AeroDist.NodoBDConsenso.INSERT:input_type -> AeroDist.record
-	6, // 3: AeroDist.NodoBDConsenso.PostularALider:input_type -> AeroDist.postulante
-	6, // 4: AeroDist.NodoBDConsenso.InformarNewLider:input_type -> AeroDist.postulante
-	7, // 5: AeroDist.NodoBDConsenso.Ping:input_type -> AeroDist.Vacio
-	3, // 6: AeroDist.NodoBDConsenso.INSERTLIDER:input_type -> AeroDist.recordID
-	1, // 7: AeroDist.NodoBDConsenso.resultadoConsenso:input_type -> AeroDist.record
-	7, // 8: AeroDist.NodoBDConsenso.GetHistorico:input_type -> AeroDist.Vacio
-	4, // 9: AeroDist.NodoBDConsenso.INSERT:output_type -> AeroDist.InsertResponse
-	5, // 10: AeroDist.NodoBDConsenso.PostularALider:output_type -> AeroDist.NewLider
-	5, // 11: AeroDist.NodoBDConsenso.InformarNewLider:output_type -> AeroDist.NewLider
-	7, // 12: AeroDist.NodoBDConsenso.Ping:output_type -> AeroDist.Vacio
-	7, // 13: AeroDist.NodoBDConsenso.INSERTLIDER:output_type -> AeroDist.Vacio
-	7, // 14: AeroDist.NodoBDConsenso.resultadoConsenso:output_type -> AeroDist.Vacio
-	2, // 15: AeroDist.NodoBDConsenso.GetHistorico:output_type -> AeroDist.Historico
+	1, // 2: AeroDist.ATC.Insert:input_type -> AeroDist.record
+	6, // 3: AeroDist.ATC.PostularALider:input_type -> AeroDist.postulante
+	6, // 4: AeroDist.ATC.InformarNewLider:input_type -> AeroDist.postulante
+	7, // 5: AeroDist.ATC.Ping:input_type -> AeroDist.Vacio
+	3, // 6: AeroDist.ATC.INSERTLIDER:input_type -> AeroDist.recordID
+	1, // 7: AeroDist.ATC.resultadoConsenso:input_type -> AeroDist.record
+	7, // 8: AeroDist.ATC.GetHistorico:input_type -> AeroDist.Vacio
+	4, // 9: AeroDist.ATC.Insert:output_type -> AeroDist.InsertResponse
+	5, // 10: AeroDist.ATC.PostularALider:output_type -> AeroDist.NewLider
+	5, // 11: AeroDist.ATC.InformarNewLider:output_type -> AeroDist.NewLider
+	7, // 12: AeroDist.ATC.Ping:output_type -> AeroDist.Vacio
+	7, // 13: AeroDist.ATC.INSERTLIDER:output_type -> AeroDist.Vacio
+	7, // 14: AeroDist.ATC.resultadoConsenso:output_type -> AeroDist.Vacio
+	2, // 15: AeroDist.ATC.GetHistorico:output_type -> AeroDist.Historico
 	9, // [9:16] is the sub-list for method output_type
 	2, // [2:9] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name

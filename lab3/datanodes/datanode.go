@@ -94,7 +94,8 @@ type server struct {
 func init() {
 	ID, _ = strconv.Atoi(os.Getenv("ID"))
 	port = AddBD[ID][9:]
-
+	bd = make(map[string]Record)
+	bdseats = make(map[string]Seat)
 }
 
 /////////////////////////////////
@@ -120,6 +121,8 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 	if !ok {
 		rec = Record{}
 		rec.version = 0
+		rec.Estado = ""
+		rec.Puerta = ""
 	}
 
 	if idx == 0 {
@@ -128,8 +131,9 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 		rec.Puerta = in.UpdateValue
 	}
 	rec.version++
-	bd[in.FlightId] = rec
 
+	bd[in.FlightId] = rec
+	log.Printf("FlightUpdate procesado exitosamente para FlightID: %s", in.FlightId)
 	return &pb.Vacio{}, nil
 }
 
