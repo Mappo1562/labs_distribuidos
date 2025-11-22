@@ -49,8 +49,8 @@ import (
 )
 
 const (
-	PortNodo1 = "datanode0:50061"
-	PortNodo2 = "datanode1:50062"
+	PortNodo1 = "dist044.inf.santiago.usm.cl:50061"
+	PortNodo2 = "dist101.inf.santiago.usm.cl:50062"
 	PortNodo3 = "datanode2:50063"
 )
 

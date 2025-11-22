@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	brokerAddr = "broker:50050"
+	brokerAddr = "dist042.inf.santiago.usm.cl:50050"
 )
 
 func leerVuelos(path string) (string, error) {

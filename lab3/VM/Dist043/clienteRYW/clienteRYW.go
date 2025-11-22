@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	coordinadorAddr = "coordinador:50060"
+	coordinadorAddr = "dist101.inf.santiago.usm.cl:50060"
 )
 
 func leerVuelos(path string) (string, error) {

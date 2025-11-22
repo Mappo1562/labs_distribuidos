@@ -36,9 +36,9 @@ import (
 
 const (
 	PortNodo1  = "dbatc0:50051"
-	PortNodo2  = "dbatc1:50052"
-	PortNodo3  = "dbatc2:50053"
-	PortBroker = "broker:50050"
+	PortNodo2  = "dist044.inf.santiago.usm.cl:50052"
+	PortNodo3  = "dist101.inf.santiago.usm.cl:50053"
+	PortBroker = "dist101.inf.santiago.usm.cl:50050"
 )
 
 var (
