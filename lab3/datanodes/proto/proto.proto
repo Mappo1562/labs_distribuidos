@@ -18,6 +18,7 @@ service Datanode{
     // Coordinador
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
     rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
 }
 
 message FlightStates{
@@ -81,6 +82,21 @@ message GetInitialInfoResponse{
     string seats = 1;
     bool success = 2;
     string msg = 3;
+}
+
+message BrokerReadRequest{
+    string flight_id = 1;
+    int64 datanode_id = 2;
+}
+
+message BrokerReadResponse{
+    string flight_id = 1;
+    string seat = 2;
+    string status = 3;
+    string gate = 4;
+    int64 version = 5;
+    bool success = 6;
+    string msg = 7;
 }
 
 message Vacio{}

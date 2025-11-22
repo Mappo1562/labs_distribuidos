@@ -558,7 +558,7 @@ func (x *ApplyWriteResponse) GetVersion() int64 {
 type BrokerReadRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	FlightId      string                 `protobuf:"bytes,1,opt,name=flight_id,json=flightId,proto3" json:"flight_id,omitempty"`
-	DatanodeId    string                 `protobuf:"bytes,2,opt,name=datanode_id,json=datanodeId,proto3" json:"datanode_id,omitempty"`
+	DatanodeId    int64                  `protobuf:"varint,2,opt,name=datanode_id,json=datanodeId,proto3" json:"datanode_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -600,11 +600,11 @@ func (x *BrokerReadRequest) GetFlightId() string {
 	return ""
 }
 
-func (x *BrokerReadRequest) GetDatanodeId() string {
+func (x *BrokerReadRequest) GetDatanodeId() int64 {
 	if x != nil {
 		return x.DatanodeId
 	}
-	return ""
+	return 0
 }
 
 type BrokerReadResponse struct {
@@ -968,7 +968,7 @@ const file_proto_proto_proto_rawDesc = "" +
 	"\aversion\x18\x04 \x01(\x03R\aversion\"Q\n" +
 	"\x11BrokerReadRequest\x12\x1b\n" +
 	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x1f\n" +
-	"\vdatanode_id\x18\x02 \x01(\tR\n" +
+	"\vdatanode_id\x18\x02 \x01(\x03R\n" +
 	"datanodeId\"\xb7\x01\n" +
 	"\x12BrokerReadResponse\x12\x1b\n" +
 	"\tflight_id\x18\x01 \x01(\tR\bflightId\x12\x12\n" +

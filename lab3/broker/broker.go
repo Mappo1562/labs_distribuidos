@@ -135,6 +135,27 @@ func (s *server) GetInitialInfo(ctx context.Context, req *pb.GetInitialInfoReque
 	return res, nil
 }
 
+func (s *server) BrokerRead(ctx context.Context, req *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
+	if req.DatanodeId >= 0 && req.DatanodeId < int64(len(broker.datanodeClients)) {
+		log.Printf("Solicitud de lectura para vuelo: %s en datanode: %d\n", req.FlightId, req.DatanodeId)
+		client := broker.datanodeClients[req.DatanodeId]
+		res, err := client.BrokerRead(ctx, req)
+		if err != nil {
+			log.Printf("Error comunicandose con datanode: %v", err)
+			return nil, err
+		}
+		return res, nil
+	}
+	log.Printf("Solicitud de lectura para vuelo: %s en datanode seleccionado por round robin\n", req.FlightId)
+	client := RoundRobinIndex(broker)
+	res, err := client.BrokerRead(ctx, req)
+	if err != nil {
+		log.Printf("Error comunicandose con datanode: %v", err)
+		return nil, err
+	}
+	return res, nil
+}
+
 //	-------------------------
 //	*  BROADCAST DATANODES  *
 //	-------------------------

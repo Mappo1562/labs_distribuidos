@@ -22,7 +22,7 @@ type CoordinadorServer struct {
 }
 
 type SessionInfo struct {
-	Datanode string
+	Datanode int64
 	Expire   time.Time
 }
 
@@ -89,7 +89,8 @@ func (s *CoordinadorServer) GetBoardingPass(ctx context.Context, in *pb.GetBoard
 
 	} else {
 		mensaje = &pb.BrokerReadRequest{
-			FlightId: in.FlightId,
+			FlightId:   in.FlightId,
+			DatanodeId: -1,
 		}
 	}
 

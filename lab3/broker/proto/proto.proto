@@ -28,6 +28,7 @@ service Datanode{
     // Coordinador
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
     rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
 }
 
 message Seat{
@@ -85,7 +86,7 @@ message ApplyWriteResponse{
 
 message BrokerReadRequest{
     string flight_id = 1;
-    string datanode_id = 2;
+    int64 datanode_id = 2;
 }
 
 message BrokerReadResponse{
