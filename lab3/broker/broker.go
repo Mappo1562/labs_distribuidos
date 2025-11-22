@@ -28,6 +28,8 @@ import (
 // Archivo CSV de actualizaciones de vuelo
 var flightsFile = "flight_updates.csv"
 
+var reporteFile = "Reporte.txt"
+
 const (
 	PortBroker      = ":50050"
 	PortCoordinador = "localhost:50060"
@@ -70,15 +72,78 @@ type Broker struct {
 	// Clientes gRPC para los Datanodes
 	datanodeClients []pb.DatanodeClient
 	RoundRobinIndex int64
+	RoundRobinPista int64
 }
 
 func NewBroker() *Broker {
-	b := &Broker{RoundRobinIndex: 0}
+	b := &Broker{RoundRobinIndex: 0, RoundRobinPista: 1}
 	b.connectToDatanodes()
 	return b
 }
 
 var broker = NewBroker()
+
+func Reporte(msg string) {
+	f, err := os.OpenFile(reporteFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Printf("Error abriendo archivo de reporte: %v", err)
+		return
+	}
+	defer f.Close()
+
+	if _, err := f.WriteString(msg + "\n"); err != nil {
+		log.Printf("Error escribiendo en archivo de reporte: %v", err)
+	}
+}
+
+//	-------------------------
+// 	*       Consenso        *
+// 	-------------------------
+
+func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
+	log.Printf("Broadcasting to ATCs: FlightID=%s, Pista=%d", flight_id, pista)
+	var atcClients []pb.ATCClient
+	var atcAddresses = []string{PortNodoATC1, PortNodoATC2, PortNodoATC3}
+	for _, address := range atcAddresses {
+		conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatalf("Error conectando a %s: %v", address, err)
+		}
+		client := pb.NewATCClient(conn)
+		atcClients = append(atcClients, client)
+	}
+
+	for _, client := range atcClients {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		req := &pb.Record{
+			FlightId: flight_id,
+			Pista:    pista,
+		}
+		res, err := client.Insert(ctx, req)
+		if err != nil {
+			log.Printf("Error comunicandose con ATC: %v", err)
+		}
+		if res.Exito && res.Lider {
+			log.Printf("ATC %d asignó pista %d para vuelo %s", res.Id, pista, flight_id)
+			reporteText := "Operacion Crítica: Pista " + strconv.FormatInt(pista, 10) + " asignada al vuelo " + flight_id
+			Reporte(reporteText)
+			return pista, true
+		} else {
+			return 0, false
+		}
+	}
+	return 0, false
+}
+
+func AsignarPistaConsenso(flight_id string) (int64, bool) {
+	pista := broker.RoundRobinPista
+	broker.RoundRobinPista = (broker.RoundRobinPista % 8) + 1 // Suponiendo 8 pistas
+
+	res, ok := BroadcastATCs(flight_id, pista)
+
+	return res, ok
+}
 
 // -------------------------
 // *  CLIENTE MR DATANODE  *
@@ -287,6 +352,8 @@ func convertFlightsToProto(flights []Flight) []*pb.Flight {
 }
 
 func main() {
+	inicioReporte := "Reporte de Operaciones Críticas\n===============================\n"
+	Reporte(inicioReporte)
 	lis, err := net.Listen("tcp", PortBroker)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -315,10 +382,24 @@ func main() {
 		for _, update := range updates {
 			simulatedTime := time.Duration(update.SimTime) * time.Second
 			time.Sleep(simulatedTime - time.Since(startTime))
-			log.Printf("Broadcasting update: FlightID=%s, Type=%s, Value=%s", update.FlightId, update.UpdateType, update.UpdateValue)
+			log.Printf("Simulando Actualizacion: FlightID=%s, Type=%s, Value=%s", update.FlightId, update.UpdateType, update.UpdateValue)
 			broker.BroadcastDatanodes(update.FlightId, update.UpdateType, update.UpdateValue)
 		}
 		log.Println("Simulación de actualizaciones de vuelo completada.")
+	}()
+
+	go func() {
+		for {
+			time.Sleep(30 * time.Second)
+			log.Println("Solicitando Pistas mediante consenso...")
+			for _, flight := range Flights {
+				pista, ok := AsignarPistaConsenso(flight.FlightId)
+				if ok {
+					log.Printf("Pista asignada para vuelo %s: %d", flight.FlightId, pista)
+				}
+
+			}
+		}
 	}()
 
 	if err := s.Serve(lis); err != nil {

@@ -29,7 +29,8 @@ message Bool{
 }
 
 message record{
-    
+    string flight_id = 1;
+    int64 pista = 2;
 }
 
 message Historico{

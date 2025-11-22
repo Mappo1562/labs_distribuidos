@@ -241,11 +241,114 @@ var Broker_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	ATC_Insert_FullMethodName = "/AeroDist.ATC/Insert"
+)
+
+// ATCClient is the client API for ATC service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ATCClient interface {
+	Insert(ctx context.Context, in *Record, opts ...grpc.CallOption) (*InsertResponse, error)
+}
+
+type aTCClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewATCClient(cc grpc.ClientConnInterface) ATCClient {
+	return &aTCClient{cc}
+}
+
+func (c *aTCClient) Insert(ctx context.Context, in *Record, opts ...grpc.CallOption) (*InsertResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(InsertResponse)
+	err := c.cc.Invoke(ctx, ATC_Insert_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ATCServer is the server API for ATC service.
+// All implementations must embed UnimplementedATCServer
+// for forward compatibility.
+type ATCServer interface {
+	Insert(context.Context, *Record) (*InsertResponse, error)
+	mustEmbedUnimplementedATCServer()
+}
+
+// UnimplementedATCServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedATCServer struct{}
+
+func (UnimplementedATCServer) Insert(context.Context, *Record) (*InsertResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Insert not implemented")
+}
+func (UnimplementedATCServer) mustEmbedUnimplementedATCServer() {}
+func (UnimplementedATCServer) testEmbeddedByValue()             {}
+
+// UnsafeATCServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ATCServer will
+// result in compilation errors.
+type UnsafeATCServer interface {
+	mustEmbedUnimplementedATCServer()
+}
+
+func RegisterATCServer(s grpc.ServiceRegistrar, srv ATCServer) {
+	// If the following call pancis, it indicates UnimplementedATCServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&ATC_ServiceDesc, srv)
+}
+
+func _ATC_Insert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Record)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ATCServer).Insert(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ATC_Insert_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ATCServer).Insert(ctx, req.(*Record))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ATC_ServiceDesc is the grpc.ServiceDesc for ATC service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ATC_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AeroDist.ATC",
+	HandlerType: (*ATCServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Insert",
+			Handler:    _ATC_Insert_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/proto.proto",
+}
+
+const (
 	Datanode_FlightUpdate_FullMethodName     = "/AeroDist.Datanode/FlightUpdate"
 	Datanode_CreateFlights_FullMethodName    = "/AeroDist.Datanode/CreateFlights"
 	Datanode_MRRead_FullMethodName           = "/AeroDist.Datanode/MRRead"
 	Datanode_CoordinadorWrite_FullMethodName = "/AeroDist.Datanode/CoordinadorWrite"
 	Datanode_GetInitialInfo_FullMethodName   = "/AeroDist.Datanode/GetInitialInfo"
+	Datanode_BrokerRead_FullMethodName       = "/AeroDist.Datanode/BrokerRead"
 )
 
 // DatanodeClient is the client API for Datanode service.
@@ -260,6 +363,7 @@ type DatanodeClient interface {
 	// Coordinador
 	CoordinadorWrite(ctx context.Context, in *CoordinadorWriteRequest, opts ...grpc.CallOption) (*CoordinadorWriteResponse, error)
 	GetInitialInfo(ctx context.Context, in *GetInitialInfoRequest, opts ...grpc.CallOption) (*GetInitialInfoResponse, error)
+	BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error)
 }
 
 type datanodeClient struct {
@@ -320,6 +424,16 @@ func (c *datanodeClient) GetInitialInfo(ctx context.Context, in *GetInitialInfoR
 	return out, nil
 }
 
+func (c *datanodeClient) BrokerRead(ctx context.Context, in *BrokerReadRequest, opts ...grpc.CallOption) (*BrokerReadResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BrokerReadResponse)
+	err := c.cc.Invoke(ctx, Datanode_BrokerRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatanodeServer is the server API for Datanode service.
 // All implementations must embed UnimplementedDatanodeServer
 // for forward compatibility.
@@ -332,6 +446,7 @@ type DatanodeServer interface {
 	// Coordinador
 	CoordinadorWrite(context.Context, *CoordinadorWriteRequest) (*CoordinadorWriteResponse, error)
 	GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error)
+	BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error)
 	mustEmbedUnimplementedDatanodeServer()
 }
 
@@ -356,6 +471,9 @@ func (UnimplementedDatanodeServer) CoordinadorWrite(context.Context, *Coordinado
 }
 func (UnimplementedDatanodeServer) GetInitialInfo(context.Context, *GetInitialInfoRequest) (*GetInitialInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInitialInfo not implemented")
+}
+func (UnimplementedDatanodeServer) BrokerRead(context.Context, *BrokerReadRequest) (*BrokerReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BrokerRead not implemented")
 }
 func (UnimplementedDatanodeServer) mustEmbedUnimplementedDatanodeServer() {}
 func (UnimplementedDatanodeServer) testEmbeddedByValue()                  {}
@@ -468,6 +586,24 @@ func _Datanode_GetInitialInfo_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Datanode_BrokerRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BrokerReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).BrokerRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_BrokerRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).BrokerRead(ctx, req.(*BrokerReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Datanode_ServiceDesc is the grpc.ServiceDesc for Datanode service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +630,10 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInitialInfo",
 			Handler:    _Datanode_GetInitialInfo_Handler,
+		},
+		{
+			MethodName: "BrokerRead",
+			Handler:    _Datanode_BrokerRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -12,9 +12,11 @@ service Broker{
     // Coordinador
     rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
-    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);   
+}
 
-    
+service ATC{
+    rpc Insert(Record) returns (InsertResponse);
 }
 
 service Datanode{
@@ -29,6 +31,17 @@ service Datanode{
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
     rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+}
+
+message Record{
+    string flight_id = 1;
+    int64 pista = 2;
+}
+
+message InsertResponse{
+    int64 id = 1;
+    bool lider = 2; // indica si es el lider o no, la unica respuesta importante es la del lider
+    bool exito = 3;
 }
 
 message Seat{
