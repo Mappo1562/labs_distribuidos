@@ -235,6 +235,7 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 		FlightId:  req.FlightId,
 		ClienteId: req.ClienteId,
 		Seat:      req.Seat,
+		RequestId: req.RequestId,
 	}
 	coordinadorRes, err := client.CoordinadorWrite(ctx, coordinadorReq)
 	if err != nil {
@@ -265,7 +266,7 @@ func (s *server) GetInitialInfo(ctx context.Context, req *pb.GetInitialInfoReque
 
 func (s *server) BrokerRead(ctx context.Context, req *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
 	if req.DatanodeId >= 0 && req.DatanodeId < int64(len(broker.datanodeClients)) {
-		log.Printf("Solicitud de lectura para vuelo: %s en datanode: %d\n", req.FlightId, req.DatanodeId)
+		log.Printf("Solicitud de lectura para el cliente %v, en el vuelo: %s en datanode: %d\n", req.ClientId, req.FlightId, req.DatanodeId)
 		client := broker.datanodeClients[req.DatanodeId]
 		res, err := client.BrokerRead(ctx, req)
 		if err != nil {
@@ -346,7 +347,7 @@ func loadFlightUpdates(filename string) ([]FlightStates, error) {
 			UpdateType:  record[2],
 			UpdateValue: record[3],
 		}
-		log.Printf("Flight Update Simulation Loaded - Time: %d, FlightID: %s, Type: %s, Value: %s", update.SimTime, update.FlightId, update.UpdateType, update.UpdateValue)
+		// log.Printf("Flight Update Simulation Loaded - Time: %d, FlightID: %s, Type: %s, Value: %s", update.SimTime, update.FlightId, update.UpdateType, update.UpdateValue)
 		updates = append(updates, update)
 
 		if !ExisteFlight(update.FlightId) {

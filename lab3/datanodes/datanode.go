@@ -83,6 +83,7 @@ var (
 		"estado": 0,
 		"puerta": 1,
 	}
+	vuelos  = [6]string{"AF-021", "LA-500", "DL-456", "AA-901", "SK-772", "IB-6833"}
 	bd      map[string]Record
 	bdseats map[string]Seat
 )
@@ -95,6 +96,9 @@ func init() {
 	ID, _ = strconv.Atoi(os.Getenv("ID"))
 	port = AddBD[ID][9:]
 	bd = make(map[string]Record)
+	for _, x := range vuelos {
+		bd[x] = Record{Estado: "", Puerta: "", version: 0}
+	}
 	bdseats = make(map[string]Seat)
 }
 
@@ -184,6 +188,7 @@ func (s *server) CoordinadorWrite(ctx context.Context, in *pb.CoordinadorWriteRe
 		userID:   in.ClienteId,
 	}
 	bdseats[in.RequestId] = rec
+	log.Printf("CoordinadorWrite procesado exitosamente para FlightID: %s, asiento %v, cliente %v", in.FlightId, rec.SeatID, rec.userID)
 	return &pb.CoordinadorWriteResponse{Success: true, Msg: "todo bien"}, nil
 }
 
@@ -231,13 +236,14 @@ func printbd() {
 }
 
 func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
+	log.Printf("************************* ME PIDIERON LOS DATOS DE %v PARA EL VUELO %v", in.ClienteId, in.FlightId)
 	muescritura.Lock()
 	defer muescritura.Unlock()
 	rec, ok := bd[in.FlightId]
 	if !ok {
 		return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
 	}
-	log.Printf("************************* ME PIDIERON LOS DATOS DE %v PARA EL VUELO %v", in.ClienteId, in.FlightId)
+
 	printbd()
 	for _, v := range bdseats {
 		if in.ClienteId == v.userID && in.FlightId == v.FlightID {
