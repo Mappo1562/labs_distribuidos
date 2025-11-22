@@ -1,0 +1,134 @@
+// protoc --go_out=. --go-grpc_out=. proto/proto.proto
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service Broker{
+    // Clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
+
+    // Coordinador
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
+    rpc ApplyWrite(ApplyWriteRequest) returns (ApplyWriteResponse);
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);   
+}
+
+service ATC{
+    rpc Insert(Record) returns (InsertResponse);
+}
+
+service Datanode{
+    // Broadcast Datanodes
+    rpc FlightUpdate(FlightStates) returns (Vacio);
+    rpc CreateFlights(Flights) returns (Vacio);
+
+    // Clientes MR
+    rpc MRRead(MRReadRequest) returns (MRReadResponse);
+
+    // Coordinador
+    rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
+    rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
+    rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+}
+
+message Record{
+    string flight_id = 1;
+    int64 pista = 2;
+}
+
+message InsertResponse{
+    int64 id = 1;
+    bool lider = 2; // indica si es el lider o no, la unica respuesta importante es la del lider
+    bool exito = 3;
+}
+
+message Seat{
+    string seatId = 1;
+	bool occupied = 2;
+}
+
+message Flight{
+    string flight_id = 1;
+    repeated Seat seats = 2;
+}
+
+message Flights{
+    repeated Flight flights = 1;
+}
+
+message MRReadRequest{
+    string flight_id = 1;
+    string client_id = 2;
+    int64 last_version_seen = 3;
+}
+
+message MRReadResponse{
+    string flight_id = 1;
+    string status = 2;
+    string gate = 3;
+    int64 version = 4;
+    bool success = 5;
+    string msg = 6;
+}
+
+message GetInitialInfoRequest{
+    string flight_id = 1;
+}
+
+message GetInitialInfoResponse{
+    string seats = 1;
+    bool success = 2;
+    string msg = 3;
+}
+
+message ApplyWriteRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
+
+message ApplyWriteResponse{
+    bool success = 1;
+    string msg = 2;
+    int64 datonode_id = 3;
+    int64 version = 4;
+}
+
+message BrokerReadRequest{
+    string flight_id = 1;
+    int64 datanode_id = 2;
+}
+
+message BrokerReadResponse{
+    string flight_id = 1;
+    string seat = 2;
+    string status = 3;
+    string gate = 4;
+    int64 version = 5;
+    bool success = 6;
+    string msg = 7;
+}
+
+message FlightStates{
+    string flight_id = 1;
+    string update_type = 2;
+    string update_value = 3;
+}
+
+message CoordinadorWriteRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
+
+message CoordinadorWriteResponse{
+    bool success = 1;
+    string msg = 2;
+    int64 version = 4;
+}
+
+message Vacio{}

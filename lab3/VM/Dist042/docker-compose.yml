@@ -1,0 +1,149 @@
+services:
+
+  broker:
+    build: ./broker
+    container_name: broker
+    ports:
+      - "50050:50050"
+    depends_on:
+      - datanode0
+      - datanode1
+      - datanode2
+    networks:
+      - grpc-net
+    volumes:
+      - ./reporte:/app/reporte
+
+  # Nodos consenso:
+  dbatc0:
+    build: ./dbatc
+    container_name: dbatc0
+    environment:
+      - ID=0
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data0:/app/data0
+    ports:
+      - "50051:50051"
+  
+  dbatc1:
+    build: ./dbatc
+    container_name: dbatc1
+    environment:
+      - ID=1
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data1:/app/data1
+    ports:
+      - "50052:50052"
+
+
+  dbatc2:
+    build: ./dbatc
+    container_name: dbatc2
+    environment:
+      - ID=2
+    networks:
+      - grpc-net
+    volumes:
+      - ./dbATC/data2:/app/data2
+    ports:
+      - "50053:50053"
+
+  datanode0:
+    build: ./datanodes
+    container_name: datanode0
+    environment:
+      - ID=0
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data0:/app/data0
+    ports:
+      - "50061:50061"
+
+  datanode1:
+    build: ./datanodes
+    container_name: datanode1
+    environment:
+      - ID=1
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data0:/app/data1
+    ports:
+      - "50062:50062"
+  
+  datanode2:
+    build: ./datanodes
+    container_name: datanode2
+    environment:
+      - ID=2
+    networks:
+      - grpc-net
+    volumes:
+      - ./datanodes/data2:/app/data2
+    ports:
+      - "50063:50063"
+
+  coordinador:
+    build: ./coordinador
+    container_name: coordinador
+    depends_on:
+      - broker
+    ports:
+      - "50060:50060"
+    networks:
+      - grpc-net
+
+  cliente-ryw1:
+    build: ./clienteRYW
+    container_name: cliente-ryw1
+    environment: 
+      - CLIENT_ID=cliente-ryw_1
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+  
+  cliente-ryw2:
+    build: ./clienteRYW
+    container_name: cliente-ryw2
+    environment: 
+      - CLIENT_ID=cliente-ryw_2
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+    
+  cliente-ryw3:
+    build: ./clienteRYW
+    container_name: cliente-ryw3
+    environment: 
+      - CLIENT_ID=cliente-ryw_3
+    depends_on:
+      - coordinador
+    networks:
+      - grpc-net
+
+  cliente-mr1:
+    build: ./clienteMR
+    container_name: cliente-mr1
+    environment: 
+      - CLIENT_ID=cliente-mr_1
+    networks:
+      - grpc-net
+
+  cliente-mr2:
+    build: ./clienteMR
+    container_name: cliente-mr2
+    environment: 
+      - CLIENT_ID=cliente-mr_2
+    networks:
+      - grpc-net
+      
+networks:
+  grpc-net:
+    driver: bridge

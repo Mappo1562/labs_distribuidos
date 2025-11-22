@@ -1,0 +1,29 @@
+### Etapa de compilación ###
+FROM golang:1.25 AS builder
+
+WORKDIR /app
+
+# Copiar dependencias
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copiar el resto del proyecto
+COPY . .
+
+# Compilar binario estático compatible con Alpine
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server .
+
+### Etapa final ###
+FROM alpine:3.19
+
+WORKDIR /app
+
+# Copiar binario ya estático
+COPY --from=builder /app/server .
+
+# Crear carpeta /data usada por tu app
+RUN mkdir -p /app/data
+
+EXPOSE 50051
+
+CMD ["./server"]

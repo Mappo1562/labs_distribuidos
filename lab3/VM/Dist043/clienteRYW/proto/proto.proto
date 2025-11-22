@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package AeroDist;
+
+option go_package = "/proto";
+
+service CoordinadorRYW{
+    rpc GetSeats(GetSeatsRequest) returns (GetSeatsResponse);
+    rpc CheckIn(CheckInRequest) returns (CheckInResponse);
+    rpc GetBoardingPass(GetBoardingPassRequest) returns (GetBoardingPassResponse);
+}
+
+message CheckInRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+    string seat = 3;
+    string request_id = 4;
+}
+
+message CheckInResponse{
+    bool success = 1;
+    string msg = 2;
+}
+
+message GetBoardingPassRequest{
+    string cliente_id = 1;
+    string flight_id = 2;
+}
+
+message GetBoardingPassResponse{
+    string flight_id = 1;
+    string seat = 2;
+    int64 version = 3;
+    bool success = 4;
+    string msg = 5;
+}
+
+message GetSeatsRequest{
+    string flight_id = 1;
+}
+
+message GetSeatsResponse{
+    string flight_id = 1;
+    string seats = 2; //lista de asientos libres en el vuelo
+    bool success = 3;
+    string msg = 4;
+}
