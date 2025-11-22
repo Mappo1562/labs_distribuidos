@@ -12,6 +12,7 @@ package main
 import (
 	"context"
 	"encoding/csv"
+	"fmt"
 	"log"
 	"math/rand"
 	"net"
@@ -32,17 +33,49 @@ var reporteFile = "Reporte.txt"
 
 const (
 	PortBroker      = ":50050"
-	PortCoordinador = "localhost:50060"
-	PortNodoATC1    = "db1ATC:50051"
-	PortNodoATC2    = "db2ATC:50052"
-	PortNodoATC3    = "db3ATC:50053"
-	PortDatanode1   = "db1:50061"
-	PortDatanode2   = "db2:50062"
-	PortDatanode3   = "db3:50063"
+	PortCoordinador = "coordinador:50060"
+	PortNodoATC1    = "dbatc0:50051"
+	PortNodoATC2    = "dbatc1:50052"
+	PortNodoATC3    = "dbatc2:50053"
+	PortDatanode1   = "datanode0:50061"
+	PortDatanode2   = "datanode1:50062"
+	PortDatanode3   = "datanode2:50063"
 )
 
 // Cantidad de pistas = 8
 // Asientos por avion = 15 * A o B = 30
+
+type Reporte struct {
+	Timestamp time.Time
+	Message   string
+}
+
+var reporte []Reporte
+
+func AddToReporte(message string) {
+	timestamp := time.Now()
+	entry := Reporte{
+		Timestamp: timestamp,
+		Message:   message,
+	}
+	reporte = append(reporte, entry)
+}
+
+func CreateReporteFile() {
+	log.Println("Creando archivo de reporte...")
+	file, err := os.Create("/app/reportes/Reporte.txt")
+	if err != nil {
+		fmt.Println("Error al crear el reporte:", err)
+		return
+	}
+	defer file.Close()
+
+	fmt.Fprintf(file, "Reporte de Operaciones Críticas\n===============================\n")
+	for _, entry := range reporte {
+		fmt.Fprintf(file, "[%s] %s\n", entry.Timestamp.Format("2006-01-02 15:04:05"), entry.Message)
+	}
+	log.Println("Reporte guardado en /app/reportes/Reporte.txt")
+}
 
 type Seat struct {
 	SeatId   string
@@ -83,19 +116,6 @@ func NewBroker() *Broker {
 
 var broker = NewBroker()
 
-func Reporte(msg string) {
-	f, err := os.OpenFile(reporteFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Printf("Error abriendo archivo de reporte: %v", err)
-		return
-	}
-	defer f.Close()
-
-	if _, err := f.WriteString(msg + "\n"); err != nil {
-		log.Printf("Error escribiendo en archivo de reporte: %v", err)
-	}
-}
-
 //	-------------------------
 // 	*       Consenso        *
 // 	-------------------------
@@ -127,7 +147,7 @@ func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
 		if res.Exito && res.Lider {
 			log.Printf("ATC %d asignó pista %d para vuelo %s", res.Id, pista, flight_id)
 			reporteText := "Operacion Crítica: Pista " + strconv.FormatInt(pista, 10) + " asignada al vuelo " + flight_id
-			Reporte(reporteText)
+			AddToReporte(reporteText)
 			return pista, true
 		} else {
 			return 0, false
@@ -352,8 +372,6 @@ func convertFlightsToProto(flights []Flight) []*pb.Flight {
 }
 
 func main() {
-	inicioReporte := "Reporte de Operaciones Críticas\n===============================\n"
-	Reporte(inicioReporte)
 	lis, err := net.Listen("tcp", PortBroker)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -389,17 +407,18 @@ func main() {
 	}()
 
 	go func() {
-		for {
-			time.Sleep(30 * time.Second)
-			log.Println("Solicitando Pistas mediante consenso...")
-			for _, flight := range Flights {
-				pista, ok := AsignarPistaConsenso(flight.FlightId)
-				if ok {
-					log.Printf("Pista asignada para vuelo %s: %d", flight.FlightId, pista)
-				}
 
+		time.Sleep(30 * time.Second)
+		log.Println("Solicitando Pistas mediante consenso...")
+		for _, flight := range Flights {
+			pista, ok := AsignarPistaConsenso(flight.FlightId)
+			if ok {
+				log.Printf("Pista asignada para vuelo %s: %d", flight.FlightId, pista)
 			}
+
 		}
+
+		CreateReporteFile()
 	}()
 
 	if err := s.Serve(lis); err != nil {

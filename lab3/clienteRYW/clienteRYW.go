@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	coordinadorAddr = "localhost:50060"
+	coordinadorAddr = "coordinador:50060"
 )
 
 func leerVuelos(path string) (string, error) {
