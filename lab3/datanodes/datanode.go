@@ -133,7 +133,7 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 	rec.version++
 
 	bd[in.FlightId] = rec
-	log.Printf("FlightUpdate procesado exitosamente para FlightID: %s", in.FlightId)
+	log.Printf("FlightUpdate procesado exitosamente para FlightID: %s, version %v, Estado %v, Puerta %v", in.FlightId, rec.version, rec.Estado, rec.Puerta)
 	return &pb.Vacio{}, nil
 }
 
@@ -224,6 +224,12 @@ func (s *server) MRRead(ctx context.Context, in *pb.MRReadRequest) (*pb.MRReadRe
 	return &pb.MRReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
 }
 
+func printbd() {
+	for _, v := range bdseats {
+		log.Printf("FlightID: %s, SeatID: %s, Ocuppied: %v, userID: %s", v.FlightID, v.SeatID, v.Ocuppied, v.userID)
+	}
+}
+
 func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
 	muescritura.Lock()
 	defer muescritura.Unlock()
@@ -231,7 +237,8 @@ func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.
 	if !ok {
 		return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
 	}
-
+	log.Printf("************************* ME PIDIERON LOS DATOS DE %v PARA EL VUELO %v", in.ClienteId, in.FlightId)
+	printbd()
 	for _, v := range bdseats {
 		if in.ClienteId == v.userID && in.FlightId == v.FlightID {
 			return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version), Seat: v.SeatID}, nil

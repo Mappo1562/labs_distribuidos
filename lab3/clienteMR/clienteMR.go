@@ -53,7 +53,7 @@ func leerVuelos(path string) (string, error) {
 }
 
 func main() {
-
+	time.Sleep(time.Second * 10) // esperar a que esten arriba los demas servicios
 	rand.Seed(02122003)
 
 	vuelos, _ := leerVuelos("flight_updates.csv")

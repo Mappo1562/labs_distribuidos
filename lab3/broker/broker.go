@@ -227,6 +227,7 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 	log.Printf("Escritura recibida de: %s asiento: %s\n", req.ClienteId, req.Seat)
 	client := RoundRobinIndex(broker)
 	coordinadorReq := &pb.CoordinadorWriteRequest{
+		FlightId:  req.FlightId,
 		ClienteId: req.ClienteId,
 		Seat:      req.Seat,
 	}

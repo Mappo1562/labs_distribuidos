@@ -59,7 +59,7 @@ func elegirAzar(completo string) string {
 }
 
 func main() {
-
+	time.Sleep(time.Second * 10) // esperar a que esten arriba los demas servicios
 	rand.Seed(02122003)
 
 	conn, err := grpc.NewClient(coordinadorAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -110,7 +110,7 @@ func main() {
 		log.Println("[RYW] CheckIn exitoso")
 	}
 
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 5)
 
 	respGetBoardingPass, err := coordinadorClient.GetBoardingPass(context.Background(), &pb.GetBoardingPassRequest{
 		ClienteId: clienteID,
