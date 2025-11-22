@@ -32,12 +32,12 @@ var flightsFile = "flight_updates.csv"
 
 const (
 	PortBroker      = ":50050"
-	PortCoordinador = "coordinador:50060"
-	PortNodoATC1    = "dbatc0:50051"
-	PortNodoATC2    = "dbatc1:50052"
-	PortNodoATC3    = "dbatc2:50053"
-	PortDatanode1   = "datanode0:50061"
-	PortDatanode2   = "datanode1:50062"
+	PortCoordinador = "dist101.inf.santiago.usm.cl:50060"
+	PortNodoATC1    = "dist043.inf.santiago.usm.cl:50051"
+	PortNodoATC2    = "dist044.inf.santiago.usm.cl:50052"
+	PortNodoATC3    = "dist101.inf.santiago.usm.cl:50053"
+	PortDatanode1   = "dist044.inf.santiago.usm.cl:50061"
+	PortDatanode2   = "dist101.inf.santiago.usm.cl:50062"
 	PortDatanode3   = "datanode2:50063"
 )
 
