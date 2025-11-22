@@ -23,6 +23,7 @@ service Datanode{
     // Broadcast Datanodes
     rpc FlightUpdate(FlightStates) returns (Vacio);
     rpc CreateFlights(Flights) returns (Vacio);
+    rpc ApagarNodo(Vacio) returns (Vacio);
 
     // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);
@@ -31,6 +32,7 @@ service Datanode{
     rpc CoordinadorWrite(CoordinadorWriteRequest) returns (CoordinadorWriteResponse);
     rpc GetInitialInfo(GetInitialInfoRequest) returns (GetInitialInfoResponse);
     rpc BrokerRead(BrokerReadRequest) returns (BrokerReadResponse);
+
 }
 
 message Record{

@@ -5,8 +5,7 @@ services:
     container_name: dbatc2
     environment:
       - ID=2
-    networks:
-      - grpc-net
+    
     volumes:
       - ./dbATC/data2:/app/data2
     ports:
@@ -17,8 +16,7 @@ services:
     container_name: datanode1
     environment:
       - ID=1
-    networks:
-      - grpc-net
+    
     volumes:
       - ./datanodes/data0:/app/data1
     ports:
@@ -31,9 +29,4 @@ services:
       - broker
     ports:
       - "50060:50060"
-    networks:
-      - grpc-net
-      
-networks:
-  grpc-net:
-    driver: bridge
+    

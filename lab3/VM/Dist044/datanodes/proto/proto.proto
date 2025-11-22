@@ -8,6 +8,7 @@ option go_package = "/proto";
 service Datanode{
     // Broker
     rpc FlightUpdate(FlightStates) returns (Vacio);//
+    rpc ApagarNodo(Vacio) returns (Vacio);
 
     // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);//
@@ -96,6 +97,7 @@ message GetInitialInfoResponse{
 message BrokerReadRequest{
     string flight_id = 1;
     int64 datanode_id = 2;
+    string cliente_id = 3;
 }
 
 message BrokerReadResponse{

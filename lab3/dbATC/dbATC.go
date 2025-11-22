@@ -320,7 +320,7 @@ func conseguirvotosLider() (int, []int64) {
 		cancel()
 
 		if err != nil {
-			log.Printf("Nodo %d no respondió a PostularALider, esta muerto", i)
+			log.Printf("Nodo ATC %d no respondió a PostularALider, esta muerto", i)
 			continue
 		}
 
@@ -339,9 +339,9 @@ func NotificarNuevoLider() {
 		cancel()
 
 		if err != nil {
-			log.Printf("Nodo %d no aceptó notificación: %v", i, err)
+			log.Printf("Nodo ATC %d no aceptó notificación: %v", i, err)
 		} else {
-			log.Printf("Nodo %d confirmó nuevo líder (%d)", i, resp.Id)
+			log.Printf("Nodo ATC %d confirmó nuevo líder (%d)", i, resp.Id)
 		}
 	}
 
@@ -394,6 +394,12 @@ func verLider() {
 		NotificarNuevoLider()
 		return
 	} else { // si no, significa que hay otro lider y que revivi
+		if len(respuestas) == 0 {
+			log.Printf("Estaba muerto y revivi pero nadie respondió a la postulación, terminaré aquí")
+			log.Printf("Nodo ATC %d: terminando ejecución", ID)
+			os.Exit(0)
+			return
+		}
 		log.Printf("Estaba muerto y revivi y ya existe un lider, estableciendo como lider al actual: %v", respuestas[0])
 		// actualizar lider
 		mulider.Lock()
@@ -495,7 +501,7 @@ func conect() {
 		conexiones[i] = conn
 		clientes[i] = pb.NewATCClient(conn)
 
-		log.Printf("Conectado al nodo %d en %s", i, dir)
+		log.Printf("Conectado al nodo ATC %d en %s", i, dir)
 	}
 }
 
@@ -512,7 +518,7 @@ func runServerLoop() {
 		grpcServer = grpc.NewServer()
 		pb.RegisterATCServer(grpcServer, &server{})
 
-		log.Printf("Nodo %d: servidor gRPC iniciado en %s", ID, port)
+		log.Printf("Nodo ATC %d: servidor gRPC iniciado en %s", ID, port)
 
 		err = grpcServer.Serve(lis)
 
@@ -522,11 +528,13 @@ func runServerLoop() {
 		mulider.Unlock()
 		log.Printf("******************--- reviviendo ---******************")
 	}
+	log.Printf("Nodo ATC %d: terminando ejecución", ID)
+	os.Exit(0)
 }
 
 func main() {
 
-	log.Printf("Nodo %d iniciando…", ID)
+	log.Printf("Nodo ATC %d iniciando…", ID)
 	conect()
 	go ciclo()
 	runServerLoop()

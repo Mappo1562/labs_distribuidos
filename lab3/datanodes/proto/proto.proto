@@ -8,6 +8,7 @@ option go_package = "/proto";
 service Datanode{
     // Broker
     rpc FlightUpdate(FlightStates) returns (Vacio);//
+    rpc ApagarNodo(Vacio) returns (Vacio);
 
     // Clientes MR
     rpc MRRead(MRReadRequest) returns (MRReadResponse);//

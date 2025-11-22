@@ -83,6 +83,7 @@ var (
 		"estado": 0,
 		"puerta": 1,
 	}
+	vuelos  = [6]string{"AF-021", "LA-500", "DL-456", "AA-901", "SK-772", "IB-6833"}
 	bd      map[string]Record
 	bdseats map[string]Seat
 )
@@ -94,7 +95,11 @@ type server struct {
 func init() {
 	ID, _ = strconv.Atoi(os.Getenv("ID"))
 	port = AddBD[ID][9:]
-
+	bd = make(map[string]Record)
+	for _, x := range vuelos {
+		bd[x] = Record{Estado: "", Puerta: "", version: 0}
+	}
+	bdseats = make(map[string]Seat)
 }
 
 /////////////////////////////////
@@ -120,6 +125,8 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 	if !ok {
 		rec = Record{}
 		rec.version = 0
+		rec.Estado = ""
+		rec.Puerta = ""
 	}
 
 	if idx == 0 {
@@ -128,8 +135,9 @@ func (s *server) FlightUpdate(ctx context.Context, in *pb.FlightStates) (*pb.Vac
 		rec.Puerta = in.UpdateValue
 	}
 	rec.version++
-	bd[in.FlightId] = rec
 
+	bd[in.FlightId] = rec
+	log.Printf("FlightUpdate procesado exitosamente para FlightID: %s, version %v, Estado %v, Puerta %v", in.FlightId, rec.version, rec.Estado, rec.Puerta)
 	return &pb.Vacio{}, nil
 }
 
@@ -180,7 +188,8 @@ func (s *server) CoordinadorWrite(ctx context.Context, in *pb.CoordinadorWriteRe
 		userID:   in.ClienteId,
 	}
 	bdseats[in.RequestId] = rec
-	return &pb.CoordinadorWriteResponse{Success: true}, nil
+	log.Printf("CoordinadorWrite procesado exitosamente para FlightID: %s, asiento %v, cliente %v", in.FlightId, rec.SeatID, rec.userID)
+	return &pb.CoordinadorWriteResponse{Success: true, Msg: "todo bien"}, nil
 }
 
 // enviar asientos que ya estan ocupados para un vuelo
@@ -220,13 +229,28 @@ func (s *server) MRRead(ctx context.Context, in *pb.MRReadRequest) (*pb.MRReadRe
 	return &pb.MRReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
 }
 
+func printbd() {
+	for _, v := range bdseats {
+		log.Printf("FlightID: %s, SeatID: %s, Ocuppied: %v, userID: %s", v.FlightID, v.SeatID, v.Ocuppied, v.userID)
+	}
+}
+
 func (s *server) BrokerRead(ctx context.Context, in *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
+	log.Printf("************************* ME PIDIERON LOS DATOS DE %v PARA EL VUELO %v", in.ClienteId, in.FlightId)
 	muescritura.Lock()
 	defer muescritura.Unlock()
 	rec, ok := bd[in.FlightId]
 	if !ok {
 		return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: "", Gate: "", Success: false, Msg: "Vuelo no encontrado", Version: int64(rec.version)}, nil
 	}
+
+	printbd()
+	for _, v := range bdseats {
+		if in.ClienteId == v.userID && in.FlightId == v.FlightID {
+			return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version), Seat: v.SeatID}, nil
+		}
+	}
+
 	return &pb.BrokerReadResponse{FlightId: in.FlightId, Status: rec.Estado, Gate: rec.Puerta, Success: true, Msg: "Todo bien", Version: int64(rec.version)}, nil
 }
 
@@ -553,6 +577,15 @@ func runServerLoop() {
 		time.Sleep(5 * time.Second)
 		log.Printf("******************--- reviviendo ---******************")
 	}
+}
+
+func (s *server) ApagarNodo(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
+	log.Printf("******************--- Apagando nodo ---******************")
+	go func() {
+		time.Sleep(2 * time.Second)
+		os.Exit(0)
+	}()
+	return &pb.Vacio{}, nil
 }
 
 func main() {

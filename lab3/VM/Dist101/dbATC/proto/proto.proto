@@ -12,9 +12,9 @@ option go_package = "/proto";
     tiene un id distinto al suyo asume que ese es el lider actual
     */
 
-service  NodoBDConsenso{
+service  ATC{
     // rpc para ser llamado por el broker:
-    rpc INSERT(record) returns (InsertResponse) {}
+    rpc Insert(record) returns (InsertResponse) {}
     // rpc entre nodos (PRIV):
     rpc PostularALider(postulante) returns (NewLider) {} // nodo x postulara a ser lider
     rpc InformarNewLider (postulante) returns (NewLider) {} // nodo x fue aceptado como lider por la mayoria

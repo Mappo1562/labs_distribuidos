@@ -4,8 +4,7 @@ services:
     container_name: dbatc1
     environment:
       - ID=1
-    networks:
-      - grpc-net
+    
     volumes:
       - ./dbATC/data1:/app/data1
     ports:
@@ -16,8 +15,7 @@ services:
     container_name: datanode0
     environment:
       - ID=0
-    networks:
-      - grpc-net
+    
     volumes:
       - ./datanodes/data0:/app/data0
     ports:
@@ -30,9 +28,4 @@ services:
       - CLIENT_ID=cliente-ryw_3
     depends_on:
       - coordinador
-    networks:
-      - grpc-net
-      
-networks:
-  grpc-net:
-    driver: bridge
+    

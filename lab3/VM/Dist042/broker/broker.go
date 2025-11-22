@@ -18,6 +18,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	pb "broker/proto"
@@ -28,8 +29,6 @@ import (
 
 // Archivo CSV de actualizaciones de vuelo
 var flightsFile = "flight_updates.csv"
-
-var reporteFile = "Reporte.txt"
 
 const (
 	PortBroker      = ":50050"
@@ -106,6 +105,7 @@ type Broker struct {
 	datanodeClients []pb.DatanodeClient
 	RoundRobinIndex int64
 	RoundRobinPista int64
+	mu              sync.Mutex
 }
 
 func NewBroker() *Broker {
@@ -120,6 +120,13 @@ var broker = NewBroker()
 // 	*       Consenso        *
 // 	-------------------------
 
+type resultadoATC struct {
+	pista int64
+	ok    bool
+	lider bool
+	id    int64
+}
+
 func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
 	log.Printf("Broadcasting to ATCs: FlightID=%s, Pista=%d", flight_id, pista)
 	var atcClients []pb.ATCClient
@@ -133,26 +140,54 @@ func BroadcastATCs(flight_id string, pista int64) (int64, bool) {
 		atcClients = append(atcClients, client)
 	}
 
+	results := make(chan resultadoATC, len(atcClients))
+
 	for _, client := range atcClients {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		req := &pb.Record{
-			FlightId: flight_id,
-			Pista:    pista,
-		}
-		res, err := client.Insert(ctx, req)
-		if err != nil {
-			log.Printf("Error comunicandose con ATC: %v", err)
-		}
-		if res.Exito && res.Lider {
-			log.Printf("ATC %d asignó pista %d para vuelo %s", res.Id, pista, flight_id)
-			reporteText := "Operacion Crítica: Pista " + strconv.FormatInt(pista, 10) + " asignada al vuelo " + flight_id
-			AddToReporte(reporteText)
-			return pista, true
-		} else {
-			return 0, false
+		go func(client pb.ATCClient) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			req := &pb.Record{
+				FlightId: flight_id,
+				Pista:    pista,
+			}
+
+			res, err := client.Insert(ctx, req)
+			if err != nil {
+				results <- resultadoATC{0, false, false, 0}
+				return
+			}
+
+			results <- resultadoATC{
+				ok:    res.Exito,
+				lider: res.Lider,
+				id:    res.Id,
+			}
+		}(client)
+	}
+
+	// necesitamos recibir las respuestas de todos
+	var respuestaLider *resultadoATC
+
+	for i := 0; i < len(atcClients); i++ {
+		r := <-results
+		if r.lider && r.ok {
+			respuestaLider = &r
 		}
 	}
+
+	// solo el líder decide
+	if respuestaLider != nil {
+		log.Printf("Operacion Crítica - Líder ATC %d asignó pista %d al vuelo %s", respuestaLider.id, pista, flight_id)
+		reporteText := fmt.Sprintf(
+			"Operacion Crítica: Pista %d asignada al vuelo %s por ATC %d",
+			pista, flight_id, respuestaLider.id,
+		)
+		AddToReporte(reporteText)
+
+		return respuestaLider.pista, true
+	}
+
 	return 0, false
 }
 
@@ -168,15 +203,18 @@ func AsignarPistaConsenso(flight_id string) (int64, bool) {
 // -------------------------
 // *  CLIENTE MR DATANODE  *
 // -------------------------
-func RoundRobinIndex(b *Broker) pb.DatanodeClient {
+func RoundRobinIndex(b *Broker) (pb.DatanodeClient, int64) {
 	client := b.datanodeClients[b.RoundRobinIndex]
 	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % int64(len(b.datanodeClients))
-	return client
+	return client, b.RoundRobinIndex - 1
 }
 
 func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadResponse, error) {
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, roundRobinIndex := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	res, err := client.MRRead(ctx, req)
+	log.Printf("Solicitud MRRead para vuelo: %s asignada al Datanode %d\n", req.FlightId, roundRobinIndex)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
 		return nil, err
@@ -190,10 +228,14 @@ func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadR
 
 func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb.ApplyWriteResponse, error) {
 	log.Printf("Escritura recibida de: %s asiento: %s\n", req.ClienteId, req.Seat)
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, roundRobinIndex := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	coordinadorReq := &pb.CoordinadorWriteRequest{
+		FlightId:  req.FlightId,
 		ClienteId: req.ClienteId,
 		Seat:      req.Seat,
+		RequestId: req.RequestId,
 	}
 	coordinadorRes, err := client.CoordinadorWrite(ctx, coordinadorReq)
 	if err != nil {
@@ -203,7 +245,7 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 	res := &pb.ApplyWriteResponse{
 		Success:    coordinadorRes.Success,
 		Msg:        coordinadorRes.Msg,
-		DatonodeId: broker.RoundRobinIndex,
+		DatonodeId: roundRobinIndex,
 		Version:    coordinadorRes.Version,
 	}
 	return res, nil
@@ -211,7 +253,9 @@ func (s *server) ApplyWrite(ctx context.Context, req *pb.ApplyWriteRequest) (*pb
 
 func (s *server) GetInitialInfo(ctx context.Context, req *pb.GetInitialInfoRequest) (*pb.GetInitialInfoResponse, error) {
 	log.Printf("Solicitud de info inicial para vuelo: %s\n", req.FlightId)
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, _ := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	res, err := client.GetInitialInfo(ctx, req)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
@@ -222,7 +266,7 @@ func (s *server) GetInitialInfo(ctx context.Context, req *pb.GetInitialInfoReque
 
 func (s *server) BrokerRead(ctx context.Context, req *pb.BrokerReadRequest) (*pb.BrokerReadResponse, error) {
 	if req.DatanodeId >= 0 && req.DatanodeId < int64(len(broker.datanodeClients)) {
-		log.Printf("Solicitud de lectura para vuelo: %s en datanode: %d\n", req.FlightId, req.DatanodeId)
+		log.Printf("Solicitud de lectura para el cliente %v, en el vuelo: %s en datanode: %d\n", req.ClientId, req.FlightId, req.DatanodeId)
 		client := broker.datanodeClients[req.DatanodeId]
 		res, err := client.BrokerRead(ctx, req)
 		if err != nil {
@@ -232,7 +276,9 @@ func (s *server) BrokerRead(ctx context.Context, req *pb.BrokerReadRequest) (*pb
 		return res, nil
 	}
 	log.Printf("Solicitud de lectura para vuelo: %s en datanode seleccionado por round robin\n", req.FlightId)
-	client := RoundRobinIndex(broker)
+	broker.mu.Lock()
+	client, _ := RoundRobinIndex(broker)
+	broker.mu.Unlock()
 	res, err := client.BrokerRead(ctx, req)
 	if err != nil {
 		log.Printf("Error comunicandose con datanode: %v", err)
@@ -301,7 +347,7 @@ func loadFlightUpdates(filename string) ([]FlightStates, error) {
 			UpdateType:  record[2],
 			UpdateValue: record[3],
 		}
-		log.Printf("Flight Update Simulation Loaded - Time: %d, FlightID: %s, Type: %s, Value: %s", update.SimTime, update.FlightId, update.UpdateType, update.UpdateValue)
+		// log.Printf("Flight Update Simulation Loaded - Time: %d, FlightID: %s, Type: %s, Value: %s", update.SimTime, update.FlightId, update.UpdateType, update.UpdateValue)
 		updates = append(updates, update)
 
 		if !ExisteFlight(update.FlightId) {
@@ -371,6 +417,18 @@ func convertFlightsToProto(flights []Flight) []*pb.Flight {
 	return protoFlights
 }
 
+func TerminarEjecucion(s *grpc.Server) {
+	log.Println("Terminando ejecución...")
+	log.Println("Apagando Datanodes...")
+	for _, client := range broker.datanodeClients {
+		client.ApagarNodo(context.Background(), &pb.Vacio{})
+	}
+	log.Println("Datanodes apagados.")
+	log.Println("Deteniendo Broker...")
+	time.Sleep(2 * time.Second)
+	s.GracefulStop()
+}
+
 func main() {
 	lis, err := net.Listen("tcp", PortBroker)
 	if err != nil {
@@ -386,13 +444,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("Error cargando flight updates: %v", err)
 		}
-		datanodes := broker.datanodeClients
-		for node := range datanodes {
-			_, err = datanodes[node].CreateFlights(context.Background(), &pb.Flights{Flights: convertFlightsToProto(Flights)})
-			if err != nil {
-				log.Fatalf("Error enviando vuelos iniciales al datanode %d: %v", node, err)
-			}
-		}
 
 		time.Sleep(5 * time.Second) // Espera antes de iniciar la simulación
 
@@ -404,11 +455,13 @@ func main() {
 			broker.BroadcastDatanodes(update.FlightId, update.UpdateType, update.UpdateValue)
 		}
 		log.Println("Simulación de actualizaciones de vuelo completada.")
+
+		TerminarEjecucion(s)
 	}()
 
 	go func() {
 
-		time.Sleep(30 * time.Second)
+		time.Sleep(10 * time.Second)
 		log.Println("Solicitando Pistas mediante consenso...")
 		for _, flight := range Flights {
 			pista, ok := AsignarPistaConsenso(flight.FlightId)
@@ -417,6 +470,7 @@ func main() {
 			}
 
 		}
+		log.Println("Asignación de Pistas completada.")
 
 		CreateReporteFile()
 	}()

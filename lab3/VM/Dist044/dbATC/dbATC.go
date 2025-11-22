@@ -49,7 +49,7 @@ var (
 	muinsert   sync.Mutex
 	ID         int
 	lider      = -1
-	clientes   = make(map[int]pb.NodoBDConsensoClient)
+	clientes   = make(map[int]pb.ATCClient)
 	conexiones = make(map[int]*grpc.ClientConn)
 	votos      = make(map[int]*pb.Record)
 	muVotos    sync.Mutex
@@ -58,12 +58,18 @@ var (
 )
 
 type server struct {
-	pb.UnimplementedNodoBDConsensoServer
+	pb.UnimplementedATCServer
 }
 
 func init() {
 	ID, _ = strconv.Atoi(os.Getenv("ID"))
 	port = AddBD[ID][6:]
+	name := "data/db" + strconv.Itoa(ID)
+	file, err := os.Create(name)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
 }
 
 /////////////////////////////////
@@ -81,7 +87,7 @@ func (s *server) ResultadoConsenso(ctx context.Context, in *pb.Record) (*pb.Vaci
 	return &pb.Vacio{}, nil
 }
 
-func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse, error) {
+func (s *server) Insert(ctx context.Context, in *pb.Record) (*pb.InsertResponse, error) {
 	mulider.Lock() // quiza estos candados no sean necesarios
 	liderCopy := lider
 	mulider.Unlock()
@@ -103,7 +109,7 @@ func (s *server) INSERT(ctx context.Context, in *pb.Record) (*pb.InsertResponse,
 	votos[int(ID)] = in
 	muVotos.Unlock()
 	consenso() // ************************************************ FALTA UN IF PARA VER SI EL CONCENSO ESTUVO BIEN O NO ************************************************
-	return &pb.InsertResponse{Id: int64(ID), Lider: true}, nil
+	return &pb.InsertResponse{Id: int64(ID), Lider: true, Exito: true}, nil
 }
 
 func (s *server) INSERTLIDER(ctx context.Context, in *pb.RecordID) (*pb.Vacio, error) {
@@ -192,7 +198,7 @@ func leerHistorico() ([]*pb.Record, error) {
 
 // ************************************************ LA IMPLEMENTACIÓN DE CONSENSO NO SOPORTA MUCHAS LLAMADAS SEGUIDAS ************************************************
 func consenso() {
-	time.Sleep(1 * time.Second) // ********************************* tiempo para que los otros llamen a INSERTLIDER *********************************
+	time.Sleep(2 * time.Second) // ********************************* tiempo para que los otros llamen a INSERTLIDER *********************************
 	muVotos.Lock()
 	votosCopy := make(map[int]*pb.Record)
 	for k, v := range votos {
@@ -205,6 +211,7 @@ func consenso() {
 		log.Printf("No hubo consenso válido")
 		return
 	}
+	log.Printf("concenso exitoso pista: %v, vuelo: %v", final.Pista, final.FlightId)
 	for i, cliente := range clientes {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		_, err := cliente.ResultadoConsenso(ctx, final)
@@ -256,7 +263,8 @@ func decidirRecord(votos map[int]*pb.Record) *pb.Record {
 /////////////////////////////////
 
 func guardarEnJSON(data *pb.Record) error {
-	name := "db" + strconv.Itoa(ID)
+	log.Printf("************************ Guardando en JSON: FlightID=%s, Pista=%d ***********************", data.FlightId, data.Pista)
+	name := "data/db" + strconv.Itoa(ID)
 	file, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -312,7 +320,7 @@ func conseguirvotosLider() (int, []int64) {
 		cancel()
 
 		if err != nil {
-			log.Printf("Nodo %d no respondió a PostularALider, esta muerto", i)
+			log.Printf("Nodo ATC %d no respondió a PostularALider, esta muerto", i)
 			continue
 		}
 
@@ -331,9 +339,9 @@ func NotificarNuevoLider() {
 		cancel()
 
 		if err != nil {
-			log.Printf("Nodo %d no aceptó notificación: %v", i, err)
+			log.Printf("Nodo ATC %d no aceptó notificación: %v", i, err)
 		} else {
-			log.Printf("Nodo %d confirmó nuevo líder (%d)", i, resp.Id)
+			log.Printf("Nodo ATC %d confirmó nuevo líder (%d)", i, resp.Id)
 		}
 	}
 
@@ -358,7 +366,7 @@ func pedirHistoricoAlLiderYGuardarlo(liderCopy int) {
 		return
 	}
 	muinsert.Lock()
-	if aplicarHistorico(historicos.Records) == nil {
+	if err := aplicarHistorico(historicos.Records); err != nil {
 		log.Printf("No logre guardar el historico correctamente")
 		return
 	}
@@ -386,6 +394,12 @@ func verLider() {
 		NotificarNuevoLider()
 		return
 	} else { // si no, significa que hay otro lider y que revivi
+		if len(respuestas) == 0 {
+			log.Printf("Estaba muerto y revivi pero nadie respondió a la postulación, terminaré aquí")
+			log.Printf("Nodo ATC %d: terminando ejecución", ID)
+			os.Exit(0)
+			return
+		}
 		log.Printf("Estaba muerto y revivi y ya existe un lider, estableciendo como lider al actual: %v", respuestas[0])
 		// actualizar lider
 		mulider.Lock()
@@ -485,9 +499,9 @@ func conect() {
 		}
 
 		conexiones[i] = conn
-		clientes[i] = pb.NewNodoBDConsensoClient(conn)
+		clientes[i] = pb.NewATCClient(conn)
 
-		log.Printf("Conectado al nodo %d en %s", i, dir)
+		log.Printf("Conectado al nodo ATC %d en %s", i, dir)
 	}
 }
 
@@ -502,9 +516,9 @@ func runServerLoop() {
 		}
 
 		grpcServer = grpc.NewServer()
-		pb.RegisterNodoBDConsensoServer(grpcServer, &server{})
+		pb.RegisterATCServer(grpcServer, &server{})
 
-		log.Printf("Nodo %d: servidor gRPC iniciado en %s", ID, port)
+		log.Printf("Nodo ATC %d: servidor gRPC iniciado en %s", ID, port)
 
 		err = grpcServer.Serve(lis)
 
@@ -514,11 +528,13 @@ func runServerLoop() {
 		mulider.Unlock()
 		log.Printf("******************--- reviviendo ---******************")
 	}
+	log.Printf("Nodo ATC %d: terminando ejecución", ID)
+	os.Exit(0)
 }
 
 func main() {
 
-	log.Printf("Nodo %d iniciando…", ID)
+	log.Printf("Nodo ATC %d iniciando…", ID)
 	conect()
 	go ciclo()
 	runServerLoop()

@@ -53,7 +53,7 @@ func (s *CoordinadorServer) CheckIn(ctx context.Context, in *pb.CheckInRequest) 
 		}
 		s.mu.Unlock()
 
-		log.Printf("[Coordinador] Sesión guardada %s -> %s\n", in.ClienteId, resp.DatonodeId)
+		log.Printf("[Coordinador] Sesión guardada %s -> %d\n", in.ClienteId, resp.DatonodeId)
 	}
 
 	respuesta := &pb.CheckInResponse{
@@ -85,6 +85,7 @@ func (s *CoordinadorServer) GetBoardingPass(ctx context.Context, in *pb.GetBoard
 		mensaje = &pb.BrokerReadRequest{
 			FlightId:   in.FlightId,
 			DatanodeId: sesion.Datanode,
+			ClienteId:  in.ClienteId,
 		}
 
 	} else {

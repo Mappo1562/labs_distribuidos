@@ -345,6 +345,7 @@ var ATC_ServiceDesc = grpc.ServiceDesc{
 const (
 	Datanode_FlightUpdate_FullMethodName     = "/AeroDist.Datanode/FlightUpdate"
 	Datanode_CreateFlights_FullMethodName    = "/AeroDist.Datanode/CreateFlights"
+	Datanode_ApagarNodo_FullMethodName       = "/AeroDist.Datanode/ApagarNodo"
 	Datanode_MRRead_FullMethodName           = "/AeroDist.Datanode/MRRead"
 	Datanode_CoordinadorWrite_FullMethodName = "/AeroDist.Datanode/CoordinadorWrite"
 	Datanode_GetInitialInfo_FullMethodName   = "/AeroDist.Datanode/GetInitialInfo"
@@ -358,6 +359,7 @@ type DatanodeClient interface {
 	// Broadcast Datanodes
 	FlightUpdate(ctx context.Context, in *FlightStates, opts ...grpc.CallOption) (*Vacio, error)
 	CreateFlights(ctx context.Context, in *Flights, opts ...grpc.CallOption) (*Vacio, error)
+	ApagarNodo(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error)
 	// Clientes MR
 	MRRead(ctx context.Context, in *MRReadRequest, opts ...grpc.CallOption) (*MRReadResponse, error)
 	// Coordinador
@@ -388,6 +390,16 @@ func (c *datanodeClient) CreateFlights(ctx context.Context, in *Flights, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Vacio)
 	err := c.cc.Invoke(ctx, Datanode_CreateFlights_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datanodeClient) ApagarNodo(ctx context.Context, in *Vacio, opts ...grpc.CallOption) (*Vacio, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Vacio)
+	err := c.cc.Invoke(ctx, Datanode_ApagarNodo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -441,6 +453,7 @@ type DatanodeServer interface {
 	// Broadcast Datanodes
 	FlightUpdate(context.Context, *FlightStates) (*Vacio, error)
 	CreateFlights(context.Context, *Flights) (*Vacio, error)
+	ApagarNodo(context.Context, *Vacio) (*Vacio, error)
 	// Clientes MR
 	MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error)
 	// Coordinador
@@ -462,6 +475,9 @@ func (UnimplementedDatanodeServer) FlightUpdate(context.Context, *FlightStates) 
 }
 func (UnimplementedDatanodeServer) CreateFlights(context.Context, *Flights) (*Vacio, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFlights not implemented")
+}
+func (UnimplementedDatanodeServer) ApagarNodo(context.Context, *Vacio) (*Vacio, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApagarNodo not implemented")
 }
 func (UnimplementedDatanodeServer) MRRead(context.Context, *MRReadRequest) (*MRReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MRRead not implemented")
@@ -528,6 +544,24 @@ func _Datanode_CreateFlights_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DatanodeServer).CreateFlights(ctx, req.(*Flights))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Datanode_ApagarNodo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Vacio)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatanodeServer).ApagarNodo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Datanode_ApagarNodo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatanodeServer).ApagarNodo(ctx, req.(*Vacio))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -618,6 +652,10 @@ var Datanode_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateFlights",
 			Handler:    _Datanode_CreateFlights_Handler,
+		},
+		{
+			MethodName: "ApagarNodo",
+			Handler:    _Datanode_ApagarNodo_Handler,
 		},
 		{
 			MethodName: "MRRead",

@@ -9,8 +9,6 @@ services:
       - datanode0
       - datanode1
       - datanode2
-    networks:
-      - grpc-net
     volumes:
       - ./reporte:/app/reporte
 
@@ -19,8 +17,6 @@ services:
     container_name: datanode2
     environment:
       - ID=2
-    networks:
-      - grpc-net
     volumes:
       - ./datanodes/data2:/app/data2
     ports:
@@ -33,17 +29,10 @@ services:
       - CLIENT_ID=cliente-ryw_1
     depends_on:
       - coordinador
-    networks:
-      - grpc-net
 
   cliente-mr1:
     build: ./clienteMR
     container_name: cliente-mr1
     environment: 
       - CLIENT_ID=cliente-mr_1
-    networks:
-      - grpc-net
       
-networks:
-  grpc-net:
-    driver: bridge

@@ -579,6 +579,15 @@ func runServerLoop() {
 	}
 }
 
+func (s *server) ApagarNodo(ctx context.Context, in *pb.Vacio) (*pb.Vacio, error) {
+	log.Printf("******************--- Apagando nodo ---******************")
+	go func() {
+		time.Sleep(2 * time.Second)
+		os.Exit(0)
+	}()
+	return &pb.Vacio{}, nil
+}
+
 func main() {
 
 	log.Printf("Nodo %d iniciando…", ID)

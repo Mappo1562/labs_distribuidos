@@ -206,7 +206,7 @@ func AsignarPistaConsenso(flight_id string) (int64, bool) {
 func RoundRobinIndex(b *Broker) (pb.DatanodeClient, int64) {
 	client := b.datanodeClients[b.RoundRobinIndex]
 	b.RoundRobinIndex = (b.RoundRobinIndex + 1) % int64(len(b.datanodeClients))
-	return client, b.RoundRobinIndex
+	return client, b.RoundRobinIndex - 1
 }
 
 func (s *server) MRRead(ctx context.Context, req *pb.MRReadRequest) (*pb.MRReadResponse, error) {
@@ -417,6 +417,18 @@ func convertFlightsToProto(flights []Flight) []*pb.Flight {
 	return protoFlights
 }
 
+func TerminarEjecucion(s *grpc.Server) {
+	log.Println("Terminando ejecución...")
+	log.Println("Apagando Datanodes...")
+	for _, client := range broker.datanodeClients {
+		client.ApagarNodo(context.Background(), &pb.Vacio{})
+	}
+	log.Println("Datanodes apagados.")
+	log.Println("Deteniendo Broker...")
+	time.Sleep(2 * time.Second)
+	s.GracefulStop()
+}
+
 func main() {
 	lis, err := net.Listen("tcp", PortBroker)
 	if err != nil {
@@ -443,6 +455,8 @@ func main() {
 			broker.BroadcastDatanodes(update.FlightId, update.UpdateType, update.UpdateValue)
 		}
 		log.Println("Simulación de actualizaciones de vuelo completada.")
+
+		TerminarEjecucion(s)
 	}()
 
 	go func() {
@@ -456,6 +470,7 @@ func main() {
 			}
 
 		}
+		log.Println("Asignación de Pistas completada.")
 
 		CreateReporteFile()
 	}()
