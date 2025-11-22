@@ -12,7 +12,7 @@ services:
     networks:
       - grpc-net
     volumes:
-      - ./reporte:/app/reporte
+      - ./reportes:/app/reportes
 
   # Nodos consenso:
   dbatc0:
@@ -135,6 +135,8 @@ services:
       - CLIENT_ID=cliente-mr_1
     networks:
       - grpc-net
+    depends_on:
+      - broker
 
   cliente-mr2:
     build: ./clienteMR
@@ -143,6 +145,8 @@ services:
       - CLIENT_ID=cliente-mr_2
     networks:
       - grpc-net
+    depends_on:
+      - broker
       
 networks:
   grpc-net:

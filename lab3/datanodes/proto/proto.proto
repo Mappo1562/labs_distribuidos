@@ -96,6 +96,7 @@ message GetInitialInfoResponse{
 message BrokerReadRequest{
     string flight_id = 1;
     int64 datanode_id = 2;
+    string cliente_id = 3;
 }
 
 message BrokerReadResponse{
